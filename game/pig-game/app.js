@@ -53,9 +53,15 @@ document.querySelector(".btn-hold").addEventListener("click", () => {
       item.style.display = "none";
     });
 
-    winningScore = document.querySelector(".final-score").value
-      ? document.querySelector(".final-score").value
-      : 100;
+    let finalDoc = document.querySelector(".final-score")
+    if (finalDoc.value) {
+      winningScore = finalDoc.value;
+      finalDoc.placeholder = finalDoc.value;
+      finalDoc.value = "";
+    } else if (!winningScore) {
+      winningScore = 100;
+    }
+
     changePlayer();
   }
 });
