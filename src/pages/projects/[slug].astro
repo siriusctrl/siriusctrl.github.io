@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectArtwork from "../../components/ProjectArtwork.astro";
+import { projects } from "../../data/projects";
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+---
+
+<BaseLayout title={project.name} description={project.summary} image={project.image}>
+  <main class="page-shell project-detail">
+    <header class="project-detail-header">
+      <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
+      <h1>{project.name}</h1>
+      <p>{project.summary}</p>
+      <div class="detail-actions">
+        {project.demoUrl && (
+          <a class="button button-primary" href={project.demoUrl}>
+            Open demo <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+          </a>
+        )}
+        <a class="button button-outline" href={project.repoUrl}>
+          View source <i class="ph ph-github-logo" aria-hidden="true"></i>
+        </a>
+      </div>
+    </header>
+    <ProjectArtwork project={project} eager class="detail-artwork" />
+    <section class="project-detail-body">
+      <div>
+        <h2>What it does</h2>
+        <p>{project.detail}</p>
+      </div>
+      <aside>
+        <h2>Built with</h2>
+        <div class="stack-list">{project.stack.map((item) => <span>{item}</span>)}</div>
+        {project.install && (
+          <div class="install-block">
+            <span>Install or start</span>
+            <code>{project.install}</code>
+          </div>
+        )}
+      </aside>
+    </section>
+  </main>
+</BaseLayout>

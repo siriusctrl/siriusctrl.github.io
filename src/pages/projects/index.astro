@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectArtwork from "../../components/ProjectArtwork.astro";
+import { projects } from "../../data/projects";
+---
+
+<BaseLayout title="Projects" description="Selected interactive experiments, terminal interfaces, and developer tools by Sirius Ctrl.">
+  <main class="page-shell">
+    <header class="page-intro">
+      <h1>Projects</h1>
+      <p>Interactive experiments and terminal software, shown through real product output.</p>
+    </header>
+    <section class="project-index" aria-label="Project index">
+      {projects.map((project) => (
+        <article class="project-index-row">
+          <a class="project-index-media" href={`/projects/${project.slug}/`}>
+            <ProjectArtwork project={project} />
+          </a>
+          <div class="project-index-copy">
+            <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
+            <h2><a href={`/projects/${project.slug}/`}>{project.name}</a></h2>
+            <p>{project.detail}</p>
+            <div class="stack-list">{project.stack.map((item) => <span>{item}</span>)}</div>
+          </div>
+        </article>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

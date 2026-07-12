@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectArtwork from "../components/ProjectArtwork.astro";
+import { projects } from "../data/projects";
+import { getCollection } from "astro:content";
+
+const freeform = projects[0];
+const terminalProjects = projects.slice(1);
+const notes = (await getCollection("notes", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout>
+  <main>
+    <section class="home-hero" aria-labelledby="hero-title">
+      <img
+        src={freeform.image}
+        alt={freeform.imageAlt}
+        width="1600"
+        height="1000"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="hero-kicker">Independent software projects</p>
+        <h1 id="hero-title">Sirius Ctrl</h1>
+        <p>Small tools and browser experiments that make complex systems easier to inspect.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href={freeform.demoUrl}>
+            Open Freeform <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+          </a>
+          <a class="button button-secondary" href="/projects/">Browse projects</a>
+        </div>
+      </div>
+      <a class="hero-project" href={`/projects/${freeform.slug}/`} aria-label={`Read about ${freeform.name}`}>
+        <span>{freeform.name}</span>
+        <span>{freeform.kind}</span>
+      </a>
+    </section>
+
+    <section class="section selected-work" aria-labelledby="selected-title">
+      <div class="section-heading compact-heading">
+        <h2 id="selected-title">Selected work</h2>
+        <p>Working software, recorded in the environment where it actually runs.</p>
+      </div>
+
+      <div class="terminal-grid">
+        {terminalProjects.map((project, index) => (
+          <article class:list={["terminal-project", index === 0 && "terminal-project-wide"]}>
+            <a href={`/projects/${project.slug}/`}>
+              <ProjectArtwork project={project} />
+            </a>
+            <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
+            <h3><a href={`/projects/${project.slug}/`}>{project.name}</a></h3>
+            <p>{project.summary}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section notes-preview" aria-labelledby="notes-title">
+      <div class="section-heading compact-heading">
+        <h2 id="notes-title">Notes</h2>
+        <p>Architecture choices, experiments, and the reasoning that survives the commit.</p>
+      </div>
+      <div class="note-list">
+        {notes.map((note) => (
+          <a class="note-row" href={`/notes/${note.id}/`}>
+            <time datetime={note.data.publishedAt.toISOString()}>
+              {note.data.publishedAt.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" })}
+            </time>
+            <span>
+              <strong>{note.data.title}</strong>
+              <small>{note.data.description}</small>
+            </span>
+            <i class="ph ph-arrow-right" aria-hidden="true"></i>
+          </a>
+        ))}
+      </div>
+      <a class="text-link" href="/notes/">All notes <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+    </section>
+  </main>
+</BaseLayout>

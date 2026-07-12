@@ -1,0 +1,30 @@
+{
+  "name": "siriusctrl.github.io",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "serve:test": "node scripts/serve-test.mjs",
+    "check": "astro check && astro build",
+    "verify:ui": "playwright test",
+    "verify:proof": "node scripts/record-proof.mjs",
+    "setup:browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.2",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/geist-mono": "^5.2.7",
+    "@phosphor-icons/web": "^2.1.2",
+    "astro": "^7.0.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@playwright/test": "^1.61.1",
+    "typescript": "^6.0.3"
+  }
+}

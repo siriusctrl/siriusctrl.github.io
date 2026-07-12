@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const notes = (await getCollection("notes", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+---
+
+<BaseLayout title="Notes" description="Writing about software architecture, interaction design, and practical experiments.">
+  <main class="page-shell">
+    <header class="page-intro">
+      <h1>Notes</h1>
+      <p>Architecture choices, experiments, and implementation details worth keeping.</p>
+    </header>
+    <section class="notes-index" aria-label="Published notes">
+      {notes.length === 0 ? (
+        <p class="empty-state">No public notes yet.</p>
+      ) : notes.map((note) => (
+        <article class="notes-index-row">
+          <time datetime={note.data.publishedAt.toISOString()}>
+            {note.data.publishedAt.toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" })}
+          </time>
+          <div>
+            <h2><a href={`/notes/${note.id}/`}>{note.data.title}</a></h2>
+            <p>{note.data.description}</p>
+          </div>
+          <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+        </article>
+      ))}
+    </section>
+  </main>
+</BaseLayout>
