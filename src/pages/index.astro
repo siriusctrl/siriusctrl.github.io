@@ -1,11 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
 import ProjectArtwork from "../components/ProjectArtwork.astro";
 import { projects } from "../data/projects";
 import { getCollection } from "astro:content";
 
-const freeform = projects[0];
-const terminalProjects = projects.slice(1);
+const featuredProjects = projects.filter((project) => project.featured);
+if (featuredProjects.length !== 1) throw new Error("Home page requires exactly one featured project");
+const featuredProject = featuredProjects[0];
+const recentProjects = projects.filter((project) => project !== featuredProject);
+const projectCount = String(projects.length).padStart(2, "0");
 const notes = (await getCollection("notes", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
   .slice(0, 3);
@@ -27,36 +31,36 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
           I like turning complicated ideas into working software—things you can run, inspect, and play with.
         </p>
         <div class="intro-links" aria-label="Homepage links">
-          <a href="/projects/">View projects <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+          <a href="/projects/">View projects <Icon name="arrow-right" /></a>
           <a href="https://github.com/siriusctrl">
-            GitHub <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+            GitHub <Icon name="arrow-up-right" />
           </a>
         </div>
       </div>
     </section>
 
-    <section class="section selected-work" aria-labelledby="selected-title">
+    <section class="section recent-work" aria-labelledby="recent-title">
       <div class="work-heading">
-        <p class="section-index">01 — 04</p>
-        <h2 id="selected-title">Recent work</h2>
+        <p class="section-index">01 — {projectCount}</p>
+        <h2 id="recent-title">Recent work</h2>
         <p>Working software, recorded in the environment where it actually runs.</p>
       </div>
 
       <article class="home-featured">
-        <a class="home-featured-media" href={`/projects/${freeform.slug}/`}>
-          <ProjectArtwork project={freeform} eager={true} />
+        <a class="home-featured-media" href={`/projects/${featuredProject.slug}/`}>
+          <ProjectArtwork project={featuredProject} eager={true} />
         </a>
         <div class="home-featured-copy">
-          <div class="project-meta"><span>01</span><span>{freeform.kind}</span><span>{freeform.year}</span></div>
-          <h3><a href={`/projects/${freeform.slug}/`}>{freeform.name}</a></h3>
-          <p>{freeform.detail}</p>
+          <div class="project-meta"><span>01</span><span>{featuredProject.kind}</span><span>{featuredProject.year}</span></div>
+          <h3><a href={`/projects/${featuredProject.slug}/`}>{featuredProject.name}</a></h3>
+          <p>{featuredProject.detail}</p>
           <div class="project-links">
-            <a href={`/projects/${freeform.slug}/`}>
-              View project <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            <a href={`/projects/${featuredProject.slug}/`}>
+              View project <Icon name="arrow-right" />
             </a>
-            {freeform.demoUrl && (
-              <a href={freeform.demoUrl}>
-                Open demo <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+            {featuredProject.demoUrl && (
+              <a href={featuredProject.demoUrl}>
+                Open demo <Icon name="arrow-up-right" />
               </a>
             )}
           </div>
@@ -64,7 +68,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       </article>
 
       <div class="project-ledger">
-        {terminalProjects.map((project, index) => (
+        {recentProjects.map((project, index) => (
           <article class="ledger-project">
             <span class="ledger-number">{String(index + 2).padStart(2, "0")}</span>
             <a class="ledger-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
@@ -76,7 +80,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
               <p>{project.summary}</p>
             </div>
             <a class="ledger-arrow" href={`/projects/${project.slug}/`} aria-label={`Read about ${project.name}`}>
-              <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+              <Icon name="arrow-up-right" />
             </a>
           </article>
         ))}
@@ -98,11 +102,11 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
               <strong>{note.data.title}</strong>
               <small>{note.data.description}</small>
             </span>
-            <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            <Icon name="arrow-right" />
           </a>
         ))}
       </div>
-      <a class="text-link" href="/notes/">All notes <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+      <a class="text-link" href="/notes/">All notes <Icon name="arrow-right" /></a>
     </section>
   </main>
 </BaseLayout>

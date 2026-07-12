@@ -10,7 +10,7 @@ interface Props {
 const { project, eager = false, class: className = "" } = Astro.props;
 ---
 
-<figure class:list={["project-artwork", `tone-${project.tone}`, className]}>
+<figure class:list={["project-artwork", className]}>
   <img
     src={project.image}
     alt={project.imageAlt}

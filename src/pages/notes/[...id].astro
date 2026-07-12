@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Icon from "../../components/Icon.astro";
 
 export async function getStaticPaths() {
   const notes = await getCollection("notes", ({ data }) => !data.draft);
@@ -14,7 +15,7 @@ const { Content } = await render(note);
 <BaseLayout title={note.data.title} description={note.data.description}>
   <main class="article-shell">
     <header class="article-header">
-      <a href="/notes/" class="back-link"><i class="ph ph-arrow-left" aria-hidden="true"></i> Notes</a>
+      <a href="/notes/" class="back-link"><Icon name="arrow-left" /> Notes</a>
       <h1>{note.data.title}</h1>
       <p>{note.data.description}</p>
       <time datetime={note.data.publishedAt.toISOString()}>

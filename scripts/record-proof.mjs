@@ -102,7 +102,7 @@ try {
     actions: [
       "open home",
       "switch to dark mode",
-      "scroll to selected work",
+      "scroll to recent work",
       "open TowerLab detail",
       "open project index",
       "open notes index and article",

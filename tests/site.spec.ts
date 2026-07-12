@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("home page presents selected work and keeps the chosen theme", async ({ page }) => {
+test("home page presents recent work and keeps the chosen theme", async ({ page }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", { level: 1, name: "Software for seeing what systems are doing." }),

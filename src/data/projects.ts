@@ -12,7 +12,6 @@ export interface Project {
   demoUrl?: string;
   install?: string;
   featured?: boolean;
-  tone: "light" | "dark";
 }
 
 export const projects: Project[] = [
@@ -30,7 +29,6 @@ export const projects: Project[] = [
     repoUrl: "https://github.com/siriusctrl/freeform-artifacts",
     demoUrl: "https://siriusctrl.github.io/freeform-artifacts/",
     featured: true,
-    tone: "light",
   },
   {
     slug: "towerlab",
@@ -45,7 +43,6 @@ export const projects: Project[] = [
     imageAlt: "TowerLab running inside a terminal with cards, enemy intent, and combat log",
     repoUrl: "https://github.com/siriusctrl/towerlab",
     install: "git clone https://github.com/siriusctrl/towerlab",
-    tone: "dark",
   },
   {
     slug: "fmtview",
@@ -60,7 +57,6 @@ export const projects: Project[] = [
     imageAlt: "fmtview terminal interface displaying highlighted structured data",
     repoUrl: "https://github.com/siriusctrl/fmtview",
     install: "cargo install fmtview --locked",
-    tone: "dark",
   },
   {
     slug: "termviz",
@@ -75,7 +71,6 @@ export const projects: Project[] = [
     imageAlt: "termviz rendering a multi-series latency plot in a real terminal emulator",
     repoUrl: "https://github.com/siriusctrl/termviz",
     install: "cargo install --git https://github.com/siriusctrl/termviz",
-    tone: "dark",
   },
 ];
 

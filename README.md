@@ -9,6 +9,12 @@ The site is intentionally split by ownership:
 - terminal projects are represented with images captured from real emulator sessions;
 - GitHub Actions builds Astro and deploys only the generated `dist/` artifact to Pages.
 
+## Prerequisites
+
+- Node.js 22.12 or newer (the pinned version is in `.nvmrc`).
+- Chromium for browser verification: `npm run setup:browsers`.
+- ffmpeg for generating the GIF and contact sheet produced by `verify:proof`.
+
 ## Local development
 
 ```sh
