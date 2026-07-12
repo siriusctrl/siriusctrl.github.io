@@ -13,48 +13,71 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 
 <BaseLayout>
   <main>
-    <section class="home-hero" aria-labelledby="hero-title">
-      <img
-        src={freeform.image}
-        alt={freeform.imageAlt}
-        width="1600"
-        height="1000"
-        loading="eager"
-        fetchpriority="high"
-      />
-      <div class="hero-scrim" aria-hidden="true"></div>
-      <div class="hero-copy">
-        <p class="hero-kicker">Independent software projects</p>
-        <h1 id="hero-title">Sirius Ctrl</h1>
-        <p>Small tools and browser experiments that make complex systems easier to inspect.</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href={freeform.demoUrl}>
-            Open Freeform <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+    <section class="home-intro" aria-labelledby="hero-title">
+      <div class="intro-rail">
+        <p>Independent software</p>
+        <p>Built in public</p>
+      </div>
+      <h1 id="hero-title">
+        Software for seeing
+        <span>what systems are doing.</span>
+      </h1>
+      <div class="intro-bottom">
+        <p class="intro-statement">
+          I like turning complicated ideas into working software—things you can run, inspect, and play with.
+        </p>
+        <div class="intro-links" aria-label="Homepage links">
+          <a href="/projects/">View projects <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+          <a href="https://github.com/siriusctrl">
+            GitHub <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
           </a>
-          <a class="button button-secondary" href="/projects/">Browse projects</a>
         </div>
       </div>
-      <a class="hero-project" href={`/projects/${freeform.slug}/`} aria-label={`Read about ${freeform.name}`}>
-        <span>{freeform.name}</span>
-        <span>{freeform.kind}</span>
-      </a>
     </section>
 
     <section class="section selected-work" aria-labelledby="selected-title">
-      <div class="section-heading compact-heading">
-        <h2 id="selected-title">Selected work</h2>
+      <div class="work-heading">
+        <p class="section-index">01 — 04</p>
+        <h2 id="selected-title">Recent work</h2>
         <p>Working software, recorded in the environment where it actually runs.</p>
       </div>
 
-      <div class="terminal-grid">
+      <article class="home-featured">
+        <a class="home-featured-media" href={`/projects/${freeform.slug}/`}>
+          <ProjectArtwork project={freeform} eager={true} />
+        </a>
+        <div class="home-featured-copy">
+          <div class="project-meta"><span>01</span><span>{freeform.kind}</span><span>{freeform.year}</span></div>
+          <h3><a href={`/projects/${freeform.slug}/`}>{freeform.name}</a></h3>
+          <p>{freeform.detail}</p>
+          <div class="project-links">
+            <a href={`/projects/${freeform.slug}/`}>
+              View project <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            </a>
+            {freeform.demoUrl && (
+              <a href={freeform.demoUrl}>
+                Open demo <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+              </a>
+            )}
+          </div>
+        </div>
+      </article>
+
+      <div class="project-ledger">
         {terminalProjects.map((project, index) => (
-          <article class:list={["terminal-project", index === 0 && "terminal-project-wide"]}>
-            <a href={`/projects/${project.slug}/`}>
+          <article class="ledger-project">
+            <span class="ledger-number">{String(index + 2).padStart(2, "0")}</span>
+            <a class="ledger-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
               <ProjectArtwork project={project} />
             </a>
-            <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
-            <h3><a href={`/projects/${project.slug}/`}>{project.name}</a></h3>
-            <p>{project.summary}</p>
+            <div class="ledger-copy">
+              <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
+              <h3><a href={`/projects/${project.slug}/`}>{project.name}</a></h3>
+              <p>{project.summary}</p>
+            </div>
+            <a class="ledger-arrow" href={`/projects/${project.slug}/`} aria-label={`Read about ${project.name}`}>
+              <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+            </a>
           </article>
         ))}
       </div>

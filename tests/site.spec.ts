@@ -2,8 +2,10 @@ import { expect, test } from "@playwright/test";
 
 test("home page presents selected work and keeps the chosen theme", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Sirius Ctrl" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open Freeform/ })).toHaveAttribute(
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Software for seeing what systems are doing." }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Open demo/ })).toHaveAttribute(
     "href",
     "https://siriusctrl.github.io/freeform-artifacts/",
   );
