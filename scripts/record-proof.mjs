@@ -45,8 +45,9 @@ try {
   await page.waitForTimeout(450);
   await page.getByRole("heading", { name: "Recent work" }).scrollIntoViewIfNeeded();
   await page.waitForTimeout(650);
-  await page.getByRole("link", { name: "TowerLab", exact: true }).click();
+  await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();
   await page.waitForLoadState("networkidle");
+  await page.getByText(/Build with AI can install a trusted artifact bundle/).waitFor();
   await page.waitForTimeout(650);
   await page.getByRole("link", { name: "Projects" }).click();
   await page.waitForLoadState("networkidle");
@@ -103,7 +104,7 @@ try {
       "open home",
       "switch to dark mode",
       "scroll to recent work",
-      "open TowerLab detail",
+      "open Freeform Artifacts detail and verify current copy",
       "open project index",
       "open notes index and article",
       "check desktop and mobile overflow",

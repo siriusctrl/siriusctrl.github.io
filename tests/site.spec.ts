@@ -24,7 +24,10 @@ test("project and note routes render real content", async ({ page }) => {
   await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();
   await expect(page).toHaveURL(/\/projects\/freeform-artifacts\/$/);
   await expect(page.getByRole("link", { name: /Open demo/ })).toBeVisible();
+  await expect(page.getByText(/Build with AI can install a trusted artifact bundle/)).toBeVisible();
+  await expect(page.getByText("Chart Kit / ECharts", { exact: true })).toBeVisible();
   await expect(page.getByText("IndexedDB", { exact: true })).toBeVisible();
+  await expect(page.getByAltText(/Dark-mode Freeform Artifacts canvas/)).toBeVisible();
 
   await page.goto("/notes/");
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
@@ -34,7 +37,7 @@ test("project and note routes render real content", async ({ page }) => {
 test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile project only");
 
-  for (const route of ["/", "/projects/", "/projects/towerlab/", "/notes/rebuilding-the-site/"]) {
+  for (const route of ["/", "/projects/", "/projects/freeform-artifacts/", "/notes/rebuilding-the-site/"]) {
     await page.goto(route);
     await page.waitForLoadState("networkidle");
     const dimensions = await page.evaluate(() => ({
