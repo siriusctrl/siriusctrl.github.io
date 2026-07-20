@@ -9,7 +9,7 @@ const featuredProjects = projects.filter((project) => project.featured);
 if (featuredProjects.length !== 1) throw new Error("Home page requires exactly one featured project");
 const featuredProject = featuredProjects[0];
 const recentProjects = projects.filter((project) => project !== featuredProject);
-const projectCount = String(projects.length).padStart(2, "0");
+const workProjects = [featuredProject, ...recentProjects];
 const notes = (await getCollection("notes", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
   .slice(0, 3);
@@ -18,17 +18,17 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 <BaseLayout>
   <main>
     <section class="home-intro" aria-labelledby="hero-title">
-      <div class="intro-rail">
-        <p>Independent software</p>
-        <p>Built in public</p>
-      </div>
-      <h1 id="hero-title">
-        Software for seeing
-        <span>what systems are doing.</span>
-      </h1>
-      <div class="intro-bottom">
+      <div class="intro-copy">
+        <div class="intro-rail">
+          <p>Independent software</p>
+          <p>Built in public</p>
+        </div>
+        <h1 id="hero-title">
+          Software for seeing
+          <span>what systems are doing.</span>
+        </h1>
         <p class="intro-statement">
-          I like turning complicated ideas into working software—things you can run, inspect, and play with.
+          I turn complicated ideas into working software: things you can run, inspect, and play with.
         </p>
         <div class="intro-links" aria-label="Homepage links">
           <a href="/projects/">View projects <Icon name="arrow-right" /></a>
@@ -37,53 +37,79 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
           </a>
         </div>
       </div>
+
+      <figure
+        class="inspection-stage"
+        data-inspection-stage
+        role="img"
+        aria-label="Fragments from four working software projects"
+      >
+        <div class="inspection-scene inspection-base" aria-hidden="true">
+          {workProjects.map((project) => (
+            <img
+              src={project.image}
+              alt=""
+              width="1600"
+              height="1000"
+              loading="eager"
+              fetchpriority={project === featuredProject ? "high" : "auto"}
+            />
+          ))}
+        </div>
+        <div class="inspection-lens" aria-hidden="true">
+          <div class="inspection-scene inspection-reveal">
+            {workProjects.map((project) => (
+              <img src={project.image} alt="" width="1600" height="1000" />
+            ))}
+          </div>
+        </div>
+      </figure>
     </section>
 
     <section class="section recent-work" aria-labelledby="recent-title">
       <div class="work-heading">
-        <p class="section-index">01 — {projectCount}</p>
         <h2 id="recent-title">Recent work</h2>
         <p>Working software, recorded in the environment where it actually runs.</p>
       </div>
 
-      <article class="home-featured">
-        <a class="home-featured-media" href={`/projects/${featuredProject.slug}/`}>
-          <ProjectArtwork project={featuredProject} eager={true} />
-        </a>
-        <div class="home-featured-copy">
-          <div class="project-meta"><span>01</span><span>{featuredProject.kind}</span><span>{featuredProject.year}</span></div>
-          <h3><a href={`/projects/${featuredProject.slug}/`}>{featuredProject.name}</a></h3>
-          <p>{featuredProject.detail}</p>
-          <div class="project-links">
-            <a href={`/projects/${featuredProject.slug}/`}>
-              View project <Icon name="arrow-right" />
-            </a>
-            {featuredProject.demoUrl && (
-              <a href={featuredProject.demoUrl}>
-                Open demo <Icon name="arrow-up-right" />
-              </a>
-            )}
+      <div class="work-stage" data-work-stage>
+        <div class="work-visual" aria-hidden="true">
+          <div class="work-visual-sticky">
+            {workProjects.map((project, index) => (
+              <div
+                class:list={["work-frame", { "is-active": index === 0 }]}
+                data-work-frame={project.slug}
+              >
+                <ProjectArtwork project={project} eager={index === 0} />
+              </div>
+            ))}
           </div>
         </div>
-      </article>
-
-      <div class="project-ledger">
-        {recentProjects.map((project, index) => (
-          <article class="ledger-project">
-            <span class="ledger-number">{String(index + 2).padStart(2, "0")}</span>
-            <a class="ledger-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
-              <ProjectArtwork project={project} />
-            </a>
-            <div class="ledger-copy">
+        <div class="work-entries">
+          {workProjects.map((project, index) => (
+            <article
+              class:list={["work-entry", { "is-active": index === 0 }]}
+              data-work-entry={project.slug}
+            >
+              <a
+                class="work-entry-media"
+                href={`/projects/${project.slug}/`}
+                tabindex="-1"
+                aria-hidden="true"
+              >
+                <ProjectArtwork project={project} />
+              </a>
               <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
               <h3><a href={`/projects/${project.slug}/`}>{project.name}</a></h3>
               <p>{project.summary}</p>
-            </div>
-            <a class="ledger-arrow" href={`/projects/${project.slug}/`} aria-label={`Read about ${project.name}`}>
-              <Icon name="arrow-up-right" />
-            </a>
-          </article>
-        ))}
+              {project.demoUrl && (
+                <a class="work-demo-link" href={project.demoUrl}>
+                  Open demo <Icon name="arrow-up-right" />
+                </a>
+              )}
+            </article>
+          ))}
+        </div>
       </div>
     </section>
 
@@ -110,3 +136,91 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  const inspectionStage = document.querySelector<HTMLElement>("[data-inspection-stage]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const finePointer = window.matchMedia("(pointer: fine)");
+
+  if (inspectionStage && !reducedMotion.matches && finePointer.matches) {
+    let bounds = inspectionStage.getBoundingClientRect();
+    let lensSize = Math.min(240, Math.max(165, bounds.width * 0.48));
+    let pointerX = bounds.width * 0.28;
+    let pointerY = bounds.height * 0.25;
+    let animationFrame = 0;
+
+    const renderLens = () => {
+      const left = Math.max(0, Math.min(bounds.width - lensSize, pointerX - lensSize / 2));
+      const top = Math.max(0, Math.min(bounds.height - lensSize, pointerY - lensSize / 2));
+
+      inspectionStage.style.setProperty("--scene-width", `${bounds.width}px`);
+      inspectionStage.style.setProperty("--scene-height", `${bounds.height}px`);
+      inspectionStage.style.setProperty("--lens-size", `${lensSize}px`);
+      inspectionStage.style.setProperty("--lens-x", `${left}px`);
+      inspectionStage.style.setProperty("--lens-y", `${top}px`);
+      inspectionStage.style.setProperty("--scene-x", `${-left}px`);
+      inspectionStage.style.setProperty("--scene-y", `${-top}px`);
+      inspectionStage.classList.add("is-ready");
+      animationFrame = 0;
+    };
+
+    const scheduleLens = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(renderLens);
+    };
+
+    const resetLens = () => {
+      pointerX = bounds.width * 0.28;
+      pointerY = bounds.height * 0.25;
+      inspectionStage.classList.remove("is-active");
+      scheduleLens();
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      bounds = inspectionStage.getBoundingClientRect();
+      lensSize = Math.min(240, Math.max(165, bounds.width * 0.48));
+      resetLens();
+    });
+
+    inspectionStage.addEventListener("pointerenter", () => inspectionStage.classList.add("is-active"));
+    inspectionStage.addEventListener("pointermove", (event) => {
+      bounds = inspectionStage.getBoundingClientRect();
+      pointerX = event.clientX - bounds.left;
+      pointerY = event.clientY - bounds.top;
+      scheduleLens();
+    });
+    inspectionStage.addEventListener("pointerleave", resetLens);
+    resizeObserver.observe(inspectionStage);
+    scheduleLens();
+  }
+
+  const workEntries = Array.from(document.querySelectorAll<HTMLElement>("[data-work-entry]"));
+  const workFrames = Array.from(document.querySelectorAll<HTMLElement>("[data-work-frame]"));
+
+  const activateWork = (slug: string) => {
+    workEntries.forEach((entry) => entry.classList.toggle("is-active", entry.dataset.workEntry === slug));
+    workFrames.forEach((frame) => frame.classList.toggle("is-active", frame.dataset.workFrame === slug));
+  };
+
+  if (workEntries.length > 0 && workFrames.length > 0) {
+    const workObserver = new IntersectionObserver(
+      (observations) => {
+        const visible = observations
+          .filter((observation) => observation.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        const slug = (visible[0]?.target as HTMLElement | undefined)?.dataset.workEntry;
+        if (slug) activateWork(slug);
+      },
+      { rootMargin: "-38% 0px -38% 0px", threshold: [0, 0.25, 0.5] },
+    );
+
+    workEntries.forEach((entry) => {
+      workObserver.observe(entry);
+      entry.addEventListener("pointerenter", () => {
+        if (entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
+      });
+      entry.addEventListener("focusin", () => {
+        if (entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
+      });
+    });
+  }
+</script>

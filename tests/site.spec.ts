@@ -19,6 +19,29 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
 });
 
+test("home interactions reveal project evidence and follow the focused work", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Pointer lens and sticky work stage are desktop interactions");
+
+  await page.goto("/");
+  const inspectionStage = page.locator("[data-inspection-stage]");
+  await expect(inspectionStage).toHaveClass(/is-ready/);
+  const bounds = await inspectionStage.boundingBox();
+  expect(bounds).not.toBeNull();
+  const initialPosition = await inspectionStage.evaluate((element) =>
+    element.style.getPropertyValue("--lens-x"),
+  );
+
+  await page.mouse.move(bounds!.x + bounds!.width * 0.72, bounds!.y + bounds!.height * 0.7);
+  await expect(inspectionStage).toHaveClass(/is-active/);
+  await expect
+    .poll(() => inspectionStage.evaluate((element) => element.style.getPropertyValue("--lens-x")))
+    .not.toBe(initialPosition);
+
+  const towerLabEntry = page.locator("[data-work-entry=towerlab]");
+  await towerLabEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect(page.locator("[data-work-frame=towerlab]")).toHaveClass(/is-active/);
+});
+
 test("project and note routes render real content", async ({ page }) => {
   await page.goto("/projects/");
   await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();

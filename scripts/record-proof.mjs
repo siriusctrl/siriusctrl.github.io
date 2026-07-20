@@ -38,13 +38,33 @@ try {
   });
   const page = await context.newPage();
   await page.goto(url);
-  await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".inspection-stage img")].every((image) => image.complete),
+  );
   await page.waitForTimeout(500);
 
+  const inspectionStage = page.locator("[data-inspection-stage]");
+  const inspectionBounds = await inspectionStage.boundingBox();
+  if (inspectionBounds) {
+    await page.mouse.move(
+      inspectionBounds.x + inspectionBounds.width * 0.72,
+      inspectionBounds.y + inspectionBounds.height * 0.68,
+    );
+    await page.waitForTimeout(550);
+  }
   await page.getByTestId("theme-toggle").click();
   await page.waitForTimeout(450);
   await page.getByRole("heading", { name: "Recent work" }).scrollIntoViewIfNeeded();
   await page.waitForTimeout(650);
+  await page.locator("[data-work-entry=towerlab]").evaluate((element) =>
+    element.scrollIntoView({ block: "center" }),
+  );
+  await page.waitForFunction(() => document.querySelector("[data-work-frame=towerlab] img")?.complete);
+  await page.waitForTimeout(650);
+  await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
+    element.scrollIntoView({ block: "center" }),
+  );
+  await page.waitForTimeout(450);
   await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();
   await page.waitForLoadState("networkidle");
   await page.getByText(/Build with AI can install a trusted artifact bundle/).waitFor();
@@ -67,7 +87,17 @@ try {
 
   const mobile = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   await mobile.goto(url);
-  await mobile.waitForFunction(() => [...document.images].every((image) => image.complete));
+  await mobile.waitForFunction(() =>
+    [...document.querySelectorAll(".inspection-stage img")].every((image) => image.complete),
+  );
+  for (const entry of await mobile.locator("[data-work-entry]").all()) {
+    await entry.scrollIntoViewIfNeeded();
+    await entry.locator("img").waitFor({ state: "visible" });
+  }
+  await mobile.waitForFunction(() =>
+    [...document.querySelectorAll(".work-entry-media img")].every((image) => image.complete),
+  );
+  await mobile.evaluate(() => window.scrollTo(0, 0));
   const mobileOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (mobileOverflow > 0) {
     throw new Error(`Mobile home overflowed by ${mobileOverflow}px`);
@@ -102,8 +132,10 @@ try {
     url,
     actions: [
       "open home",
+      "move the inspection lens across real project fragments",
       "switch to dark mode",
       "scroll to recent work",
+      "focus TowerLab in the sticky work stage",
       "open Freeform Artifacts detail and verify current copy",
       "open project index",
       "open notes index and article",
@@ -119,6 +151,7 @@ try {
       "",
       "- Chromium rendered the home, project detail, project index, notes index, and article routes.",
       "- Theme switching persisted across internal navigation.",
+      "- The home inspection lens and sticky work-stage transitions were exercised.",
       "- Real project media loaded before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",
       "- A contact sheet was generated for internal temporal inspection.",
