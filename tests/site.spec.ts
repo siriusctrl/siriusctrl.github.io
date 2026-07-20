@@ -38,13 +38,47 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
     await expect.poll(readRevealOrigin).not.toBeNull();
     const revealOrigin = await readRevealOrigin();
     if (!revealOrigin) throw new Error("Theme reveal animation did not expose an origin");
-    expect(Math.abs(revealOrigin.x - (themeToggleBounds!.x + clickPosition.x))).toBeLessThan(2);
-    expect(Math.abs(revealOrigin.y - (themeToggleBounds!.y + clickPosition.y))).toBeLessThan(2);
+    expect(Math.abs(revealOrigin.x - (themeToggleBounds!.x + themeToggleBounds!.width / 2))).toBeLessThan(2);
+    expect(Math.abs(revealOrigin.y - (themeToggleBounds!.y + themeToggleBounds!.height / 2))).toBeLessThan(2);
   }
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.themeTransition)).toBeUndefined();
   await page.reload();
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+});
+
+test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMobile }) => {
+  test.skip(isMobile, "4k coverage uses the desktop browser profile");
+
+  await page.setViewportSize({ width: 3840, height: 2160 });
+  await page.goto("/");
+  const themeToggle = page.getByTestId("theme-toggle");
+  const bounds = await themeToggle.boundingBox();
+  if (!bounds) throw new Error("Theme toggle did not expose its bounds");
+
+  await themeToggle.click({ position: { x: 6, y: 6 } });
+  await page.waitForFunction(() =>
+    document.getAnimations().some((animation) =>
+      animation.effect?.pseudoElement === "::view-transition-new(root)"
+    ),
+  );
+  const earlyFrame = await page.evaluate(async () => {
+    const animation = document.getAnimations().find((candidate) =>
+      candidate.effect?.pseudoElement === "::view-transition-new(root)"
+    );
+    if (!animation) return null;
+    animation.pause();
+    animation.currentTime = 180;
+    await new Promise(requestAnimationFrame);
+    return getComputedStyle(document.documentElement, "::view-transition-new(root)").clipPath;
+  });
+  const match = earlyFrame?.match(/circle\(([\d.]+)px at ([\d.]+)px ([\d.]+)px\)/);
+  if (!match) throw new Error(`Unable to read the 4k reveal frame: ${earlyFrame}`);
+
+  const [, radius, x, y] = match.map(Number);
+  expect(radius).toBeLessThan(100);
+  expect(Math.abs(x - (bounds.x + bounds.width / 2))).toBeLessThan(2);
+  expect(Math.abs(y - (bounds.y + bounds.height / 2))).toBeLessThan(2);
 });
 
 test("home work stage snaps one project into focus per wheel step", async ({ page, isMobile }) => {

@@ -69,7 +69,7 @@ const socialImage = new URL(image, Astro.site);
         startViewTransition?: (update: () => void) => ThemeTransition;
       };
 
-      toggle?.addEventListener("click", (event) => {
+      toggle?.addEventListener("click", () => {
         const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
         const applyTheme = () => {
           document.documentElement.dataset.theme = next;
@@ -89,8 +89,9 @@ const socialImage = new URL(image, Astro.site);
         }
 
         const bounds = toggle.getBoundingClientRect();
-        const x = event.detail > 0 ? event.clientX : bounds.left + bounds.width / 2;
-        const y = event.detail > 0 ? event.clientY : bounds.top + bounds.height / 2;
+        const x = bounds.left + bounds.width / 2;
+        const y = bounds.top + bounds.height / 2;
+        const buttonRadius = Math.max(bounds.width, bounds.height) / 2;
         const radius = Math.hypot(
           Math.max(x, window.innerWidth - x),
           Math.max(y, window.innerHeight - y),
@@ -103,12 +104,15 @@ const socialImage = new URL(image, Astro.site);
             document.documentElement.animate(
               [
                 { clipPath: `circle(0 at ${x}px ${y}px)`, offset: 0 },
-                { clipPath: `circle(18px at ${x}px ${y}px)`, offset: 0.12 },
+                { clipPath: `circle(${buttonRadius}px at ${x}px ${y}px)`, offset: 0.16 },
+                { clipPath: `circle(${radius * 0.08}px at ${x}px ${y}px)`, offset: 0.38 },
+                { clipPath: `circle(${radius * 0.28}px at ${x}px ${y}px)`, offset: 0.62 },
+                { clipPath: `circle(${radius * 0.62}px at ${x}px ${y}px)`, offset: 0.82 },
                 { clipPath: `circle(${radius}px at ${x}px ${y}px)`, offset: 1 },
               ],
               {
-                duration: 720,
-                easing: "ease-in",
+                duration: 860,
+                easing: "linear",
                 pseudoElement: "::view-transition-new(root)",
               } as KeyframeAnimationOptions & { pseudoElement: string },
             );

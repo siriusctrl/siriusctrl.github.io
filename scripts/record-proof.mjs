@@ -40,7 +40,7 @@ try {
   await page.goto(url);
   await page.waitForTimeout(650);
   await page.getByTestId("theme-toggle").click();
-  await page.waitForTimeout(760);
+  await page.waitForTimeout(900);
   await page.getByRole("heading", { name: "Recent work" }).scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
   await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
