@@ -213,6 +213,37 @@ test("work visual stays inside its stage while leaving the first project", async
   expect(boundary.visualInterceptsHeading).toBe(false);
 });
 
+test("pointer crossing project whitespace does not activate the next project", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Pointer hover coverage uses the desktop browser profile");
+
+  await page.goto("/");
+  const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
+  await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect
+    .poll(() =>
+      firstEntry.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }),
+    )
+    .toBeLessThan(1);
+
+  const entriesBounds = await page.locator(".work-entries").boundingBox();
+  const viewport = page.viewportSize();
+  if (!entriesBounds || !viewport) throw new Error("Work hover test did not expose its geometry");
+  const x = entriesBounds.x + entriesBounds.width / 2;
+  await page.mouse.move(x, viewport.height / 2);
+  await page.mouse.move(x, viewport.height - 1, { steps: 12 });
+
+  const pointerHit = await page.evaluate(({ x, y }) =>
+    document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-work-entry]")?.dataset.workEntry,
+  { x, y: viewport.height - 1 });
+  expect(pointerHit).toBe("towerlab");
+  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=towerlab]")).not.toHaveClass(/is-active/);
+  await expect(firstEntry).toHaveClass(/is-active/);
+});
+
 test("reduced motion keeps theme and work changes immediate", async ({ page, isMobile }) => {
   test.skip(isMobile, "Reduced-motion fallback only needs one browser profile");
 

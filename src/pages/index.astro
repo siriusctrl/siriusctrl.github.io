@@ -138,9 +138,6 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 
     workEntries.forEach((entry) => {
       workObserver.observe(entry);
-      entry.addEventListener("pointerenter", () => {
-        if (!isWorkAnimating && entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
-      });
       entry.addEventListener("focusin", () => {
         if (!isWorkAnimating && entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
       });
