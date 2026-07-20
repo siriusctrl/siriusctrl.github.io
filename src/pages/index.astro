@@ -16,17 +16,17 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 ---
 
 <BaseLayout>
-  <main>
+  <main class="home-page">
     <section class="home-intro" aria-labelledby="hero-title">
-      <div class="intro-copy">
-        <div class="intro-rail">
-          <p>Independent software</p>
-          <p>Built in public</p>
-        </div>
-        <h1 id="hero-title">
-          Software for seeing
-          <span>what systems are doing.</span>
-        </h1>
+      <div class="intro-rail">
+        <p>Independent software</p>
+        <p>Built in public</p>
+      </div>
+      <h1 id="hero-title">
+        Software for seeing
+        <span>what systems are doing.</span>
+      </h1>
+      <div class="intro-bottom">
         <p class="intro-statement">
           I turn complicated ideas into working software: things you can run, inspect, and play with.
         </p>
@@ -37,33 +37,6 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
           </a>
         </div>
       </div>
-
-      <figure
-        class="inspection-stage"
-        data-inspection-stage
-        role="img"
-        aria-label="Fragments from four working software projects"
-      >
-        <div class="inspection-scene inspection-base" aria-hidden="true">
-          {workProjects.map((project) => (
-            <img
-              src={project.image}
-              alt=""
-              width="1600"
-              height="1000"
-              loading="eager"
-              fetchpriority={project === featuredProject ? "high" : "auto"}
-            />
-          ))}
-        </div>
-        <div class="inspection-lens" aria-hidden="true">
-          <div class="inspection-scene inspection-reveal">
-            {workProjects.map((project) => (
-              <img src={project.image} alt="" width="1600" height="1000" />
-            ))}
-          </div>
-        </div>
-      </figure>
     </section>
 
     <section class="section recent-work" aria-labelledby="recent-title">
@@ -138,61 +111,6 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 </BaseLayout>
 
 <script>
-  const inspectionStage = document.querySelector<HTMLElement>("[data-inspection-stage]");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const finePointer = window.matchMedia("(pointer: fine)");
-
-  if (inspectionStage && !reducedMotion.matches && finePointer.matches) {
-    let bounds = inspectionStage.getBoundingClientRect();
-    let lensSize = Math.min(240, Math.max(165, bounds.width * 0.48));
-    let pointerX = bounds.width * 0.28;
-    let pointerY = bounds.height * 0.25;
-    let animationFrame = 0;
-
-    const renderLens = () => {
-      const left = Math.max(0, Math.min(bounds.width - lensSize, pointerX - lensSize / 2));
-      const top = Math.max(0, Math.min(bounds.height - lensSize, pointerY - lensSize / 2));
-
-      inspectionStage.style.setProperty("--scene-width", `${bounds.width}px`);
-      inspectionStage.style.setProperty("--scene-height", `${bounds.height}px`);
-      inspectionStage.style.setProperty("--lens-size", `${lensSize}px`);
-      inspectionStage.style.setProperty("--lens-x", `${left}px`);
-      inspectionStage.style.setProperty("--lens-y", `${top}px`);
-      inspectionStage.style.setProperty("--scene-x", `${-left}px`);
-      inspectionStage.style.setProperty("--scene-y", `${-top}px`);
-      inspectionStage.classList.add("is-ready");
-      animationFrame = 0;
-    };
-
-    const scheduleLens = () => {
-      if (!animationFrame) animationFrame = window.requestAnimationFrame(renderLens);
-    };
-
-    const resetLens = () => {
-      pointerX = bounds.width * 0.28;
-      pointerY = bounds.height * 0.25;
-      inspectionStage.classList.remove("is-active");
-      scheduleLens();
-    };
-
-    const resizeObserver = new ResizeObserver(() => {
-      bounds = inspectionStage.getBoundingClientRect();
-      lensSize = Math.min(240, Math.max(165, bounds.width * 0.48));
-      resetLens();
-    });
-
-    inspectionStage.addEventListener("pointerenter", () => inspectionStage.classList.add("is-active"));
-    inspectionStage.addEventListener("pointermove", (event) => {
-      bounds = inspectionStage.getBoundingClientRect();
-      pointerX = event.clientX - bounds.left;
-      pointerY = event.clientY - bounds.top;
-      scheduleLens();
-    });
-    inspectionStage.addEventListener("pointerleave", resetLens);
-    resizeObserver.observe(inspectionStage);
-    scheduleLens();
-  }
-
   const workEntries = Array.from(document.querySelectorAll<HTMLElement>("[data-work-entry]"));
   const workFrames = Array.from(document.querySelectorAll<HTMLElement>("[data-work-frame]"));
 
@@ -202,6 +120,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
   };
 
   if (workEntries.length > 0 && workFrames.length > 0) {
+    document.documentElement.classList.add("has-work-snap");
     const workObserver = new IntersectionObserver(
       (observations) => {
         const visible = observations

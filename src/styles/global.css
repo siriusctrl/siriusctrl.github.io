@@ -42,6 +42,25 @@ html {
   scroll-behavior: smooth;
 }
 
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  display: block;
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
 body {
   margin: 0;
   color: var(--text);
@@ -154,14 +173,10 @@ img {
 
 .home-intro {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
-  gap: clamp(42px, 6vw, 86px);
-  align-items: center;
   width: min(calc(100% - 48px), 1240px);
   min-height: calc(100dvh - 68px);
   margin: 0 auto;
-  padding: clamp(56px, 7vw, 92px) 0;
+  padding: clamp(56px, 7vw, 92px) 0 clamp(64px, 8vw, 104px);
   overflow: clip;
   border-bottom: 1px solid var(--line-strong);
 }
@@ -179,8 +194,7 @@ img {
 .intro-rail {
   display: flex;
   justify-content: space-between;
-  width: min(100%, 620px);
-  margin-bottom: clamp(38px, 4vw, 54px);
+  margin-bottom: clamp(44px, 5vw, 66px);
   color: var(--faint);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -192,12 +206,12 @@ img {
 }
 
 .home-intro h1 {
-  max-width: 820px;
+  max-width: 1160px;
   margin: 0;
-  font-size: clamp(52px, 5.4vw, 76px);
+  font-size: clamp(60px, 7vw, 100px);
   font-weight: 760;
-  letter-spacing: -0.06em;
-  line-height: 0.92;
+  letter-spacing: -0.065em;
+  line-height: 0.9;
   text-wrap: balance;
 }
 
@@ -207,20 +221,28 @@ img {
   font-weight: 560;
 }
 
+.intro-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: clamp(42px, 8vw, 132px);
+  align-items: end;
+  margin-top: clamp(44px, 6vw, 74px);
+}
+
 .intro-statement {
-  max-width: 520px;
-  margin: clamp(34px, 4vw, 52px) 0 0;
+  max-width: 600px;
+  margin: 0;
   color: var(--muted);
-  font-size: clamp(18px, 1.55vw, 22px);
-  line-height: 1.45;
+  font-size: clamp(19px, 1.8vw, 25px);
+  line-height: 1.4;
   text-wrap: pretty;
 }
 
 .intro-links {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 26px;
-  margin-top: 28px;
 }
 
 .intro-links a {
@@ -244,86 +266,6 @@ img {
 .intro-links a:hover .icon,
 .project-links a:hover .icon {
   transform: translate(3px, -1px);
-}
-
-.inspection-stage {
-  --lens-size: 180px;
-  --lens-x: 38%;
-  --lens-y: 27%;
-  --scene-x: -38%;
-  --scene-y: -27%;
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  margin: 0;
-  overflow: hidden;
-  background: var(--surface);
-  border-radius: var(--radius);
-  isolation: isolate;
-}
-
-.inspection-scene {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 8px;
-  background: var(--surface);
-}
-
-.inspection-scene img {
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  object-fit: cover;
-  border-radius: calc(var(--radius) - 2px);
-}
-
-.inspection-base {
-  opacity: 0.27;
-  filter: grayscale(1) contrast(0.88);
-  transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.inspection-lens {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--lens-size);
-  height: var(--lens-size);
-  overflow: hidden;
-  opacity: 0;
-  background: var(--surface);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--line-strong), 0 18px 42px color-mix(in srgb, var(--shadow), transparent 24%);
-  transform: translate3d(var(--lens-x), var(--lens-y), 0);
-  transition: opacity 260ms ease, transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-.inspection-reveal {
-  inset: auto;
-  width: var(--scene-width, 100%);
-  height: var(--scene-height, 100%);
-  transform: translate3d(var(--scene-x), var(--scene-y), 0);
-  transition: transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-.inspection-stage.is-ready .inspection-lens {
-  opacity: 0.94;
-}
-
-.inspection-stage.is-active .inspection-base {
-  opacity: 0.14;
-}
-
-.inspection-stage.is-active .inspection-lens,
-.inspection-stage.is-active .inspection-reveal {
-  transition-duration: 90ms;
-  transition-timing-function: linear;
 }
 
 .detail-actions,
@@ -492,9 +434,10 @@ a:hover > .project-artwork img {
 
 .work-visual-sticky {
   position: sticky;
-  top: 96px;
+  top: 50%;
   width: 100%;
   aspect-ratio: 16 / 10;
+  transform: translateY(-50%);
 }
 
 .work-frame {
@@ -502,8 +445,9 @@ a:hover > .project-artwork img {
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  transform: translate3d(0, 18px, 0) scale(0.985);
-  transition: opacity 420ms ease, transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 24px, 0) scale(0.97);
+  transition: opacity 520ms ease, transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
 }
 
 .work-frame.is-active {
@@ -521,10 +465,10 @@ a:hover > .project-artwork img {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: max(480px, 62dvh);
-  opacity: 0.32;
-  transform: translate3d(0, 14px, 0);
-  transition: opacity 360ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: max(560px, 90dvh);
+  opacity: 0.24;
+  transform: translate3d(0, 22px, 0);
+  transition: opacity 480ms ease, transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .work-entry.is-active {
@@ -577,6 +521,17 @@ a:hover > .project-artwork img {
 
 .work-demo-link:hover .icon {
   transform: translate(3px, -2px);
+}
+
+@media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+  html.has-work-snap {
+    scroll-snap-type: y proximity;
+  }
+
+  .work-entry {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
 }
 
 .notes-preview {
@@ -892,8 +847,7 @@ a:hover > .project-artwork img {
   .intro-rail,
   .home-intro h1,
   .intro-statement,
-  .intro-links,
-  .inspection-base {
+  .intro-links {
     animation: enter 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
@@ -907,11 +861,6 @@ a:hover > .project-artwork img {
 
   .intro-links {
     animation-delay: 230ms;
-  }
-
-  .inspection-base {
-    animation-duration: 820ms;
-    animation-delay: 140ms;
   }
 
   @keyframes enter {
@@ -931,7 +880,7 @@ a:hover > .project-artwork img {
     gap: 12px;
   }
 
-  .home-intro,
+  .intro-bottom,
   .project-index-row,
   .project-detail-body {
     grid-template-columns: 1fr;
@@ -942,22 +891,8 @@ a:hover > .project-artwork img {
     padding: 72px 0 86px;
   }
 
-  .intro-copy {
-    max-width: 760px;
-  }
-
-  .inspection-stage {
-    aspect-ratio: 16 / 9;
-    margin-top: 56px;
-  }
-
-  .inspection-base {
-    opacity: 0.84;
-    filter: grayscale(0.48) contrast(0.94);
-  }
-
-  .inspection-lens {
-    display: none;
+  .intro-links {
+    justify-content: flex-start;
   }
 
   .project-index-row {
@@ -1026,7 +961,6 @@ a:hover > .project-artwork img {
   }
 
   .home-intro {
-    gap: 0;
     padding: 52px 0 72px;
   }
 
@@ -1035,29 +969,24 @@ a:hover > .project-artwork img {
   }
 
   .home-intro h1 {
-    font-size: clamp(42px, 11.5vw, 54px);
+    font-size: clamp(48px, 13vw, 62px);
     letter-spacing: -0.055em;
     line-height: 0.94;
   }
 
+  .intro-bottom {
+    gap: 26px;
+    margin-top: 38px;
+  }
+
   .intro-statement {
     max-width: 34ch;
-    margin-top: 32px;
+    margin: 0;
     font-size: 18px;
   }
 
   .intro-links {
     gap: 22px;
-    margin-top: 24px;
-  }
-
-  .inspection-stage {
-    margin-top: 44px;
-  }
-
-  .inspection-scene {
-    gap: 5px;
-    padding: 5px;
   }
 
   .section {
@@ -1148,15 +1077,6 @@ a:hover > .project-artwork img {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-
-  .inspection-base {
-    opacity: 0.8;
-    filter: grayscale(0.52) contrast(0.94);
-  }
-
-  .inspection-lens {
-    display: none;
   }
 
   .work-frame,

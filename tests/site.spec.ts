@@ -14,32 +14,59 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
   await expect(page.getByRole("heading", { name: "termviz" })).toBeVisible();
 
   await page.getByTestId("theme-toggle").click();
+  const animatedThemeChange = await page.evaluate(
+    () => "startViewTransition" in document && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  if (animatedThemeChange) {
+    await expect(page.locator("html")).toHaveAttribute("data-theme-transition", "active");
+  }
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+  await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.themeTransition)).toBeUndefined();
   await page.reload();
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
 });
 
-test("home interactions reveal project evidence and follow the focused work", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Pointer lens and sticky work stage are desktop interactions");
+test("home work stage snaps one project into focus per wheel step", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Sticky work-stage snapping is a desktop interaction");
 
   await page.goto("/");
-  const inspectionStage = page.locator("[data-inspection-stage]");
-  await expect(inspectionStage).toHaveClass(/is-ready/);
-  const bounds = await inspectionStage.boundingBox();
-  expect(bounds).not.toBeNull();
-  const initialPosition = await inspectionStage.evaluate((element) =>
-    element.style.getPropertyValue("--lens-x"),
-  );
-
-  await page.mouse.move(bounds!.x + bounds!.width * 0.72, bounds!.y + bounds!.height * 0.7);
-  await expect(inspectionStage).toHaveClass(/is-active/);
-  await expect
-    .poll(() => inspectionStage.evaluate((element) => element.style.getPropertyValue("--lens-x")))
-    .not.toBe(initialPosition);
-
+  await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
+  const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
   const towerLabEntry = page.locator("[data-work-entry=towerlab]");
-  await towerLabEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await freeformEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
+  await expect
+    .poll(() =>
+      freeformEntry.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }),
+    )
+    .toBeLessThan(8);
+
+  await page.mouse.wheel(0, 700);
   await expect(page.locator("[data-work-frame=towerlab]")).toHaveClass(/is-active/);
+  await expect
+    .poll(() =>
+      towerLabEntry.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }),
+    )
+    .toBeLessThan(8);
+});
+
+test("reduced motion keeps theme and work changes immediate", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Reduced-motion fallback only needs one browser profile");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByTestId("theme-toggle").click();
+  await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType))
+    .toBe("none");
 });
 
 test("project and note routes render real content", async ({ page }) => {

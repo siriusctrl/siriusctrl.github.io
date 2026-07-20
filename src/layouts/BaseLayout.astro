@@ -46,6 +46,10 @@ const socialImage = new URL(image, Astro.site);
           ? saved
           : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]')?.setAttribute(
+          "content",
+          theme === "dark" ? "#151716" : "#f3f3ef",
+        );
       })();
     </script>
   </head>
@@ -54,12 +58,63 @@ const socialImage = new URL(image, Astro.site);
     <slot />
     <SiteFooter />
     <script>
+      type ThemeTransition = {
+        ready: Promise<void>;
+        finished: Promise<void>;
+      };
+
       const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const transitionDocument = document as Document & {
+        startViewTransition?: (update: () => void) => ThemeTransition;
+      };
+
       toggle?.addEventListener("click", () => {
         const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-        document.documentElement.dataset.theme = next;
-        window.localStorage.setItem("siriusctrl.theme", next);
-        toggle.setAttribute("aria-label", `Switch to ${next === "dark" ? "light" : "dark"} mode`);
+        const applyTheme = () => {
+          document.documentElement.dataset.theme = next;
+          document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
+            "content",
+            next === "dark" ? "#151716" : "#f3f3ef",
+          );
+          window.localStorage.setItem("siriusctrl.theme", next);
+          const label = `Switch to ${next === "dark" ? "light" : "dark"} mode`;
+          toggle.setAttribute("aria-label", label);
+          toggle.setAttribute("title", label);
+        };
+
+        if (!transitionDocument.startViewTransition || reducedMotion.matches) {
+          applyTheme();
+          return;
+        }
+
+        const bounds = toggle.getBoundingClientRect();
+        const x = bounds.left + bounds.width / 2;
+        const y = bounds.top + bounds.height / 2;
+        const radius = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y),
+        );
+        const transition = transitionDocument.startViewTransition(applyTheme);
+        document.documentElement.dataset.themeTransition = "active";
+
+        transition.ready
+          .then(() => {
+            document.documentElement.animate(
+              { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+              {
+                duration: 620,
+                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                pseudoElement: "::view-transition-new(root)",
+              } as KeyframeAnimationOptions & { pseudoElement: string },
+            );
+          })
+          .catch(() => undefined);
+
+        const clearTransitionState = () => {
+          delete document.documentElement.dataset.themeTransition;
+        };
+        transition.finished.then(clearTransitionState, clearTransitionState);
       });
     </script>
   </body>
