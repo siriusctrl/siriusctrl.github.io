@@ -31,15 +31,19 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
       const effect = animation?.effect as KeyframeEffect | undefined;
       const clipPath = effect?.getKeyframes()[0]?.clipPath;
       const match = typeof clipPath === "string"
-        ? clipPath.match(/at\s+([\d.]+)px\s+([\d.]+)px/)
+        ? clipPath.match(/at\s+([\d.]+)%\s+([\d.]+)%/)
         : null;
       return match ? { x: Number(match[1]), y: Number(match[2]) } : null;
     });
     await expect.poll(readRevealOrigin).not.toBeNull();
     const revealOrigin = await readRevealOrigin();
     if (!revealOrigin) throw new Error("Theme reveal animation did not expose an origin");
-    expect(Math.abs(revealOrigin.x - (themeToggleBounds!.x + themeToggleBounds!.width / 2))).toBeLessThan(2);
-    expect(Math.abs(revealOrigin.y - (themeToggleBounds!.y + themeToggleBounds!.height / 2))).toBeLessThan(2);
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error("Theme reveal test did not expose a viewport");
+    const expectedX = ((themeToggleBounds!.x + themeToggleBounds!.width / 2) / viewport.width) * 100;
+    const expectedY = ((themeToggleBounds!.y + themeToggleBounds!.height / 2) / viewport.height) * 100;
+    expect(Math.abs(revealOrigin.x - expectedX)).toBeLessThan(0.1);
+    expect(Math.abs(revealOrigin.y - expectedY)).toBeLessThan(0.1);
   }
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.themeTransition)).toBeUndefined();
@@ -59,12 +63,12 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
   await themeToggle.click({ position: { x: 6, y: 6 } });
   await page.waitForFunction(() =>
     document.getAnimations().some((animation) =>
-      animation.effect?.pseudoElement === "::view-transition-new(root)"
+      (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-new(root)"
     ),
   );
   const earlyFrame = await page.evaluate(async () => {
     const animation = document.getAnimations().find((candidate) =>
-      candidate.effect?.pseudoElement === "::view-transition-new(root)"
+      (candidate.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-new(root)"
     );
     if (!animation) return null;
     animation.pause();
@@ -72,13 +76,54 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
     await new Promise(requestAnimationFrame);
     return getComputedStyle(document.documentElement, "::view-transition-new(root)").clipPath;
   });
-  const match = earlyFrame?.match(/circle\(([\d.]+)px at ([\d.]+)px ([\d.]+)px\)/);
+  const match = earlyFrame?.match(/circle\(([\d.]+)% at ([\d.]+)% ([\d.]+)%\)/);
   if (!match) throw new Error(`Unable to read the 4k reveal frame: ${earlyFrame}`);
 
-  const [, radius, x, y] = match.map(Number);
-  expect(radius).toBeLessThan(100);
-  expect(Math.abs(x - (bounds.x + bounds.width / 2))).toBeLessThan(2);
-  expect(Math.abs(y - (bounds.y + bounds.height / 2))).toBeLessThan(2);
+  const [, radiusPercent, xPercent, yPercent] = match.map(Number);
+  const viewport = page.viewportSize();
+  if (!viewport) throw new Error("4k reveal test did not expose a viewport");
+  const radiusBasis = Math.hypot(viewport.width, viewport.height) / Math.SQRT2;
+  expect((radiusPercent / 100) * radiusBasis).toBeLessThan(100);
+  expect(Math.abs(xPercent - ((bounds.x + bounds.width / 2) / viewport.width) * 100)).toBeLessThan(0.1);
+  expect(Math.abs(yPercent - ((bounds.y + bounds.height / 2) / viewport.height) * 100)).toBeLessThan(0.1);
+});
+
+test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Browser zoom coverage uses the desktop browser profile");
+
+  for (const zoom of [0.8, 1, 1.25, 1.5]) {
+    await page.goto("/");
+    const expected = await page.getByTestId("theme-toggle").evaluate((element, scale) => {
+      document.documentElement.style.zoom = String(scale);
+      const bounds = element.getBoundingClientRect();
+      return {
+        x: ((bounds.left + bounds.width / 2) / window.innerWidth) * 100,
+        y: ((bounds.top + bounds.height / 2) / window.innerHeight) * 100,
+      };
+    }, zoom);
+
+    await page.getByTestId("theme-toggle").evaluate((element) => (element as HTMLElement).click());
+    await page.waitForFunction(() =>
+      document.getAnimations().some((animation) =>
+        (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-new(root)"
+      ),
+    );
+    const keyframes = await page.evaluate(() => {
+      const animation = document.getAnimations().find((candidate) =>
+        (candidate.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-new(root)"
+      );
+      return (animation?.effect as KeyframeEffect | null)?.getKeyframes()
+        .map((frame) => frame.clipPath)
+        .filter((clipPath): clipPath is string => typeof clipPath === "string") ?? [];
+    });
+    expect(keyframes).toHaveLength(6);
+    for (const clipPath of keyframes) {
+      const match = clipPath.match(/circle\(([\d.]+)% at ([\d.]+)% ([\d.]+)%\)/);
+      if (!match) throw new Error(`Zoom ${zoom} used a non-relative reveal: ${clipPath}`);
+      expect(Math.abs(Number(match[2]) - expected.x)).toBeLessThan(0.1);
+      expect(Math.abs(Number(match[3]) - expected.y)).toBeLessThan(0.1);
+    }
+  }
 });
 
 test("home work stage snaps one project into focus per wheel step", async ({ page, isMobile }) => {

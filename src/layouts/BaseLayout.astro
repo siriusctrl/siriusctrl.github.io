@@ -96,6 +96,9 @@ const socialImage = new URL(image, Astro.site);
           Math.max(x, window.innerWidth - x),
           Math.max(y, window.innerHeight - y),
         );
+        const radiusBasis = Math.hypot(window.innerWidth, window.innerHeight) / Math.SQRT2;
+        const position = `${(x / window.innerWidth) * 100}% ${(y / window.innerHeight) * 100}%`;
+        const radiusPercent = (value: number) => `${(value / radiusBasis) * 100}%`;
         const transition = transitionDocument.startViewTransition(applyTheme);
         document.documentElement.dataset.themeTransition = "active";
 
@@ -103,12 +106,12 @@ const socialImage = new URL(image, Astro.site);
           .then(() => {
             document.documentElement.animate(
               [
-                { clipPath: `circle(0 at ${x}px ${y}px)`, offset: 0 },
-                { clipPath: `circle(${buttonRadius}px at ${x}px ${y}px)`, offset: 0.16 },
-                { clipPath: `circle(${radius * 0.08}px at ${x}px ${y}px)`, offset: 0.38 },
-                { clipPath: `circle(${radius * 0.28}px at ${x}px ${y}px)`, offset: 0.62 },
-                { clipPath: `circle(${radius * 0.62}px at ${x}px ${y}px)`, offset: 0.82 },
-                { clipPath: `circle(${radius}px at ${x}px ${y}px)`, offset: 1 },
+                { clipPath: `circle(0% at ${position})`, offset: 0 },
+                { clipPath: `circle(${radiusPercent(buttonRadius)} at ${position})`, offset: 0.16 },
+                { clipPath: `circle(${radiusPercent(radius * 0.08)} at ${position})`, offset: 0.38 },
+                { clipPath: `circle(${radiusPercent(radius * 0.28)} at ${position})`, offset: 0.62 },
+                { clipPath: `circle(${radiusPercent(radius * 0.62)} at ${position})`, offset: 0.82 },
+                { clipPath: `circle(${radiusPercent(radius)} at ${position})`, offset: 1 },
               ],
               {
                 duration: 860,
