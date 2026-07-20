@@ -126,7 +126,7 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
   }
 });
 
-test("home work stage snaps one project into focus per wheel step", async ({ page, isMobile }) => {
+test("home work stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
   test.skip(isMobile, "Sticky work-stage snapping is a desktop interaction");
 
   await page.goto("/");
@@ -142,10 +142,29 @@ test("home work stage snaps one project into focus per wheel step", async ({ pag
         return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
       }),
     )
-    .toBeLessThan(8);
+    .toBeLessThan(0.75);
+
+  const centeredScrollY = await page.evaluate(() => window.scrollY);
+  await page.mouse.wheel(0, 45);
+  await expect
+    .poll(() =>
+      freeformEntry.evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m42),
+    )
+    .toBeLessThan(-1);
+  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=towerlab]")).not.toHaveClass(/is-active/);
+  expect(Math.abs(await page.evaluate(() => window.scrollY) - centeredScrollY)).toBeLessThan(1);
+  await expect
+    .poll(() =>
+      freeformEntry.evaluate((element) => Math.abs(new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)),
+    )
+    .toBeLessThan(0.5);
 
   await page.mouse.wheel(0, 700);
+  await page.waitForTimeout(120);
+  await page.mouse.wheel(0, 180);
   await expect(page.locator("[data-work-frame=towerlab]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=fmtview]")).not.toHaveClass(/is-active/);
   await expect
     .poll(() =>
       towerLabEntry.evaluate((element) => {

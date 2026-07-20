@@ -421,6 +421,8 @@ a:hover > .project-artwork img {
 }
 
 .work-stage {
+  --work-pull: 0px;
+  --work-visual-pull: 0px;
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.58fr);
   gap: clamp(48px, 7vw, 104px);
@@ -453,7 +455,7 @@ a:hover > .project-artwork img {
 .work-frame.is-active {
   z-index: 1;
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: translate3d(0, var(--work-visual-pull), 0) scale(1);
 }
 
 .work-frame .project-artwork {
@@ -473,7 +475,19 @@ a:hover > .project-artwork img {
 
 .work-entry.is-active {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, var(--work-pull), 0);
+}
+
+.work-stage.is-wheel-pulling .work-frame.is-active,
+.work-stage.is-wheel-pulling .work-entry.is-active {
+  transition-duration: 80ms;
+  transition-timing-function: linear;
+}
+
+.work-stage.is-wheel-settling .work-frame.is-active,
+.work-stage.is-wheel-settling .work-entry.is-active {
+  transition-duration: 520ms;
+  transition-timing-function: cubic-bezier(0.22, 1.38, 0.36, 1);
 }
 
 .work-entry-media {
@@ -526,6 +540,11 @@ a:hover > .project-artwork img {
 @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
   html.has-work-snap {
     scroll-snap-type: y proximity;
+  }
+
+  html.has-work-snap.is-work-animating,
+  html.has-work-snap.is-work-resisting {
+    scroll-snap-type: none;
   }
 
   .work-entry {

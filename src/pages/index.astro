@@ -111,18 +111,22 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 </BaseLayout>
 
 <script>
+  const workStage = document.querySelector<HTMLElement>("[data-work-stage]");
   const workEntries = Array.from(document.querySelectorAll<HTMLElement>("[data-work-entry]"));
   const workFrames = Array.from(document.querySelectorAll<HTMLElement>("[data-work-frame]"));
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let isWorkAnimating = false;
 
   const activateWork = (slug: string) => {
     workEntries.forEach((entry) => entry.classList.toggle("is-active", entry.dataset.workEntry === slug));
     workFrames.forEach((frame) => frame.classList.toggle("is-active", frame.dataset.workFrame === slug));
   };
 
-  if (workEntries.length > 0 && workFrames.length > 0) {
+  if (workStage && workEntries.length > 0 && workFrames.length > 0) {
     document.documentElement.classList.add("has-work-snap");
     const workObserver = new IntersectionObserver(
       (observations) => {
+        if (isWorkAnimating) return;
         const visible = observations
           .filter((observation) => observation.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
@@ -135,11 +139,184 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
     workEntries.forEach((entry) => {
       workObserver.observe(entry);
       entry.addEventListener("pointerenter", () => {
-        if (entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
+        if (!isWorkAnimating && entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
       });
       entry.addEventListener("focusin", () => {
-        if (entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
+        if (!isWorkAnimating && entry.dataset.workEntry) activateWork(entry.dataset.workEntry);
       });
     });
+
+    const intentThreshold = 140;
+    let wheelIntent = 0;
+    let lastWheelAt = 0;
+    let reboundTimer: number | undefined;
+    let settleClassTimer: number | undefined;
+    let cooldownUntil = 0;
+
+    const setWorkPull = (pixels: number) => {
+      workStage.style.setProperty("--work-pull", `${pixels.toFixed(2)}px`);
+      workStage.style.setProperty("--work-visual-pull", `${(pixels * 0.16).toFixed(2)}px`);
+    };
+
+    const clearSettleClass = () => {
+      if (settleClassTimer) window.clearTimeout(settleClassTimer);
+      settleClassTimer = window.setTimeout(() => {
+        workStage.classList.remove("is-wheel-settling");
+        document.documentElement.classList.remove("is-work-resisting");
+      }, 560);
+    };
+
+    const reboundWork = () => {
+      wheelIntent = 0;
+      lastWheelAt = 0;
+      workStage.classList.remove("is-wheel-pulling");
+      workStage.classList.add("is-wheel-settling");
+      window.requestAnimationFrame(() => setWorkPull(0));
+      clearSettleClass();
+    };
+
+    const nearestWorkEntry = () => {
+      const viewportCenter = window.innerHeight / 2;
+      return workEntries
+        .map((entry, index) => {
+          const bounds = entry.getBoundingClientRect();
+          return { index, distance: bounds.top + bounds.height / 2 - viewportCenter };
+        })
+        .sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance))[0];
+    };
+
+    const entryScrollTarget = (entry: HTMLElement) => {
+      const bounds = entry.getBoundingClientRect();
+      const transform = getComputedStyle(entry).transform;
+      const transformY = transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
+      const target = window.scrollY + bounds.top + bounds.height / 2 - transformY - window.innerHeight / 2;
+      return Math.max(0, Math.min(target, document.documentElement.scrollHeight - window.innerHeight));
+    };
+
+    const moveToWorkEntry = (index: number) => {
+      const entry = workEntries[index];
+      const slug = entry?.dataset.workEntry;
+      if (!entry || !slug) return;
+
+      if (reboundTimer) window.clearTimeout(reboundTimer);
+      wheelIntent = 0;
+      lastWheelAt = 0;
+      isWorkAnimating = true;
+      document.documentElement.classList.add("is-work-animating");
+      workStage.classList.remove("is-wheel-pulling");
+      workStage.classList.add("is-wheel-settling");
+      setWorkPull(0);
+      clearSettleClass();
+
+      let position = window.scrollY;
+      const start = position;
+      const target = entryScrollTarget(entry);
+      const travel = target - start;
+      let velocity = 0;
+      let previousTime = performance.now();
+      let targetActivated = false;
+      const startedAt = previousTime;
+
+      const finish = () => {
+        window.scrollTo(0, target);
+        activateWork(slug);
+        isWorkAnimating = false;
+        cooldownUntil = performance.now() + 180;
+        document.documentElement.classList.remove("is-work-animating");
+      };
+
+      const step = (time: number) => {
+        const elapsed = time - startedAt;
+        const deltaTime = Math.min((time - previousTime) / 1000, 0.032);
+        previousTime = time;
+
+        const angularFrequency = 12;
+        const dampingRatio = 0.84;
+        const acceleration = angularFrequency ** 2 * (target - position)
+          - 2 * dampingRatio * angularFrequency * velocity;
+        velocity += acceleration * deltaTime;
+        position += velocity * deltaTime;
+        window.scrollTo(0, position);
+
+        const progress = travel === 0 ? 1 : Math.abs((position - start) / travel);
+        if (!targetActivated && progress > 0.38) {
+          activateWork(slug);
+          targetActivated = true;
+        }
+
+        if ((Math.abs(target - position) < 0.5 && Math.abs(velocity) < 5) || elapsed > 1100) {
+          finish();
+          return;
+        }
+        window.requestAnimationFrame(step);
+      };
+
+      window.requestAnimationFrame(step);
+    };
+
+    window.addEventListener("wheel", (event) => {
+      if (
+        reducedMotion.matches
+        || window.innerWidth <= 860
+        || event.ctrlKey
+        || Math.abs(event.deltaY) <= Math.abs(event.deltaX)
+      ) return;
+
+      const stageBounds = workStage.getBoundingClientRect();
+      const viewportCenter = window.innerHeight / 2;
+      if (stageBounds.top > viewportCenter || stageBounds.bottom < viewportCenter) return;
+
+      if (isWorkAnimating) {
+        event.preventDefault();
+        cooldownUntil = performance.now() + 180;
+        return;
+      }
+
+      const nearest = nearestWorkEntry();
+      if (!nearest || Math.abs(nearest.distance) > 28) return;
+
+      const scale = event.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? 16
+        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? window.innerHeight
+          : 1;
+      const delta = event.deltaY * scale;
+      const direction = Math.sign(delta);
+      const now = performance.now();
+      if (now < cooldownUntil) {
+        event.preventDefault();
+        cooldownUntil = now + 180;
+        return;
+      }
+      const leavingStage = (direction < 0 && nearest.index === 0)
+        || (direction > 0 && nearest.index === workEntries.length - 1);
+      if (leavingStage) {
+        reboundWork();
+        return;
+      }
+
+      event.preventDefault();
+
+      if (now - lastWheelAt > 180 || (wheelIntent !== 0 && Math.sign(wheelIntent) !== direction)) {
+        wheelIntent = 0;
+      }
+      lastWheelAt = now;
+      wheelIntent += Math.max(-220, Math.min(220, delta));
+
+      if (Math.abs(wheelIntent) >= intentThreshold) {
+        moveToWorkEntry(nearest.index + direction);
+        return;
+      }
+
+      if (reboundTimer) window.clearTimeout(reboundTimer);
+      workStage.classList.remove("is-wheel-settling");
+      workStage.classList.add("is-wheel-pulling");
+      document.documentElement.classList.add("is-work-resisting");
+      const pull = -Math.sign(wheelIntent)
+        * 16
+        * (1 - Math.exp(-Math.abs(wheelIntent) / 70));
+      setWorkPull(pull);
+      reboundTimer = window.setTimeout(reboundWork, 140);
+    }, { passive: false });
   }
 </script>
