@@ -174,6 +174,45 @@ test("home work stage rebounds small input and advances decisive input", async (
   expect(finalCenterError).toBeLessThan(1);
 });
 
+test("work visual stays inside its stage while leaving the first project", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The sticky work visual is desktop-only");
+
+  await page.goto("/");
+  const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
+  await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect
+    .poll(() =>
+      firstEntry.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }),
+    )
+    .toBeLessThan(1);
+
+  await page.evaluate(() => {
+    document.documentElement.classList.add("is-work-animating");
+    window.scrollBy(0, -360);
+  });
+  await page.waitForTimeout(50);
+  const boundary = await page.evaluate(() => {
+    const heading = document.querySelector<HTMLElement>(".work-heading")!.getBoundingClientRect();
+    const visual = document.querySelector<HTMLElement>(".work-visual")!.getBoundingClientRect();
+    const sticky = document.querySelector<HTMLElement>(".work-visual-sticky")!.getBoundingClientRect();
+    const x = Math.max(heading.left, sticky.left) + 20;
+    const y = Math.max(heading.top, sticky.top) + 20;
+    const hit = document.elementFromPoint(x, y);
+    return {
+      headingOverlapsUnclippedSticky: heading.bottom > sticky.top,
+      stickyCrossesStageBoundary: sticky.top < visual.top,
+      visualInterceptsHeading: Boolean(hit?.closest(".work-visual")),
+    };
+  });
+
+  expect(boundary.headingOverlapsUnclippedSticky).toBe(true);
+  expect(boundary.stickyCrossesStageBoundary).toBe(true);
+  expect(boundary.visualInterceptsHeading).toBe(false);
+});
+
 test("reduced motion keeps theme and work changes immediate", async ({ page, isMobile }) => {
   test.skip(isMobile, "Reduced-motion fallback only needs one browser profile");
 

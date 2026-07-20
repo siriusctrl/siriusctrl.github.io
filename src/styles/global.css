@@ -432,6 +432,7 @@ a:hover > .project-artwork img {
 .work-visual {
   position: relative;
   height: 100%;
+  clip-path: inset(0);
 }
 
 .work-visual-sticky {
