@@ -69,7 +69,7 @@ const socialImage = new URL(image, Astro.site);
         startViewTransition?: (update: () => void) => ThemeTransition;
       };
 
-      toggle?.addEventListener("click", () => {
+      toggle?.addEventListener("click", (event) => {
         const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
         const applyTheme = () => {
           document.documentElement.dataset.theme = next;
@@ -89,8 +89,8 @@ const socialImage = new URL(image, Astro.site);
         }
 
         const bounds = toggle.getBoundingClientRect();
-        const x = bounds.left + bounds.width / 2;
-        const y = bounds.top + bounds.height / 2;
+        const x = event.detail > 0 ? event.clientX : bounds.left + bounds.width / 2;
+        const y = event.detail > 0 ? event.clientY : bounds.top + bounds.height / 2;
         const radius = Math.hypot(
           Math.max(x, window.innerWidth - x),
           Math.max(y, window.innerHeight - y),
@@ -101,10 +101,14 @@ const socialImage = new URL(image, Astro.site);
         transition.ready
           .then(() => {
             document.documentElement.animate(
-              { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+              [
+                { clipPath: `circle(0 at ${x}px ${y}px)`, offset: 0 },
+                { clipPath: `circle(18px at ${x}px ${y}px)`, offset: 0.12 },
+                { clipPath: `circle(${radius}px at ${x}px ${y}px)`, offset: 1 },
+              ],
               {
-                duration: 620,
-                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                duration: 720,
+                easing: "ease-in",
                 pseudoElement: "::view-transition-new(root)",
               } as KeyframeAnimationOptions & { pseudoElement: string },
             );

@@ -98,7 +98,7 @@ try {
   renameSync(path.join(videoDir, videos[0]), webmPath);
 
   const gif = spawnSync("ffmpeg", [
-    "-y", "-ss", "1.0", "-i", webmPath,
+    "-y", "-ss", "0.55", "-i", webmPath,
     "-vf", "fps=10,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
     gifPath,
   ], { stdio: "pipe" });

@@ -13,12 +13,33 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
   await expect(page.getByRole("heading", { name: "fmtview" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "termviz" })).toBeVisible();
 
-  await page.getByTestId("theme-toggle").click();
+  const themeToggle = page.getByTestId("theme-toggle");
+  const themeToggleBounds = await themeToggle.boundingBox();
+  expect(themeToggleBounds).not.toBeNull();
+  const clickPosition = { x: 6, y: 6 };
+  await themeToggle.click({ position: clickPosition });
   const animatedThemeChange = await page.evaluate(
     () => "startViewTransition" in document && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   if (animatedThemeChange) {
     await expect(page.locator("html")).toHaveAttribute("data-theme-transition", "active");
+    const readRevealOrigin = () => page.evaluate(() => {
+      const animation = document.getAnimations().find((candidate) => {
+        const effect = candidate.effect as KeyframeEffect | null;
+        return effect?.pseudoElement === "::view-transition-new(root)";
+      });
+      const effect = animation?.effect as KeyframeEffect | undefined;
+      const clipPath = effect?.getKeyframes()[0]?.clipPath;
+      const match = typeof clipPath === "string"
+        ? clipPath.match(/at\s+([\d.]+)px\s+([\d.]+)px/)
+        : null;
+      return match ? { x: Number(match[1]), y: Number(match[2]) } : null;
+    });
+    await expect.poll(readRevealOrigin).not.toBeNull();
+    const revealOrigin = await readRevealOrigin();
+    if (!revealOrigin) throw new Error("Theme reveal animation did not expose an origin");
+    expect(Math.abs(revealOrigin.x - (themeToggleBounds!.x + clickPosition.x))).toBeLessThan(2);
+    expect(Math.abs(revealOrigin.y - (themeToggleBounds!.y + clickPosition.y))).toBeLessThan(2);
   }
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.themeTransition)).toBeUndefined();
