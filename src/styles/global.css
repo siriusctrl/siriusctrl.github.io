@@ -542,7 +542,11 @@ a:hover > .project-artwork img {
     scroll-snap-type: y proximity;
   }
 
-  html.has-work-snap.is-work-animating,
+  html.has-work-snap.is-work-animating {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+  }
+
   html.has-work-snap.is-work-resisting {
     scroll-snap-type: none;
   }

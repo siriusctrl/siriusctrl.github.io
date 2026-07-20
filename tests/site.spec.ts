@@ -161,18 +161,17 @@ test("home work stage rebounds small input and advances decisive input", async (
     .toBeLessThan(0.5);
 
   await page.mouse.wheel(0, 700);
+  await expect(page.locator("html")).toHaveClass(/is-work-animating/);
   await page.waitForTimeout(120);
   await page.mouse.wheel(0, 180);
   await expect(page.locator("[data-work-frame=towerlab]")).toHaveClass(/is-active/);
   await expect(page.locator("[data-work-frame=fmtview]")).not.toHaveClass(/is-active/);
-  await expect
-    .poll(() =>
-      towerLabEntry.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }),
-    )
-    .toBeLessThan(8);
+  await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
+  const finalCenterError = await towerLabEntry.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+  });
+  expect(finalCenterError).toBeLessThan(1);
 });
 
 test("reduced motion keeps theme and work changes immediate", async ({ page, isMobile }) => {
