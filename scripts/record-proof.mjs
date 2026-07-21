@@ -48,7 +48,7 @@ try {
   );
   await page.waitForTimeout(600);
   await page.mouse.wheel(0, 700);
-  await page.waitForFunction(() => document.querySelector("[data-work-frame=picoagent] img")?.complete);
+  await page.waitForFunction(() => document.querySelector("[data-work-frame=fiasco] img")?.complete);
   await page.waitForTimeout(900);
   await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
     element.scrollIntoView({ block: "center" }),
@@ -123,7 +123,7 @@ try {
       "open home",
       "switch to dark mode with a radial reveal from the theme button",
       "scroll to recent work",
-      "move one wheel step from Freeform Artifacts to the centered picoagent stage",
+      "move one wheel step from Freeform Artifacts to the centered Fiasco stage",
       "open Freeform Artifacts detail and verify current copy",
       "open project index",
       "open notes index and article",
