@@ -361,6 +361,17 @@ img {
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.project-artwork.has-portrait-art {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.project-artwork.has-portrait-art img {
+  object-fit: contain;
+}
+
 a:hover > .project-artwork img {
   transform: scale(1.012);
 }

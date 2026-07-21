@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">TowerLab minimal behavior portrait</title>
+  <desc id="description">One selected card resolves into a single highlighted route through a deterministic tree.</desc>
+  <style>
+    :root{--paper:#efeee9;--ink:#202321;--muted:#737873;--faint:#c5c6c0;--rule:#d2d2cc;--accent:#b63d34;--accent-soft:#e6cfca}
+    .paper{fill:var(--paper)}.frame,.guide,.route,.chosen,.node,.card{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}.guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .route{stroke:var(--ink);stroke-width:1.45}.chosen{stroke:var(--accent);stroke-width:2.5}
+    .node{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.node.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .card{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}.dot{fill:var(--ink)}.dot.accent{fill:var(--accent)}
+    .label,.micro{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}.micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}.accent-text{fill:var(--accent)}
+    .piece{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+    .card-piece,.tree{animation:decision-in 1100ms cubic-bezier(.16,1,.3,1) 80ms both}
+    .draw{stroke-dasharray:1200;animation:draw 1200ms cubic-bezier(.16,1,.3,1) 620ms both}
+    @keyframes decision-in{0%{opacity:0;transform:translateY(55px)}72%{opacity:1;transform:translateY(-4px)}100%{opacity:1;transform:none}}
+    @keyframes draw{from{stroke-dashoffset:1200}to{stroke-dashoffset:0}}
+    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
+    @media(prefers-reduced-motion:reduce){.piece,.draw{animation:none}}
+  </style>
+  <rect class="paper" width="1600" height="1000"/><rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">TOWERLAB / CHOOSE</text><text class="micro" x="1508" y="102" text-anchor="end">SEED 07</text>
+  <path class="guide" d="M220 500H1380M800 180V820"/>
+
+  <g class="piece card-piece">
+    <rect class="card" x="280" y="380" width="320" height="250"/>
+    <rect fill="var(--accent)" x="280" y="380" width="10" height="250"/>
+    <path class="route" d="M330 440H510M330 530H470M330 575H525" opacity=".25"/>
+    <path class="chosen" d="M330 485H550"/>
+  </g>
+
+  <g class="piece tree">
+    <g class="route">
+      <path d="M600 505H720M720 505L850 365M720 505H850M720 505L850 645"/>
+      <path d="M850 365L1030 295M850 365L1030 435M850 505L1030 435M850 505L1030 575M850 645L1030 575M850 645L1030 715"/>
+      <path d="M1030 295L1220 365M1030 435L1220 365M1030 575L1220 645M1030 715L1220 645"/>
+    </g>
+    <path class="chosen draw" d="M600 505H720L850 365L1030 435L1220 365"/>
+    <g>
+      <circle class="node active" cx="600" cy="505" r="17"/><circle class="dot accent" cx="600" cy="505" r="5"/>
+      <circle class="node active" cx="720" cy="505" r="17"/><circle class="dot accent" cx="720" cy="505" r="5"/>
+      <circle class="node active" cx="850" cy="365" r="17"/><circle class="dot accent" cx="850" cy="365" r="5"/>
+      <circle class="node" cx="850" cy="505" r="15"/><circle class="dot" cx="850" cy="505" r="4"/>
+      <circle class="node" cx="850" cy="645" r="15"/><circle class="dot" cx="850" cy="645" r="4"/>
+      <circle class="node" cx="1030" cy="295" r="15"/><circle class="dot" cx="1030" cy="295" r="4"/>
+      <circle class="node active" cx="1030" cy="435" r="17"/><circle class="dot accent" cx="1030" cy="435" r="5"/>
+      <circle class="node" cx="1030" cy="575" r="15"/><circle class="dot" cx="1030" cy="575" r="4"/>
+      <circle class="node" cx="1030" cy="715" r="15"/><circle class="dot" cx="1030" cy="715" r="4"/>
+      <circle class="node active" cx="1220" cy="365" r="18"/><circle class="dot accent" cx="1220" cy="365" r="5"/>
+      <circle class="node" cx="1220" cy="645" r="15"/><circle class="dot" cx="1220" cy="645" r="4"/>
+    </g>
+  </g>
+</svg>

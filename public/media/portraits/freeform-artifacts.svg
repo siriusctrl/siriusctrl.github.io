@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Freeform Artifacts minimal behavior portrait</title>
+  <desc id="description">Three data artifacts drift into alignment on a spatial canvas.</desc>
+  <style>
+    :root {
+      --paper:#efeee9; --ink:#202321; --muted:#737873; --faint:#c5c6c0;
+      --rule:#d2d2cc; --accent:#b63d34; --accent-soft:#e6cfca;
+    }
+    .paper{fill:var(--paper)}
+    .frame,.guide,.panel,.line,.node{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}
+    .guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .panel{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .panel.selected{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .line{stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .line.accent{stroke:var(--accent);stroke-width:2.4}
+    .node{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .node.accent{stroke:var(--accent)}
+    .bar{fill:var(--ink);opacity:.14}.bar.accent{fill:var(--accent);opacity:.78}
+    .label,.micro{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}.micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .accent-text{fill:var(--accent)}
+    .piece{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+    .metric{animation:metric-in 1050ms cubic-bezier(.16,1,.3,1) 80ms both}
+    .chart{animation:chart-in 1150ms cubic-bezier(.16,1,.3,1) 180ms both}
+    .pipeline{animation:pipeline-in 1100ms cubic-bezier(.16,1,.3,1) 300ms both}
+    .draw{stroke-dasharray:900;animation:draw 1100ms cubic-bezier(.16,1,.3,1) 720ms both}
+    @keyframes metric-in{0%{opacity:0;transform:translate(-90px,60px) rotate(-2deg)}72%{opacity:1;transform:translate(5px,-3px)}100%{opacity:1;transform:none}}
+    @keyframes chart-in{0%{opacity:0;transform:translate(75px,-55px) rotate(1.4deg)}72%{opacity:1;transform:translate(-4px,3px)}100%{opacity:1;transform:none}}
+    @keyframes pipeline-in{0%{opacity:0;transform:translate(45px,75px) rotate(-1deg)}72%{opacity:1;transform:translate(-3px,-4px)}100%{opacity:1;transform:none}}
+    @keyframes draw{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
+    @media(prefers-reduced-motion:reduce){.piece,.draw{animation:none}}
+  </style>
+  <rect class="paper" width="1600" height="1000"/>
+  <rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">FREEFORM / ARRANGE</text>
+  <text class="micro" x="1508" y="102" text-anchor="end">LOCAL STATE</text>
+  <path class="guide" d="M220 500H1380M800 170V830"/>
+
+  <g class="piece chart">
+    <rect class="panel" x="590" y="215" width="660" height="440"/>
+    <path class="guide" d="M650 380H1190M650 500H1190"/>
+    <g>
+      <rect class="bar" x="690" y="516" width="42" height="79"/>
+      <rect class="bar" x="770" y="491" width="42" height="104"/>
+      <rect class="bar" x="850" y="449" width="42" height="146"/>
+      <rect class="bar accent" x="930" y="389" width="42" height="206"/>
+      <rect class="bar" x="1010" y="309" width="42" height="286"/>
+      <rect class="bar" x="1090" y="263" width="42" height="332"/>
+    </g>
+    <path class="line accent draw" d="M666 532C760 530 820 492 890 445S1020 338 1168 247"/>
+    <circle class="node accent" cx="666" cy="532" r="6"/><circle class="node accent" cx="890" cy="445" r="6"/><circle class="node accent" cx="1168" cy="247" r="6"/>
+  </g>
+
+  <g class="piece metric">
+    <rect class="panel selected" x="305" y="330" width="365" height="245"/>
+    <path class="line" d="M345 390H575M345 435H630M345 525H600" opacity=".22"/>
+    <path class="line accent" d="M345 480H535"/>
+  </g>
+
+  <g class="piece pipeline">
+    <rect class="panel" x="680" y="618" width="570" height="150"/>
+    <path class="line" d="M790 694H1140"/>
+    <circle class="node" cx="790" cy="694" r="15"/><circle fill="var(--ink)" cx="790" cy="694" r="4"/>
+    <circle class="node" cx="965" cy="694" r="15"/><circle fill="var(--ink)" cx="965" cy="694" r="4"/>
+    <circle class="node accent" cx="1140" cy="694" r="15"/><circle fill="var(--accent)" cx="1140" cy="694" r="4"/>
+  </g>
+</svg>

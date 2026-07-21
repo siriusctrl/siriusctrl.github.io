@@ -48,7 +48,7 @@ try {
   );
   await page.waitForTimeout(600);
   await page.mouse.wheel(0, 700);
-  await page.waitForFunction(() => document.querySelector("[data-work-frame=towerlab] img")?.complete);
+  await page.waitForFunction(() => document.querySelector("[data-work-frame=picoagent] img")?.complete);
   await page.waitForTimeout(900);
   await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
     element.scrollIntoView({ block: "center" }),
@@ -84,6 +84,7 @@ try {
   await mobile.waitForFunction(() =>
     [...document.querySelectorAll(".work-entry-media img")].every((image) => image.complete),
   );
+  await mobile.waitForTimeout(2800);
   await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.waitForTimeout(900);
   const mobileOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -122,7 +123,7 @@ try {
       "open home",
       "switch to dark mode with a radial reveal from the theme button",
       "scroll to recent work",
-      "move one wheel step from Freeform Artifacts to the centered TowerLab stage",
+      "move one wheel step from Freeform Artifacts to the centered picoagent stage",
       "open Freeform Artifacts detail and verify current copy",
       "open project index",
       "open notes index and article",
@@ -139,7 +140,7 @@ try {
       "- Chromium rendered the home, project detail, project index, notes index, and article routes.",
       "- Theme switching persisted across internal navigation.",
       "- The radial theme reveal and one-project scroll snap were exercised.",
-      "- Real project media loaded before capture.",
+      "- SVG project portraits and real project media loaded before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",
       "- A contact sheet was generated for internal temporal inspection.",
       "",

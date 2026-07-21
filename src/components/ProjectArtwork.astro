@@ -4,16 +4,20 @@ import type { Project } from "../data/projects";
 interface Props {
   project: Project;
   eager?: boolean;
+  variant?: "portrait" | "runtime";
   class?: string;
 }
 
-const { project, eager = false, class: className = "" } = Astro.props;
+const { project, eager = false, variant = "portrait", class: className = "" } = Astro.props;
+const source = variant === "portrait" ? project.portrait : project.image;
+const alt = variant === "portrait" ? project.portraitAlt : project.imageAlt;
+const hasPortraitArt = source === project.portrait;
 ---
 
-<figure class:list={["project-artwork", className]}>
+<figure class:list={["project-artwork", `is-${variant}`, { "has-portrait-art": hasPortraitArt }, className]}>
   <img
-    src={project.image}
-    alt={project.imageAlt}
+    src={source}
+    alt={alt}
     width="1600"
     height="1000"
     loading={eager ? "eager" : "lazy"}

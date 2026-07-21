@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">termviz minimal behavior portrait</title>
+  <desc id="description">Two plotted series are rendered on a sparse coordinate field with one focused inspection window.</desc>
+  <style>
+    :root{--paper:#efeee9;--ink:#202321;--muted:#737873;--faint:#c5c6c0;--rule:#d2d2cc;--accent:#b63d34;--accent-soft:#e6cfca}
+    .paper{fill:var(--paper)}.frame,.guide,.axis,.series,.focus,.dot{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}.guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}.axis{stroke:var(--ink);stroke-width:1.5}
+    .series{stroke:var(--ink);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}.series.accent{stroke:var(--accent);stroke-width:2.8}
+    .focus{stroke:var(--accent);stroke-width:1.7}.dot{fill:var(--paper);stroke:var(--ink);stroke-width:1.7}.dot.accent{stroke:var(--accent)}
+    .label,.micro{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}.micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .plot{transform-box:fill-box;transform-origin:center;animation:plot-in 1100ms cubic-bezier(.16,1,.3,1) 80ms both;will-change:transform,opacity}
+    .draw-a{stroke-dasharray:1600;animation:draw 1350ms cubic-bezier(.16,1,.3,1) 520ms both}.draw-b{stroke-dasharray:1600;animation:draw 1350ms cubic-bezier(.16,1,.3,1) 680ms both}
+    .focus-window{transform-box:fill-box;transform-origin:center;animation:focus-in 700ms cubic-bezier(.16,1,.3,1) 1300ms both}
+    @keyframes plot-in{0%{opacity:0;transform:translateY(65px) rotate(-.8deg)}72%{opacity:1;transform:translateY(-4px)}100%{opacity:1;transform:none}}
+    @keyframes draw{from{stroke-dashoffset:1600}to{stroke-dashoffset:0}}
+    @keyframes focus-in{0%{opacity:0;transform:scale(.45)}72%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
+    @media(prefers-reduced-motion:reduce){.plot,.draw-a,.draw-b,.focus-window{animation:none}}
+  </style>
+  <rect class="paper" width="1600" height="1000"/><rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">TERMVIZ / INSPECT</text><text class="micro" x="1508" y="102" text-anchor="end">40 POINTS</text>
+
+  <g class="plot">
+    <path class="axis" d="M285 745H1325M285 225V745"/>
+    <path class="guide" d="M285 355H1325M285 485H1325M285 615H1325M545 225V745M805 225V745M1065 225V745"/>
+    <path class="series draw-a" d="M330 650L455 520L580 405L705 500L830 435L955 270L1080 335L1205 245L1280 375"/>
+    <path class="series accent draw-b" d="M330 700L455 630L580 665L705 570L830 515L955 420L1080 350L1205 445L1280 490"/>
+    <g>
+      <circle class="dot" cx="330" cy="650" r="7"/><circle class="dot" cx="705" cy="500" r="7"/><circle class="dot" cx="955" cy="270" r="7"/><circle class="dot" cx="1280" cy="375" r="7"/>
+      <circle class="dot accent" cx="330" cy="700" r="7"/><circle class="dot accent" cx="705" cy="570" r="7"/><circle class="dot accent" cx="955" cy="420" r="7"/><circle class="dot accent" cx="1280" cy="490" r="7"/>
+    </g>
+    <g class="focus-window"><path class="focus" d="M885 245v-25h25M1000 220h25v25M885 445v25h25M1000 470h25v-25"/></g>
+  </g>
+</svg>
