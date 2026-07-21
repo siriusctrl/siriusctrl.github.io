@@ -38,9 +38,9 @@ export const projects: Project[] = [
     slug: "fiasco",
     name: "Fiasco",
     kind: "Agent orchestrator",
-    summary: "A headless Rust orchestrator for multiple agents and background jobs.",
+    summary: "Orchestrate the agents. Contain the fiasco.",
     detail:
-      "Orchestrate the agents. Contain the fiasco. One durable runtime coordinates root and delegated agents, concurrent tool calls, and long-running background jobs with resumable run directories, streaming model providers, skills, MCP, hooks, artifacts, and file-backed memory.",
+      "A headless Rust orchestrator for multiple agents and background jobs. One durable runtime coordinates root and delegated agents, concurrent tool calls, and long-running background jobs with resumable run directories, streaming model providers, skills, MCP, hooks, artifacts, and file-backed memory.",
     year: "2026",
     stack: ["Rust", "Multi-agent orchestration", "Background jobs", "MCP"],
     portrait: "/media/portraits/fiasco.svg",

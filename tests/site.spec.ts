@@ -11,6 +11,12 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
   );
   await expect(page.getByRole("heading", { name: "TowerLab" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fiasco" })).toBeVisible();
+  await expect(
+    page.locator("[data-work-entry=fiasco]").getByText(
+      "Orchestrate the agents. Contain the fiasco.",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "fmtview" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "termviz" })).toBeVisible();
 
@@ -307,6 +313,9 @@ test("project and note routes render real content", async ({ page }) => {
     "https://github.com/siriusctrl/fiasco",
   );
   await expect(page.getByText(/Orchestrate the agents\. Contain the fiasco\./)).toBeVisible();
+  await expect(
+    page.getByText(/A headless Rust orchestrator for multiple agents and background jobs\./),
+  ).toBeVisible();
   await expect(page.getByAltText(/Fiasco orchestration trace/)).toBeVisible();
 
   await page.goto("/notes/");
