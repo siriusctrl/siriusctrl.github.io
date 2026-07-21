@@ -10,7 +10,7 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
     "https://siriusctrl.github.io/freeform-artifacts/",
   );
   await expect(page.getByRole("heading", { name: "TowerLab" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "picoagent" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Fiasco" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "fmtview" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "termviz" })).toBeVisible();
 
@@ -165,7 +165,7 @@ test("home work stage rebounds small input and advances decisive input", async (
   await page.goto("/");
   await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
   const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
-  const picoagentEntry = page.locator("[data-work-entry=picoagent]");
+  const fiascoEntry = page.locator("[data-work-entry=fiasco]");
   await freeformEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
   await expect
@@ -185,7 +185,7 @@ test("home work stage rebounds small input and advances decisive input", async (
     )
     .toBeLessThan(-1);
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=picoagent]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
   expect(Math.abs(await page.evaluate(() => window.scrollY) - centeredScrollY)).toBeLessThan(1);
   await expect
     .poll(() =>
@@ -197,10 +197,10 @@ test("home work stage rebounds small input and advances decisive input", async (
   await expect(page.locator("html")).toHaveClass(/is-work-animating/);
   await page.waitForTimeout(120);
   await page.mouse.wheel(0, 180);
-  await expect(page.locator("[data-work-frame=picoagent]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=fiasco]")).toHaveClass(/is-active/);
   await expect(page.locator("[data-work-frame=towerlab]")).not.toHaveClass(/is-active/);
   await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
-  const finalCenterError = await picoagentEntry.evaluate((element) => {
+  const finalCenterError = await fiascoEntry.evaluate((element) => {
     const bounds = element.getBoundingClientRect();
     return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
   });
@@ -270,9 +270,9 @@ test("pointer crossing project whitespace does not activate the next project", a
   const pointerHit = await page.evaluate(({ x, y }) =>
     document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-work-entry]")?.dataset.workEntry,
   { x, y: viewport.height - 1 });
-  expect(pointerHit).toBe("picoagent");
+  expect(pointerHit).toBe("fiasco");
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=picoagent]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
   await expect(firstEntry).toHaveClass(/is-active/);
 });
 
@@ -300,13 +300,14 @@ test("project and note routes render real content", async ({ page }) => {
   await expect(page.getByAltText(/Dark-mode Freeform Artifacts canvas/)).toBeVisible();
 
   await page.goto("/projects/picoagent/");
-  await expect(page.getByRole("heading", { level: 1, name: "picoagent" })).toBeVisible();
+  await expect(page).toHaveURL(/\/projects\/fiasco\/$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Fiasco" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View source/ })).toHaveAttribute(
     "href",
-    "https://github.com/siriusctrl/picoagent",
+    "https://github.com/siriusctrl/fiasco",
   );
-  await expect(page.getByText(/one agent loop, one tool registry/)).toBeVisible();
-  await expect(page.getByAltText(/picoagent runtime trace/)).toBeVisible();
+  await expect(page.getByText(/Orchestrate the agents\. Contain the fiasco\./)).toBeVisible();
+  await expect(page.getByAltText(/Fiasco orchestration trace/)).toBeVisible();
 
   await page.goto("/notes/");
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();

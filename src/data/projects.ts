@@ -1,7 +1,7 @@
 export interface Project {
   slug: string;
   name: string;
-  kind: "Interactive lab" | "Agent runtime" | "Terminal game" | "CLI tool";
+  kind: "Interactive lab" | "Agent orchestrator" | "Terminal game" | "CLI tool";
   summary: string;
   detail: string;
   year: string;
@@ -35,20 +35,20 @@ export const projects: Project[] = [
     featured: true,
   },
   {
-    slug: "picoagent",
-    name: "picoagent",
-    kind: "Agent runtime",
-    summary: "A small headless Rust agent harness with explicit tools, skills, MCP, hooks, subagents, and memory.",
+    slug: "fiasco",
+    name: "Fiasco",
+    kind: "Agent orchestrator",
+    summary: "A headless Rust orchestrator for multiple agents and background jobs.",
     detail:
-      "A deliberately small runtime for local automation and cloud jobs: one agent loop, one tool registry, portable run directories, streaming model providers, durable background work, delegated subagents, skills, MCP, hooks, artifacts, and file-backed memory—without an embedded UI or database.",
+      "Orchestrate the agents. Contain the fiasco. One durable runtime coordinates root and delegated agents, concurrent tool calls, and long-running background jobs with resumable run directories, streaming model providers, skills, MCP, hooks, artifacts, and file-backed memory.",
     year: "2026",
-    stack: ["Rust", "Streaming model APIs", "MCP", "Portable run logs"],
-    portrait: "/media/portraits/picoagent.svg",
-    portraitAlt: "Minimal runtime trace of an agent loop branching through a tool call into a portable run directory",
-    image: "/media/portraits/picoagent.svg",
-    imageAlt: "picoagent runtime trace showing the model and tool loop, extension surfaces, background tasks, and run artifacts",
-    repoUrl: "https://github.com/siriusctrl/picoagent",
-    install: "cargo install --git https://github.com/siriusctrl/picoagent",
+    stack: ["Rust", "Multi-agent orchestration", "Background jobs", "MCP"],
+    portrait: "/media/portraits/fiasco.svg",
+    portraitAlt: "Minimal runtime trace of a root agent delegating child agents and background jobs into a durable run directory",
+    image: "/media/portraits/fiasco.svg",
+    imageAlt: "Fiasco orchestration trace showing delegated agents, background jobs, and durable run artifacts",
+    repoUrl: "https://github.com/siriusctrl/fiasco",
+    install: "cargo install --git https://github.com/siriusctrl/fiasco",
   },
   {
     slug: "towerlab",
