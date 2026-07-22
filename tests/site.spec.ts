@@ -166,7 +166,7 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
 });
 
 test("home work stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Sticky work-stage snapping is a desktop interaction");
+  test.skip(isMobile, "The work-stage controller is a desktop interaction");
 
   await page.goto("/");
   await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
@@ -199,10 +199,11 @@ test("home work stage rebounds small input and advances decisive input", async (
     )
     .toBeLessThan(0.5);
 
-  await page.mouse.wheel(0, 700);
+  for (const delta of [4, 8, 12, 18, 24, 30, 25, 18, 10, 5, 2]) {
+    await page.mouse.wheel(0, delta);
+  }
   await expect(page.locator("html")).toHaveClass(/is-work-animating/);
-  await page.waitForTimeout(120);
-  await page.mouse.wheel(0, 180);
+  await page.mouse.wheel(0, 180); // Momentum tail must not skip another project.
   await expect(page.locator("[data-work-frame=fiasco]")).toHaveClass(/is-active/);
   await expect(page.locator("[data-work-frame=towerlab]")).not.toHaveClass(/is-active/);
   await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
@@ -211,6 +212,62 @@ test("home work stage rebounds small input and advances decisive input", async (
     return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
   });
   expect(finalCenterError).toBeLessThan(1);
+});
+
+test("keyboard navigation advances exactly one centered project", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The work-stage controller is a desktop interaction");
+
+  await page.goto("/");
+  const entry = (slug: string) => page.locator(`[data-work-entry=${slug}]`);
+  await entry("freeform-artifacts").evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect
+    .poll(() => entry("freeform-artifacts").evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+    }))
+    .toBeLessThan(1);
+
+  for (const [key, slug] of [
+    ["ArrowDown", "fiasco"],
+    ["ArrowDown", "towerlab"],
+    ["ArrowUp", "fiasco"],
+  ] as const) {
+    await page.keyboard.press(key);
+    await expect(page.locator(`[data-work-frame=${slug}]`)).toHaveClass(/is-active/);
+    await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
+    await expect
+      .poll(() => entry(slug).evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }))
+      .toBeLessThan(1);
+  }
+});
+
+test("work artwork and copy share the same center through the final item", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The sticky work visual is desktop-only");
+
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 3840, height: 2160 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const finalEntry = page.locator("[data-work-entry=termviz]");
+    await finalEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    await expect
+      .poll(() => page.evaluate(() => {
+        const entry = document.querySelector<HTMLElement>("[data-work-entry=termviz]")!.getBoundingClientRect();
+        const canvas = document.querySelector<HTMLElement>(".work-visual-canvas")!.getBoundingClientRect();
+        const viewportCenter = window.innerHeight / 2;
+        return Math.max(
+          Math.abs(entry.top + entry.height / 2 - viewportCenter),
+          Math.abs(canvas.top + canvas.height / 2 - viewportCenter),
+        );
+      }))
+      .toBeLessThan(1);
+    await expect(page.locator("[data-work-frame=termviz]")).toHaveClass(/is-active/);
+  }
 });
 
 test("work visual keeps pace with the first project while leaving the stage", async ({ page, isMobile }) => {
@@ -234,7 +291,7 @@ test("work visual keeps pace with the first project while leaving the stage", as
   const boundary = await page.evaluate(() => {
     const heading = document.querySelector<HTMLElement>(".work-heading")!.getBoundingClientRect();
     const visual = document.querySelector<HTMLElement>(".work-visual")!.getBoundingClientRect();
-    const sticky = document.querySelector<HTMLElement>(".work-visual-sticky")!.getBoundingClientRect();
+    const sticky = document.querySelector<HTMLElement>(".work-visual-canvas")!.getBoundingClientRect();
     const entry = document.querySelector<HTMLElement>("[data-work-entry=freeform-artifacts]")!
       .getBoundingClientRect();
     return {

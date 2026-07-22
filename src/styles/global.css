@@ -437,21 +437,26 @@ a:hover > .project-artwork img {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.58fr);
   gap: clamp(48px, 7vw, 104px);
-  align-items: start;
+  align-items: stretch;
 }
 
 .work-visual {
   position: relative;
-  height: 100%;
+  min-height: 100%;
 }
 
-.work-visual-sticky {
+.work-visual-pin {
   position: sticky;
-  top: 50%;
-  margin-top: max(280px, 45dvh);
+  top: 0;
+  display: grid;
+  place-items: center;
+  height: 100dvh;
+}
+
+.work-visual-canvas {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  transform: translateY(-50%);
 }
 
 .work-frame {
@@ -479,10 +484,10 @@ a:hover > .project-artwork img {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: max(560px, 90dvh);
+  min-height: 100dvh;
   opacity: 0.24;
-  transform: translate3d(0, 22px, 0);
-  transition: opacity 480ms ease, transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, 0, 0);
+  transition: opacity 480ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .work-entry.is-active {
@@ -550,22 +555,8 @@ a:hover > .project-artwork img {
 }
 
 @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
-  html.has-work-snap {
-    scroll-snap-type: y proximity;
-  }
-
-  html.has-work-snap.is-work-animating {
+  html.has-work-navigation.is-work-animating {
     scroll-behavior: auto;
-    scroll-snap-type: none;
-  }
-
-  html.has-work-snap.is-work-resisting {
-    scroll-snap-type: none;
-  }
-
-  .work-entry {
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
   }
 }
 
