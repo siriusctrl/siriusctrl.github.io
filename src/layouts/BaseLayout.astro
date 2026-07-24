@@ -28,7 +28,7 @@ const socialImage = new URL(image, Astro.site);
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f3f3ef" />
+    <meta name="theme-color" content="#eeefeb" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="Sirius Ctrl notes" href="/rss.xml" />
@@ -48,7 +48,7 @@ const socialImage = new URL(image, Astro.site);
         document.documentElement.dataset.theme = theme;
         document.querySelector('meta[name="theme-color"]')?.setAttribute(
           "content",
-          theme === "dark" ? "#151716" : "#f3f3ef",
+          theme === "dark" ? "#1b1d1b" : "#eeefeb",
         );
       })();
     </script>
@@ -75,7 +75,7 @@ const socialImage = new URL(image, Astro.site);
           document.documentElement.dataset.theme = next;
           document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
             "content",
-            next === "dark" ? "#151716" : "#f3f3ef",
+            next === "dark" ? "#1b1d1b" : "#eeefeb",
           );
           window.localStorage.setItem("siriusctrl.theme", next);
           const label = `Switch to ${next === "dark" ? "light" : "dark"} mode`;

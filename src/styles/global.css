@@ -1,17 +1,19 @@
 :root {
   color-scheme: light;
-  --bg: #f3f3ef;
-  --surface: #fafaf7;
-  --surface-strong: #ffffff;
-  --text: #1b1d1c;
-  --muted: #656b68;
-  --faint: #686f6b;
-  --line: rgb(27 29 28 / 14%);
-  --line-strong: rgb(27 29 28 / 24%);
-  --accent: #b63d34;
-  --accent-strong: #a7332a;
-  --button-text: #f8f8f4;
-  --shadow: rgb(18 20 19 / 16%);
+  --bg: #eeefeb;
+  --surface: #f5f5f1;
+  --surface-strong: #fafaf6;
+  --text: #252724;
+  --muted: #626863;
+  --faint: #69706b;
+  --line: rgb(37 39 36 / 12%);
+  --line-strong: rgb(37 39 36 / 22%);
+  --accent: #b24137;
+  --accent-strong: #9f372f;
+  --button-text: #f7f7f2;
+  --shadow: rgb(30 33 30 / 12%);
+  --paper-grain-opacity: 0.028;
+  --paper-grain-blend: multiply;
   --radius: 6px;
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
@@ -19,18 +21,20 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #151716;
-  --surface: #1b1e1c;
-  --surface-strong: #222522;
-  --text: #eff0eb;
-  --muted: #a9afaa;
-  --faint: #7f8681;
-  --line: rgb(239 240 235 / 14%);
-  --line-strong: rgb(239 240 235 / 24%);
-  --accent: #e0675c;
-  --accent-strong: #ef8277;
-  --button-text: #171918;
-  --shadow: rgb(0 0 0 / 34%);
+  --bg: #1b1d1b;
+  --surface: #222522;
+  --surface-strong: #292c29;
+  --text: #e8e9e4;
+  --muted: #aeb3ad;
+  --faint: #858b85;
+  --line: rgb(232 233 228 / 13%);
+  --line-strong: rgb(232 233 228 / 22%);
+  --accent: #df6b61;
+  --accent-strong: #ee8277;
+  --button-text: #1b1d1b;
+  --shadow: rgb(0 0 0 / 24%);
+  --paper-grain-opacity: 0.035;
+  --paper-grain-blend: screen;
 }
 
 * {
@@ -69,6 +73,17 @@ body {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  pointer-events: none;
+  background: url("/media/paper-grain.svg") 0 0 / 512px 512px repeat;
+  content: "";
+  mix-blend-mode: var(--paper-grain-blend);
+  opacity: var(--paper-grain-opacity);
 }
 
 body,

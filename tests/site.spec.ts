@@ -127,6 +127,44 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
   await expect.poll(samplePaperColors).toEqual(Array.from({ length: 5 }, () => [26, 29, 27, 255]));
 });
 
+test("light and dark canvases keep a restrained paper texture", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
+  await page.goto("/");
+
+  const readSurface = () => page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const grain = getComputedStyle(document.body, "::before");
+    return {
+      background: root.getPropertyValue("--bg").trim(),
+      surfaceStrong: root.getPropertyValue("--surface-strong").trim(),
+      grainImage: grain.backgroundImage,
+      grainOpacity: grain.opacity,
+      grainBlend: grain.mixBlendMode,
+      themeColor: document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content,
+    };
+  });
+
+  await expect.poll(readSurface).toEqual({
+    background: "#eeefeb",
+    surfaceStrong: "#fafaf6",
+    grainImage: expect.stringContaining("paper-grain.svg"),
+    grainOpacity: "0.028",
+    grainBlend: "multiply",
+    themeColor: "#eeefeb",
+  });
+
+  await page.getByTestId("theme-toggle").click();
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+  await expect.poll(readSurface).toEqual({
+    background: "#1b1d1b",
+    surfaceStrong: "#292c29",
+    grainImage: expect.stringContaining("paper-grain.svg"),
+    grainOpacity: "0.035",
+    grainBlend: "screen",
+    themeColor: "#1b1d1b",
+  });
+});
+
 test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isMobile }) => {
   test.skip(isMobile, "Browser zoom coverage uses the desktop browser profile");
 
