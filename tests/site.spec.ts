@@ -214,6 +214,51 @@ test("home work stage rebounds small input and advances decisive input", async (
   expect(finalCenterError).toBeLessThan(1);
 });
 
+test("work stage accepts deliberate reversal without mistaking momentum for intent", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The work-stage controller is a desktop interaction");
+
+  const centerFreeform = async () => {
+    await page.goto("/");
+    await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
+      element.scrollIntoView({ block: "center", behavior: "instant" }),
+    );
+    await expect
+      .poll(() => page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+      }))
+      .toBeLessThan(1);
+  };
+  const wheel = async (deltas: number[]) => {
+    for (const delta of deltas) await page.mouse.wheel(0, delta);
+  };
+
+  await centerFreeform();
+  await wheel([20, 25, 30, 30]);
+  await expect(page.locator("html")).toHaveClass(/is-work-animating/);
+  await wheel([-10, -20, -30, -40]);
+  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
+  await expect
+    .poll(() => page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+    }))
+    .toBeLessThan(1);
+
+  await centerFreeform();
+  await wheel([20, 25, 30, 30]);
+  await wheel([-8, -12, -15]); // A small opposite bounce must not cancel the committed step.
+  await expect(page.locator("[data-work-frame=fiasco]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
+  await expect
+    .poll(() => page.locator("[data-work-entry=fiasco]").evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
+    }))
+    .toBeLessThan(1);
+});
+
 test("keyboard navigation advances exactly one centered project", async ({ page, isMobile }) => {
   test.skip(isMobile, "The work-stage controller is a desktop interaction");
 

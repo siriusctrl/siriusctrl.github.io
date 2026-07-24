@@ -133,9 +133,12 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
     let activeIndex = -1;
     let isWorkAnimating = false;
     let animationFrame: number | undefined;
+    let animationVelocity = 0;
+    let motionOriginIndex: number | undefined;
+    let motionTargetIndex: number | undefined;
     let wheelIntent = 0;
-    let wheelDirection = 0;
-    let wheelConsumed = false;
+    let wheelIntentDirection = 0;
+    let wheelCommittedDirection = 0;
     let wheelEndTimer: number | undefined;
     let settleClassTimer: number | undefined;
     let scrollSettleTimer: number | undefined;
@@ -198,8 +201,8 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
 
     const resetWheelGesture = () => {
       wheelIntent = 0;
-      wheelDirection = 0;
-      wheelConsumed = false;
+      wheelIntentDirection = 0;
+      wheelCommittedDirection = 0;
       if (wheelEndTimer) window.clearTimeout(wheelEndTimer);
       if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
       wheelEndTimer = undefined;
@@ -214,12 +217,15 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       window.requestAnimationFrame(() => navigateWork(direction));
     };
 
-    const animateTo = (rawTarget: number, targetIndex?: number) => {
+    const animateTo = (rawTarget: number, targetIndex?: number, originIndex?: number) => {
+      const carriedVelocity = isWorkAnimating ? animationVelocity : 0;
       if (animationFrame !== undefined) window.cancelAnimationFrame(animationFrame);
       animationFrame = undefined;
       if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
       scrollSettleTimer = undefined;
       const target = clamp(rawTarget, 0, document.documentElement.scrollHeight - window.innerHeight);
+      motionOriginIndex = originIndex ?? nearestIndexFor(window.scrollY);
+      motionTargetIndex = targetIndex;
       settleWorkPull();
 
       const finish = () => {
@@ -227,6 +233,9 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
         if (targetIndex !== undefined) activateWork(targetIndex);
         isWorkAnimating = false;
         animationFrame = undefined;
+        animationVelocity = 0;
+        motionOriginIndex = undefined;
+        motionTargetIndex = undefined;
         suppressScrollSettleUntil = performance.now() + 120;
         root.classList.remove("is-work-animating");
         workStage.dataset.workNavigationState = "idle";
@@ -248,7 +257,8 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       workStage.dataset.workNavigationState = "animating";
 
       let position = window.scrollY;
-      let velocity = 0;
+      let velocity = carriedVelocity;
+      animationVelocity = velocity;
       let previousTime = performance.now();
       const startedAt = previousTime;
 
@@ -264,6 +274,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
           - 2 * dampingRatio * angularFrequency * velocity;
         velocity += acceleration * deltaTime;
         position += velocity * deltaTime;
+        animationVelocity = velocity;
         window.scrollTo(0, position);
         activateWork(nearestIndexFor(position));
 
@@ -277,9 +288,19 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       animationFrame = window.requestAnimationFrame(step);
     };
 
-    const navigateWork = (direction: number) => {
+    const navigateWork = (direction: number, reverseCurrentMotion = false) => {
       const targets = workTargets();
       const position = window.scrollY;
+      const originIndex = nearestIndexFor(position, targets);
+
+      // Reverse toward the anchor this motion left, even if it has not crossed the midpoint yet.
+      if (reverseCurrentMotion && isWorkAnimating && motionOriginIndex !== undefined) {
+        const reverseTargetIndex = motionOriginIndex;
+        const reverseOriginIndex = motionTargetIndex ?? originIndex;
+        animateTo(targets[reverseTargetIndex], reverseTargetIndex, reverseOriginIndex);
+        return;
+      }
+
       let targetIndex = -1;
 
       if (direction > 0) {
@@ -294,13 +315,13 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       }
 
       if (targetIndex >= 0) {
-        animateTo(targets[targetIndex], targetIndex);
+        animateTo(targets[targetIndex], targetIndex, originIndex);
         return;
       }
 
       const edgeIndex = direction > 0 ? targets.length - 1 : 0;
       const exitDistance = clamp(window.innerHeight * 0.62, 360, 720);
-      animateTo(targets[edgeIndex] + direction * exitDistance, edgeIndex);
+      animateTo(targets[edgeIndex] + direction * exitDistance, edgeIndex, originIndex);
     };
 
     const finishWheelGesture = () => {
@@ -309,13 +330,13 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
         return;
       }
 
-      const shouldSettleScroll = !wheelConsumed && desktopWork.matches;
+      const shouldSettleScroll = wheelCommittedDirection === 0 && desktopWork.matches;
       const targets = workTargets();
       const nearestIndex = nearestIndexFor(window.scrollY, targets);
       const centerError = Math.abs(targets[nearestIndex] - window.scrollY);
       wheelIntent = 0;
-      wheelDirection = 0;
-      wheelConsumed = false;
+      wheelIntentDirection = 0;
+      wheelCommittedDirection = 0;
       wheelEndTimer = undefined;
       settleWorkPull();
 
@@ -363,24 +384,40 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       wheelEndTimer = window.setTimeout(finishWheelGesture, gestureQuietTime);
 
       if (enteringFromAbove || enteringFromBelow) {
-        wheelConsumed = true;
+        wheelIntent = 0;
+        wheelIntentDirection = 0;
+        wheelCommittedDirection = direction;
         const entryIndex = enteringFromAbove ? 0 : targets.length - 1;
         animateTo(targets[entryIndex], entryIndex);
         return;
       }
 
-      if (isWorkAnimating || wheelConsumed) return;
+      // Keep swallowing same-direction momentum, but let the opposite direction build fresh intent.
+      if (wheelCommittedDirection === direction) {
+        if (wheelIntent > 0) {
+          wheelIntent = 0;
+          wheelIntentDirection = 0;
+          settleWorkPull();
+        }
+        return;
+      }
 
-      if (wheelDirection !== 0 && wheelDirection !== direction) {
+      const isReversingCommittedGesture = wheelCommittedDirection !== 0
+        && wheelCommittedDirection !== direction;
+      if (isWorkAnimating && !isReversingCommittedGesture) return;
+
+      if (wheelIntentDirection !== 0 && wheelIntentDirection !== direction) {
         wheelIntent = 0;
       }
-      wheelDirection = direction;
+      wheelIntentDirection = direction;
       wheelIntent += Math.min(Math.abs(delta), 120);
 
       if (wheelIntent >= intentThreshold) {
-        wheelConsumed = true;
+        const shouldReverseMotion = isReversingCommittedGesture && isWorkAnimating;
+        wheelCommittedDirection = direction;
         wheelIntent = 0;
-        navigateWork(direction);
+        wheelIntentDirection = 0;
+        navigateWork(direction, shouldReverseMotion);
         return;
       }
 
@@ -431,7 +468,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
         !desktopWork.matches
         || isWorkAnimating
         || wheelIntent > 0
-        || wheelConsumed
+        || wheelCommittedDirection !== 0
         || performance.now() < suppressScrollSettleUntil
       ) return;
       const targets = workTargets();
@@ -442,7 +479,7 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
       if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
       scrollSettleTimer = window.setTimeout(() => {
         scrollSettleTimer = undefined;
-        if (isWorkAnimating || wheelIntent > 0 || wheelConsumed) return;
+        if (isWorkAnimating || wheelIntent > 0 || wheelCommittedDirection !== 0) return;
         const settledTargets = workTargets();
         const settledIndex = nearestIndexFor(window.scrollY, settledTargets);
         if (Math.abs(settledTargets[settledIndex] - window.scrollY) > anchorTolerance) {
