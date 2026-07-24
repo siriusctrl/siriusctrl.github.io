@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <pattern id="short-fibers-a" width="503" height="467" patternUnits="userSpaceOnUse">
+      <path
+        d="
+          M17 31l9 1 M61 84l-12 2 M112 26l9 10 M168 73l14 3
+          M224 39l-1 13 M279 96l13-1 M341 22l-10 6 M403 68l12-5
+          M472 41l-9 12 M31 141l13-3 M89 187l-11-8 M143 128l11 7
+          M201 174l15-3 M258 137l2 13 M316 204l14-4 M374 151l-13 4
+          M439 192l11-10 M488 133l-8 9 M22 252l13-1 M77 291l-10 12
+          M132 236l15 0 M187 278l-11-4 M247 223l9 12 M302 303l14-3
+          M359 261l3 13 M417 232l-12 0 M479 285l11 4 M41 361l-12 7
+          M98 329l14-2 M156 391l-8-12 M214 345l15 2 M271 413l11-7
+          M329 371l-12-3 M386 428l13-4 M447 352l1 14 M491 419l-12 3
+          M55 452l11-4 M121 444l-10-7 M179 454l14 2 M239 440l3 12
+          M296 456l12-1 M354 446l-10-1 M411 458l10-6 M468 447l-8 8
+        "
+        fill="none"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-width="0.36"
+        opacity="0.075"
+      />
+    </pattern>
+    <pattern id="short-fibers-b" width="619" height="541" patternUnits="userSpaceOnUse">
+      <path
+        d="
+          M29 53l17-2 M94 116l-11-13 M157 38l14-5 M226 91l-14 8
+          M301 47l11 14 M372 126l15-2 M451 62l-12-5 M526 105l16-5
+          M594 31l-10 11 M51 191l14 4 M121 247l-14 0 M188 174l11-13
+          M263 225l16 0 M337 183l-3 15 M409 263l16-9 M488 201l-15 4
+          M565 252l12-11 M607 167l-9 11 M36 328l17-1 M106 377l-11 14
+          M179 304l16 0 M251 362l-13-4 M326 291l11 14 M398 389l17-3
+          M472 337l3 15 M548 298l-15 0 M606 371l12 4 M57 454l-14 9
+          M132 419l16-3 M205 487l-9-14 M279 438l18 2 M352 516l13-8
+          M427 469l-14-3 M501 528l16-5 M577 445l2 16 M611 507l-14 3
+          M18 512l12-3 M166 525l-12-8 M315 535l15 2 M462 512l4 14
+        "
+        fill="none"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-width="0.3"
+        opacity="0.055"
+      />
+    </pattern>
+    <pattern id="pulp-flecks" width="397" height="359" patternUnits="userSpaceOnUse">
+      <g fill="#000" opacity="0.11">
+        <circle cx="19" cy="27" r="0.7" />
+        <ellipse cx="63" cy="91" rx="1.2" ry="0.55" transform="rotate(22 63 91)" />
+        <circle cx="118" cy="43" r="0.55" />
+        <ellipse cx="172" cy="119" rx="0.6" ry="1.25" transform="rotate(-17 172 119)" />
+        <circle cx="229" cy="68" r="0.75" />
+        <ellipse cx="287" cy="25" rx="1.3" ry="0.55" transform="rotate(13 287 25)" />
+        <circle cx="344" cy="107" r="0.6" />
+        <ellipse cx="383" cy="55" rx="0.65" ry="1.2" transform="rotate(26 383 55)" />
+        <circle cx="38" cy="187" r="0.7" />
+        <ellipse cx="96" cy="239" rx="1.2" ry="0.55" transform="rotate(-19 96 239)" />
+        <circle cx="153" cy="172" r="0.55" />
+        <ellipse cx="211" cy="262" rx="0.6" ry="1.3" transform="rotate(24 211 262)" />
+        <circle cx="268" cy="205" r="0.75" />
+        <ellipse cx="326" cy="281" rx="1.25" ry="0.55" transform="rotate(-12 326 281)" />
+        <circle cx="379" cy="191" r="0.6" />
+        <ellipse cx="22" cy="329" rx="0.65" ry="1.2" transform="rotate(18 22 329)" />
+        <circle cx="139" cy="318" r="0.7" />
+        <ellipse cx="252" cy="342" rx="1.2" ry="0.55" transform="rotate(21 252 342)" />
+        <circle cx="361" cy="326" r="0.55" />
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="2048" height="2048" fill="url(#short-fibers-a)" />
+  <rect width="2048" height="2048" fill="url(#short-fibers-b)" />
+  <rect width="2048" height="2048" fill="url(#pulp-flecks)" />
+
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <g stroke-width="0.65" opacity="0.075">
+      <path d="M93 188q31-9 67 3" />
+      <path d="M247 319q18 8 45-1" />
+      <path d="M401 101q37 4 68-13" />
+      <path d="M557 238q24-17 52-9" />
+      <path d="M729 384q36-11 81 5" />
+      <path d="M868 151q17 15 42 16" />
+      <path d="M1021 295q35 9 69-4" />
+      <path d="M1193 83q29-14 57-3" />
+      <path d="M1369 347q23 17 51 8" />
+      <path d="M1518 203q43-7 84 8" />
+      <path d="M1736 112q22 10 51 1" />
+      <path d="M1884 386q31-16 64-3" />
+
+      <path d="M139 523q25 13 56 2" />
+      <path d="M318 694q38-18 76-6" />
+      <path d="M486 508q18-13 41-4" />
+      <path d="M636 771q31 12 67-2" />
+      <path d="M809 598q25-19 56-8" />
+      <path d="M967 705q42-8 83 9" />
+      <path d="M1142 534q21 15 49 11" />
+      <path d="M1297 794q35-16 71-5" />
+      <path d="M1481 617q27 11 61-1" />
+      <path d="M1654 748q20-14 45-7" />
+      <path d="M1819 555q39 6 74-11" />
+
+      <path d="M77 914q32-13 63-2" />
+      <path d="M253 1076q22 17 50 10" />
+      <path d="M423 882q36 9 73-5" />
+      <path d="M578 1031q24-14 52-5" />
+      <path d="M751 916q29 16 65 5" />
+      <path d="M921 1114q41-16 79-3" />
+      <path d="M1097 936q19 13 45 8" />
+      <path d="M1249 1053q34 7 68-8" />
+      <path d="M1421 893q25-17 55-7" />
+      <path d="M1588 1119q38 12 79-4" />
+      <path d="M1769 951q21-11 48-3" />
+      <path d="M1905 1073q31-5 58 8" />
+
+      <path d="M126 1287q24-15 53-7" />
+      <path d="M291 1433q39 10 76-6" />
+      <path d="M474 1238q21 14 48 9" />
+      <path d="M622 1377q33-17 68-7" />
+      <path d="M794 1264q27 12 59 0" />
+      <path d="M959 1461q22-16 49-6" />
+      <path d="M1129 1306q40 7 76-10" />
+      <path d="M1312 1428q24 15 55 7" />
+      <path d="M1476 1250q32-12 67-1" />
+      <path d="M1641 1469q20-13 46-4" />
+      <path d="M1826 1338q36 11 73-4" />
+
+      <path d="M89 1648q35-9 67 5" />
+      <path d="M264 1835q19 14 45 8" />
+      <path d="M438 1607q28-17 59-7" />
+      <path d="M603 1784q39 8 76-9" />
+      <path d="M782 1651q23 15 51 7" />
+      <path d="M943 1908q34-13 69-2" />
+      <path d="M1118 1724q20-16 47-7" />
+      <path d="M1281 1876q42 10 81-7" />
+      <path d="M1468 1679q25 13 56 3" />
+      <path d="M1627 1932q31-17 65-6" />
+      <path d="M1810 1746q22 14 50 6" />
+      <path d="M1937 1887q29-8 56 3" />
+    </g>
+
+    <g stroke-width="0.48" opacity="0.055">
+      <path d="M177 132l29 18" />
+      <path d="M349 431l-18 31" />
+      <path d="M517 338l38 22" />
+      <path d="M681 92l-13 34" />
+      <path d="M936 421l31-28" />
+      <path d="M1127 188l17 41" />
+      <path d="M1326 472l-33 24" />
+      <path d="M1603 83l19 29" />
+      <path d="M1801 297l-31 17" />
+      <path d="M2011 159l-22 37" />
+
+      <path d="M93 734l34-20" />
+      <path d="M371 579l18 35" />
+      <path d="M543 819l-27 25" />
+      <path d="M715 641l12 40" />
+      <path d="M891 786l34 19" />
+      <path d="M1082 633l-17 37" />
+      <path d="M1258 851l29-24" />
+      <path d="M1449 718l16 34" />
+      <path d="M1711 842l-33 18" />
+      <path d="M1931 673l19 31" />
+
+      <path d="M189 961l21 38" />
+      <path d="M348 1147l-31 22" />
+      <path d="M524 995l15 32" />
+      <path d="M694 1179l34-21" />
+      <path d="M871 1004l-19 39" />
+      <path d="M1051 1205l29 17" />
+      <path d="M1229 976l18 36" />
+      <path d="M1396 1173l-28 25" />
+      <path d="M1633 1006l34 20" />
+      <path d="M1877 1198l-17 34" />
+
+      <path d="M78 1492l31 23" />
+      <path d="M358 1331l-14 37" />
+      <path d="M536 1535l28-19" />
+      <path d="M706 1403l17 34" />
+      <path d="M889 1562l-34 18" />
+      <path d="M1064 1386l20 40" />
+      <path d="M1241 1579l29-25" />
+      <path d="M1432 1389l-17 35" />
+      <path d="M1698 1557l33 21" />
+      <path d="M1912 1428l-22 31" />
+
+      <path d="M176 1741l-21 35" />
+      <path d="M367 1930l31-19" />
+      <path d="M549 1698l15 38" />
+      <path d="M723 1984l-29 24" />
+      <path d="M898 1817l32 20" />
+      <path d="M1088 1981l-17 36" />
+      <path d="M1264 1762l24 31" />
+      <path d="M1451 2012l29-22" />
+      <path d="M1709 1814l-31 25" />
+      <path d="M1944 1996l18-34" />
+    </g>
+  </g>
+
+  <g fill="#000" opacity="0.09">
+    <circle cx="114" cy="74" r="0.8" />
+    <ellipse cx="284" cy="213" rx="1.3" ry="0.6" transform="rotate(21 284 213)" />
+    <circle cx="461" cy="287" r="0.65" />
+    <ellipse cx="626" cy="171" rx="0.7" ry="1.4" transform="rotate(-18 626 171)" />
+    <circle cx="793" cy="328" r="0.9" />
+    <ellipse cx="958" cy="82" rx="1.4" ry="0.7" transform="rotate(14 958 82)" />
+    <circle cx="1109" cy="402" r="0.7" />
+    <ellipse cx="1271" cy="237" rx="0.8" ry="1.5" transform="rotate(28 1271 237)" />
+    <circle cx="1442" cy="119" r="0.75" />
+    <ellipse cx="1609" cy="389" rx="1.5" ry="0.65" transform="rotate(-12 1609 389)" />
+    <circle cx="1778" cy="246" r="0.85" />
+    <ellipse cx="1951" cy="68" rx="0.7" ry="1.3" transform="rotate(19 1951 68)" />
+
+    <ellipse cx="75" cy="612" rx="1.4" ry="0.7" transform="rotate(-16 75 612)" />
+    <circle cx="235" cy="793" r="0.7" />
+    <ellipse cx="409" cy="541" rx="0.75" ry="1.4" transform="rotate(24 409 541)" />
+    <circle cx="574" cy="697" r="0.85" />
+    <ellipse cx="742" cy="486" rx="1.5" ry="0.65" transform="rotate(17 742 486)" />
+    <circle cx="909" cy="842" r="0.65" />
+    <ellipse cx="1078" cy="569" rx="0.8" ry="1.3" transform="rotate(-21 1078 569)" />
+    <circle cx="1237" cy="746" r="0.8" />
+    <ellipse cx="1407" cy="516" rx="1.3" ry="0.7" transform="rotate(13 1407 516)" />
+    <circle cx="1574" cy="824" r="0.75" />
+    <ellipse cx="1743" cy="648" rx="0.7" ry="1.5" transform="rotate(-26 1743 648)" />
+    <circle cx="1916" cy="482" r="0.9" />
+
+    <circle cx="128" cy="1018" r="0.75" />
+    <ellipse cx="297" cy="1184" rx="1.4" ry="0.65" transform="rotate(18 297 1184)" />
+    <circle cx="466" cy="936" r="0.7" />
+    <ellipse cx="633" cy="1127" rx="0.75" ry="1.4" transform="rotate(-23 633 1127)" />
+    <circle cx="801" cy="992" r="0.85" />
+    <ellipse cx="974" cy="1213" rx="1.5" ry="0.7" transform="rotate(11 974 1213)" />
+    <circle cx="1138" cy="1067" r="0.65" />
+    <ellipse cx="1304" cy="924" rx="0.8" ry="1.4" transform="rotate(27 1304 924)" />
+    <circle cx="1472" cy="1161" r="0.8" />
+    <ellipse cx="1639" cy="974" rx="1.3" ry="0.65" transform="rotate(-15 1639 974)" />
+    <circle cx="1807" cy="1229" r="0.75" />
+    <ellipse cx="1974" cy="1029" rx="0.7" ry="1.4" transform="rotate(20 1974 1029)" />
+
+    <ellipse cx="81" cy="1397" rx="1.4" ry="0.65" transform="rotate(15 81 1397)" />
+    <circle cx="247" cy="1574" r="0.7" />
+    <ellipse cx="416" cy="1308" rx="0.75" ry="1.5" transform="rotate(-20 416 1308)" />
+    <circle cx="584" cy="1516" r="0.85" />
+    <ellipse cx="752" cy="1364" rx="1.5" ry="0.7" transform="rotate(24 752 1364)" />
+    <circle cx="918" cy="1596" r="0.65" />
+    <ellipse cx="1086" cy="1438" rx="0.8" ry="1.3" transform="rotate(-17 1086 1438)" />
+    <circle cx="1254" cy="1608" r="0.8" />
+    <ellipse cx="1423" cy="1482" rx="1.3" ry="0.65" transform="rotate(12 1423 1482)" />
+    <circle cx="1591" cy="1334" r="0.75" />
+    <ellipse cx="1758" cy="1589" rx="0.7" ry="1.5" transform="rotate(-25 1758 1589)" />
+    <circle cx="1928" cy="1457" r="0.85" />
+
+    <circle cx="121" cy="1814" r="0.8" />
+    <ellipse cx="289" cy="1991" rx="1.4" ry="0.65" transform="rotate(-14 289 1991)" />
+    <circle cx="457" cy="1732" r="0.7" />
+    <ellipse cx="625" cy="1888" rx="0.75" ry="1.4" transform="rotate(22 625 1888)" />
+    <circle cx="794" cy="2016" r="0.85" />
+    <ellipse cx="963" cy="1753" rx="1.5" ry="0.7" transform="rotate(-18 963 1753)" />
+    <circle cx="1131" cy="1937" r="0.65" />
+    <ellipse cx="1299" cy="1698" rx="0.8" ry="1.4" transform="rotate(26 1299 1698)" />
+    <circle cx="1467" cy="1871" r="0.8" />
+    <ellipse cx="1636" cy="2019" rx="1.3" ry="0.65" transform="rotate(-11 1636 2019)" />
+    <circle cx="1804" cy="1687" r="0.75" />
+    <ellipse cx="1971" cy="1843" rx="0.7" ry="1.5" transform="rotate(19 1971 1843)" />
+  </g>
+</svg>

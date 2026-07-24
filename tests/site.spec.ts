@@ -133,13 +133,18 @@ test("light and dark canvases keep a restrained paper texture", async ({ page })
 
   const readSurface = () => page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
-    const grain = getComputedStyle(document.body, "::before");
+    const pulp = getComputedStyle(document.body, "::before");
+    const inclusions = getComputedStyle(document.body, "::after");
     return {
       background: root.getPropertyValue("--bg").trim(),
       surfaceStrong: root.getPropertyValue("--surface-strong").trim(),
-      grainImage: grain.backgroundImage,
-      grainOpacity: grain.opacity,
-      grainBlend: grain.mixBlendMode,
+      pulpImage: pulp.backgroundImage,
+      pulpOpacity: pulp.opacity,
+      pulpBlend: pulp.mixBlendMode,
+      pulpFilter: pulp.filter,
+      inclusionImage: inclusions.backgroundImage,
+      inclusionOpacity: inclusions.opacity,
+      inclusionBlend: inclusions.mixBlendMode,
       themeColor: document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content,
     };
   });
@@ -147,9 +152,13 @@ test("light and dark canvases keep a restrained paper texture", async ({ page })
   await expect.poll(readSurface).toEqual({
     background: "#eeefeb",
     surfaceStrong: "#fafaf6",
-    grainImage: expect.stringContaining("paper-grain.svg"),
-    grainOpacity: "0.028",
-    grainBlend: "multiply",
+    pulpImage: expect.stringContaining("paper-pulp.svg"),
+    pulpOpacity: "0.62",
+    pulpBlend: "multiply",
+    pulpFilter: "none",
+    inclusionImage: expect.stringContaining("paper-inclusions.svg"),
+    inclusionOpacity: "0.72",
+    inclusionBlend: "multiply",
     themeColor: "#eeefeb",
   });
 
@@ -158,9 +167,13 @@ test("light and dark canvases keep a restrained paper texture", async ({ page })
   await expect.poll(readSurface).toEqual({
     background: "#1b1d1b",
     surfaceStrong: "#292c29",
-    grainImage: expect.stringContaining("paper-grain.svg"),
-    grainOpacity: "0.035",
-    grainBlend: "screen",
+    pulpImage: expect.stringContaining("paper-pulp.svg"),
+    pulpOpacity: "0.5",
+    pulpBlend: "screen",
+    pulpFilter: "invert(1)",
+    inclusionImage: expect.stringContaining("paper-inclusions.svg"),
+    inclusionOpacity: "0.68",
+    inclusionBlend: "screen",
     themeColor: "#1b1d1b",
   });
 });
