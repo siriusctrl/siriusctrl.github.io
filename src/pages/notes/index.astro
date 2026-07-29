@@ -7,11 +7,11 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 ---
 
-<BaseLayout title="Notes" description="Writing about software architecture, interaction design, and practical experiments.">
+<BaseLayout title="Writing" description="Writing about software architecture, interaction design, and practical experiments.">
   <main class="page-shell">
     <header class="page-intro">
-      <h1>Notes</h1>
-      <p>Architecture choices, experiments, and implementation details worth keeping.</p>
+      <h1>Writing</h1>
+      <p>Ideas that needed more room than a commit, kept close to the software they inform.</p>
     </header>
     <section class="notes-index" aria-label="Published notes">
       {notes.length === 0 ? (

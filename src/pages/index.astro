@@ -1,516 +1,132 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Icon from "../components/Icon.astro";
-import ProjectArtwork from "../components/ProjectArtwork.astro";
 import { projects } from "../data/projects";
-import { getCollection } from "astro:content";
 
-const featuredProjects = projects.filter((project) => project.featured);
-if (featuredProjects.length !== 1) throw new Error("Home page requires exactly one featured project");
-const featuredProject = featuredProjects[0];
-const recentProjects = projects.filter((project) => project !== featuredProject);
-const workProjects = [featuredProject, ...recentProjects];
 const notes = (await getCollection("notes", ({ data }) => !data.draft))
-  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
-  .slice(0, 3);
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+const latestNote = notes[0];
+if (!latestNote) throw new Error("Home page requires at least one published note");
+const siteNote = notes.find((note) => note.id === "rebuilding-the-site");
+if (!siteNote) throw new Error("Home page requires the rebuilding-the-site note");
+
+const softwareSlugs = ["freeform-artifacts", "lattice", "fiasco"];
+const selectedSoftware = softwareSlugs.map((slug) => {
+  const project = projects.find((candidate) => candidate.slug === slug);
+  if (!project) throw new Error(`Missing home page software entry: ${slug}`);
+  return project;
+});
+
+const threads = [
+  {
+    title: "Interfaces beyond the transcript",
+    description: "AI output becomes more useful when it can be moved, inspected, and recombined.",
+    links: [
+      { label: "Freeform Artifacts", href: "/projects/freeform-artifacts/" },
+      { label: "Lattice", href: "/projects/lattice/" },
+    ],
+  },
+  {
+    title: "Agents with observable state",
+    description: "Autonomy is easier to trust when execution leaves a durable, inspectable trace.",
+    links: [
+      { label: "Fiasco", href: "/projects/fiasco/" },
+      { label: "TowerLab", href: "/projects/towerlab/" },
+    ],
+  },
+  {
+    title: "Static software as a publishing medium",
+    description: "A site can remain static while still offering local, interactive work.",
+    links: [
+      { label: siteNote.data.title, href: `/notes/${siteNote.id}/` },
+    ],
+  },
+];
 ---
 
 <BaseLayout>
   <main class="home-page">
     <section class="home-intro" aria-labelledby="hero-title">
-      <div class="intro-rail">
-        <p>Independent software</p>
-        <p>Built in public</p>
-      </div>
+      <p class="home-byline">A working set by Sirius Ctrl</p>
       <h1 id="hero-title">
-        Software for seeing
-        <span>what systems are doing.</span>
+        Some ideas need to run.
+        <span>Others need to be written down.</span>
       </h1>
       <div class="intro-bottom">
         <p class="intro-statement">
-          I turn complicated ideas into working software: things you can run, inspect, and play with.
+          A working set on agents, interfaces, and making complex systems legible.
         </p>
         <div class="intro-links" aria-label="Homepage links">
-          <a href="/projects/">View projects <Icon name="arrow-right" /></a>
-          <a href="https://github.com/siriusctrl">
-            GitHub <Icon name="arrow-up-right" />
-          </a>
+          <a href="#ideas">Browse the index <Icon name="arrow-right" /></a>
+          <a href="/notes/">Read the writing <Icon name="arrow-right" /></a>
         </div>
       </div>
     </section>
 
-    <section class="section recent-work" aria-labelledby="recent-title">
-      <div class="work-heading">
-        <h2 id="recent-title">Recent work</h2>
-        <p>Working software, drawn through the behavior that makes it distinct.</p>
+    <section class="section threads-section" id="ideas" aria-labelledby="threads-title">
+      <div class="section-heading compact-heading">
+        <h2 id="threads-title">Current threads</h2>
+        <p>Questions in progress, expressed through software and writing.</p>
       </div>
-
-      <div class="work-stage" data-work-stage>
-        <div class="work-visual" aria-hidden="true">
-          <div class="work-visual-pin">
-            <div class="work-visual-canvas">
-              {workProjects.map((project, index) => (
-                <div
-                  class:list={["work-frame", { "is-active": index === 0 }]}
-                  data-work-frame={project.slug}
-                >
-                  <ProjectArtwork project={project} eager={index === 0} />
-                </div>
+      <div class="thread-list">
+        {threads.map((thread) => (
+          <article class="thread-row">
+            <div class="thread-copy">
+              <h3>{thread.title}</h3>
+              <p>{thread.description}</p>
+            </div>
+            <div class="thread-links" aria-label={`Forms of ${thread.title}`}>
+              {thread.links.map((link) => (
+                <a href={link.href}>
+                  <span>{link.label}</span>
+                  <Icon name="arrow-right" />
+                </a>
               ))}
             </div>
-          </div>
-        </div>
-        <div class="work-entries">
-          {workProjects.map((project, index) => (
-            <article
-              class:list={["work-entry", { "is-active": index === 0 }]}
-              data-work-entry={project.slug}
-            >
-              <a
-                class="work-entry-media"
-                href={`/projects/${project.slug}/`}
-                tabindex="-1"
-                aria-hidden="true"
-              >
-                <ProjectArtwork project={project} />
-              </a>
-              <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
-              <h3><a href={`/projects/${project.slug}/`}>{project.name}</a></h3>
-              <p>{project.summary}</p>
-              {project.demoUrl && (
-                <a class="work-demo-link" href={project.demoUrl}>
-                  Open demo <Icon name="arrow-up-right" />
-                </a>
-              )}
-            </article>
-          ))}
-        </div>
+          </article>
+        ))}
       </div>
     </section>
 
-    <section class="section notes-preview" aria-labelledby="notes-title">
-      <div class="section-heading compact-heading">
-        <h2 id="notes-title">Notes</h2>
-        <p>Architecture choices, experiments, and the reasoning that survives the commit.</p>
+    <section class="section writing-feature" aria-labelledby="writing-title">
+      <div class="writing-label">
+        <p>Writing</p>
+        <time datetime={latestNote.data.publishedAt.toISOString()}>
+          {latestNote.data.publishedAt.toLocaleDateString("en", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </time>
       </div>
-      <div class="note-list">
-        {notes.map((note) => (
-          <a class="note-row" href={`/notes/${note.id}/`}>
-            <time datetime={note.data.publishedAt.toISOString()}>
-              {note.data.publishedAt.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" })}
-            </time>
-            <span>
-              <strong>{note.data.title}</strong>
-              <small>{note.data.description}</small>
-            </span>
+      <div class="writing-copy">
+        <h2 id="writing-title">
+          <a href={`/notes/${latestNote.id}/`}>{latestNote.data.title}</a>
+        </h2>
+        <p>{latestNote.data.description}</p>
+        <a class="text-link" href={`/notes/${latestNote.id}/`}>
+          Read the essay <Icon name="arrow-right" />
+        </a>
+      </div>
+    </section>
+
+    <section class="section software-preview" aria-labelledby="software-title">
+      <div class="section-heading compact-heading">
+        <h2 id="software-title">Software</h2>
+        <p>Working forms for the questions above.</p>
+      </div>
+      <div class="software-compact-list">
+        {selectedSoftware.map((project) => (
+          <a class="software-compact-row" href={`/projects/${project.slug}/`}>
+            <span class="project-meta"><span>{project.kind}</span><span>{project.year}</span></span>
+            <strong>{project.name}</strong>
+            <span>{project.summary}</span>
             <Icon name="arrow-right" />
           </a>
         ))}
       </div>
-      <a class="text-link" href="/notes/">All notes <Icon name="arrow-right" /></a>
+      <a class="text-link" href="/projects/">All software <Icon name="arrow-right" /></a>
     </section>
   </main>
 </BaseLayout>
-
-<script>
-  const workStage = document.querySelector<HTMLElement>("[data-work-stage]");
-  const workEntries = Array.from(document.querySelectorAll<HTMLElement>("[data-work-entry]"));
-  const workFrames = Array.from(document.querySelectorAll<HTMLElement>("[data-work-frame]"));
-  const desktopWork = window.matchMedia("(min-width: 861px)");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-  if (workStage && workEntries.length > 0 && workFrames.length > 0) {
-    const root = document.documentElement;
-    root.classList.add("has-work-navigation");
-
-    // A gesture must build intent before the page moves, then its momentum tail is consumed.
-    const intentThreshold = 96;
-    const gestureQuietTime = 180;
-    const anchorTolerance = 2;
-    const clamp = (value: number, minimum: number, maximum: number) =>
-      Math.min(maximum, Math.max(minimum, value));
-
-    let activeIndex = -1;
-    let isWorkAnimating = false;
-    let animationFrame: number | undefined;
-    let animationVelocity = 0;
-    let motionOriginIndex: number | undefined;
-    let motionTargetIndex: number | undefined;
-    let wheelIntent = 0;
-    let wheelIntentDirection = 0;
-    let wheelCommittedDirection = 0;
-    let wheelEndTimer: number | undefined;
-    let settleClassTimer: number | undefined;
-    let scrollSettleTimer: number | undefined;
-    let resizeSettleTimer: number | undefined;
-    let pendingKeyboardSteps = 0;
-    let suppressScrollSettleUntil = 0;
-
-    const activateWork = (index: number) => {
-      const nextIndex = clamp(index, 0, workEntries.length - 1);
-      if (activeIndex === nextIndex && workEntries[nextIndex]?.classList.contains("is-active")) return;
-      activeIndex = nextIndex;
-      const slug = workEntries[nextIndex]?.dataset.workEntry;
-      if (!slug) return;
-      workEntries.forEach((entry, entryIndex) => entry.classList.toggle("is-active", entryIndex === nextIndex));
-      workFrames.forEach((frame) => frame.classList.toggle("is-active", frame.dataset.workFrame === slug));
-      workStage.dataset.workActiveIndex = String(nextIndex);
-    };
-
-    const setWorkPull = (pixels: number) => {
-      workStage.style.setProperty("--work-pull", `${pixels.toFixed(2)}px`);
-      workStage.style.setProperty("--work-visual-pull", `${(pixels * 0.14).toFixed(2)}px`);
-    };
-
-    const clearSettleClass = () => {
-      if (settleClassTimer) window.clearTimeout(settleClassTimer);
-      settleClassTimer = window.setTimeout(() => {
-        workStage.classList.remove("is-wheel-settling");
-      }, 560);
-    };
-
-    const settleWorkPull = () => {
-      workStage.classList.remove("is-wheel-pulling");
-      workStage.classList.add("is-wheel-settling");
-      window.requestAnimationFrame(() => setWorkPull(0));
-      clearSettleClass();
-    };
-
-    const entryScrollTarget = (entry: HTMLElement) => {
-      const bounds = entry.getBoundingClientRect();
-      const transform = getComputedStyle(entry).transform;
-      const transformY = transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
-      // The resistance pull is visual only and must never move the navigation anchor.
-      const target = window.scrollY + bounds.top + bounds.height / 2 - transformY - window.innerHeight / 2;
-      return Math.max(0, Math.min(target, document.documentElement.scrollHeight - window.innerHeight));
-    };
-
-    const workTargets = () => workEntries.map(entryScrollTarget);
-
-    const nearestIndexFor = (position: number, targets = workTargets()) => targets.reduce(
-      (nearestIndex, target, index) =>
-        Math.abs(target - position) < Math.abs(targets[nearestIndex] - position) ? index : nearestIndex,
-      0,
-    );
-
-    const ownsViewportCenter = () => {
-      const bounds = workStage.getBoundingClientRect();
-      const viewportCenter = window.innerHeight / 2;
-      return bounds.top <= viewportCenter && bounds.bottom >= viewportCenter;
-    };
-
-    const resetWheelGesture = () => {
-      wheelIntent = 0;
-      wheelIntentDirection = 0;
-      wheelCommittedDirection = 0;
-      if (wheelEndTimer) window.clearTimeout(wheelEndTimer);
-      if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
-      wheelEndTimer = undefined;
-      scrollSettleTimer = undefined;
-      settleWorkPull();
-    };
-
-    const drainKeyboardQueue = () => {
-      if (pendingKeyboardSteps === 0 || isWorkAnimating) return;
-      const direction = Math.sign(pendingKeyboardSteps);
-      pendingKeyboardSteps -= direction;
-      window.requestAnimationFrame(() => navigateWork(direction));
-    };
-
-    const animateTo = (rawTarget: number, targetIndex?: number, originIndex?: number) => {
-      const carriedVelocity = isWorkAnimating ? animationVelocity : 0;
-      if (animationFrame !== undefined) window.cancelAnimationFrame(animationFrame);
-      animationFrame = undefined;
-      if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
-      scrollSettleTimer = undefined;
-      const target = clamp(rawTarget, 0, document.documentElement.scrollHeight - window.innerHeight);
-      motionOriginIndex = originIndex ?? nearestIndexFor(window.scrollY);
-      motionTargetIndex = targetIndex;
-      settleWorkPull();
-
-      const finish = () => {
-        window.scrollTo(0, target);
-        if (targetIndex !== undefined) activateWork(targetIndex);
-        isWorkAnimating = false;
-        animationFrame = undefined;
-        animationVelocity = 0;
-        motionOriginIndex = undefined;
-        motionTargetIndex = undefined;
-        suppressScrollSettleUntil = performance.now() + 120;
-        root.classList.remove("is-work-animating");
-        workStage.dataset.workNavigationState = "idle";
-        drainKeyboardQueue();
-      };
-
-      if (Math.abs(target - window.scrollY) < 0.5) {
-        finish();
-        return;
-      }
-
-      if (reducedMotion.matches) {
-        finish();
-        return;
-      }
-
-      isWorkAnimating = true;
-      root.classList.add("is-work-animating");
-      workStage.dataset.workNavigationState = "animating";
-
-      let position = window.scrollY;
-      let velocity = carriedVelocity;
-      animationVelocity = velocity;
-      let previousTime = performance.now();
-      const startedAt = previousTime;
-
-      const step = (time: number) => {
-        const elapsed = time - startedAt;
-        const deltaTime = Math.min((time - previousTime) / 1000, 0.032);
-        previousTime = time;
-
-        // Critical damping gives weight without overshoot or a lingering intermediate state.
-        const angularFrequency = 13.5;
-        const dampingRatio = 1;
-        const acceleration = angularFrequency ** 2 * (target - position)
-          - 2 * dampingRatio * angularFrequency * velocity;
-        velocity += acceleration * deltaTime;
-        position += velocity * deltaTime;
-        animationVelocity = velocity;
-        window.scrollTo(0, position);
-        activateWork(nearestIndexFor(position));
-
-        if ((Math.abs(target - position) < 0.35 && Math.abs(velocity) < 4) || elapsed > 1200) {
-          finish();
-          return;
-        }
-        animationFrame = window.requestAnimationFrame(step);
-      };
-
-      animationFrame = window.requestAnimationFrame(step);
-    };
-
-    const navigateWork = (direction: number, reverseCurrentMotion = false) => {
-      const targets = workTargets();
-      const position = window.scrollY;
-      const originIndex = nearestIndexFor(position, targets);
-
-      // Reverse toward the anchor this motion left, even if it has not crossed the midpoint yet.
-      if (reverseCurrentMotion && isWorkAnimating && motionOriginIndex !== undefined) {
-        const reverseTargetIndex = motionOriginIndex;
-        const reverseOriginIndex = motionTargetIndex ?? originIndex;
-        animateTo(targets[reverseTargetIndex], reverseTargetIndex, reverseOriginIndex);
-        return;
-      }
-
-      let targetIndex = -1;
-
-      if (direction > 0) {
-        targetIndex = targets.findIndex((target) => target > position + anchorTolerance);
-      } else {
-        for (let index = targets.length - 1; index >= 0; index -= 1) {
-          if (targets[index] < position - anchorTolerance) {
-            targetIndex = index;
-            break;
-          }
-        }
-      }
-
-      if (targetIndex >= 0) {
-        animateTo(targets[targetIndex], targetIndex, originIndex);
-        return;
-      }
-
-      const edgeIndex = direction > 0 ? targets.length - 1 : 0;
-      const exitDistance = clamp(window.innerHeight * 0.62, 360, 720);
-      animateTo(targets[edgeIndex] + direction * exitDistance, edgeIndex, originIndex);
-    };
-
-    const finishWheelGesture = () => {
-      if (isWorkAnimating) {
-        wheelEndTimer = window.setTimeout(finishWheelGesture, 100);
-        return;
-      }
-
-      const shouldSettleScroll = wheelCommittedDirection === 0 && desktopWork.matches;
-      const targets = workTargets();
-      const nearestIndex = nearestIndexFor(window.scrollY, targets);
-      const centerError = Math.abs(targets[nearestIndex] - window.scrollY);
-      wheelIntent = 0;
-      wheelIntentDirection = 0;
-      wheelCommittedDirection = 0;
-      wheelEndTimer = undefined;
-      settleWorkPull();
-
-      if (shouldSettleScroll && centerError > anchorTolerance && ownsViewportCenter()) {
-        animateTo(targets[nearestIndex], nearestIndex);
-      }
-    };
-
-    window.addEventListener("wheel", (event) => {
-      if (
-        reducedMotion.matches
-        || !desktopWork.matches
-        || event.ctrlKey
-        || Math.abs(event.deltaY) <= Math.abs(event.deltaX)
-      ) return;
-
-      const scale = event.deltaMode === WheelEvent.DOM_DELTA_LINE
-        ? 18
-        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-          ? window.innerHeight
-          : 1;
-      const delta = event.deltaY * scale;
-      const direction = Math.sign(delta);
-      if (direction === 0) return;
-
-      const targets = workTargets();
-      const position = window.scrollY;
-      const firstTarget = targets[0];
-      const lastTarget = targets[targets.length - 1];
-      const projectedPosition = position + delta;
-      const insideStage = position >= firstTarget - anchorTolerance
-        && position <= lastTarget + anchorTolerance;
-      const enteringFromAbove = direction > 0
-        && position < firstTarget - anchorTolerance
-        && projectedPosition >= firstTarget - 24;
-      const enteringFromBelow = direction < 0
-        && position > lastTarget + anchorTolerance
-        && projectedPosition <= lastTarget + 24;
-      if (!insideStage && !enteringFromAbove && !enteringFromBelow) return;
-
-      event.preventDefault();
-      if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
-      scrollSettleTimer = undefined;
-      if (wheelEndTimer) window.clearTimeout(wheelEndTimer);
-      wheelEndTimer = window.setTimeout(finishWheelGesture, gestureQuietTime);
-
-      if (enteringFromAbove || enteringFromBelow) {
-        wheelIntent = 0;
-        wheelIntentDirection = 0;
-        wheelCommittedDirection = direction;
-        const entryIndex = enteringFromAbove ? 0 : targets.length - 1;
-        animateTo(targets[entryIndex], entryIndex);
-        return;
-      }
-
-      // Keep swallowing same-direction momentum, but let the opposite direction build fresh intent.
-      if (wheelCommittedDirection === direction) {
-        if (wheelIntent > 0) {
-          wheelIntent = 0;
-          wheelIntentDirection = 0;
-          settleWorkPull();
-        }
-        return;
-      }
-
-      const isReversingCommittedGesture = wheelCommittedDirection !== 0
-        && wheelCommittedDirection !== direction;
-      if (isWorkAnimating && !isReversingCommittedGesture) return;
-
-      if (wheelIntentDirection !== 0 && wheelIntentDirection !== direction) {
-        wheelIntent = 0;
-      }
-      wheelIntentDirection = direction;
-      wheelIntent += Math.min(Math.abs(delta), 120);
-
-      if (wheelIntent >= intentThreshold) {
-        const shouldReverseMotion = isReversingCommittedGesture && isWorkAnimating;
-        wheelCommittedDirection = direction;
-        wheelIntent = 0;
-        wheelIntentDirection = 0;
-        navigateWork(direction, shouldReverseMotion);
-        return;
-      }
-
-      workStage.classList.remove("is-wheel-settling");
-      workStage.classList.add("is-wheel-pulling");
-      const pull = -direction * 14 * (1 - Math.exp(-wheelIntent / 46));
-      setWorkPull(pull);
-    }, { passive: false });
-
-    window.addEventListener("keydown", (event) => {
-      const direction = event.key === "ArrowDown" || event.key === "PageDown"
-        ? 1
-        : event.key === "ArrowUp" || event.key === "PageUp"
-          ? -1
-          : 0;
-      if (
-        direction === 0
-        || !desktopWork.matches
-        || event.altKey
-        || event.ctrlKey
-        || event.metaKey
-        || event.shiftKey
-        || (event.target instanceof HTMLElement
-          && event.target.matches("input, textarea, select, [contenteditable=true]"))
-      ) return;
-
-      const targets = workTargets();
-      const position = window.scrollY;
-      const insideRange = position >= targets[0] - anchorTolerance
-        && position <= targets[targets.length - 1] + anchorTolerance;
-      if (!insideRange && !ownsViewportCenter()) return;
-
-      event.preventDefault();
-      resetWheelGesture();
-      if (isWorkAnimating) {
-        pendingKeyboardSteps = clamp(
-          pendingKeyboardSteps + direction,
-          -workEntries.length,
-          workEntries.length,
-        );
-        return;
-      }
-      navigateWork(direction);
-    });
-
-    window.addEventListener("scroll", () => {
-      if (
-        !desktopWork.matches
-        || isWorkAnimating
-        || wheelIntent > 0
-        || wheelCommittedDirection !== 0
-        || performance.now() < suppressScrollSettleUntil
-      ) return;
-      const targets = workTargets();
-      const position = window.scrollY;
-      if (position < targets[0] || position > targets[targets.length - 1]) return;
-      const nearestIndex = nearestIndexFor(position, targets);
-      activateWork(nearestIndex);
-      if (scrollSettleTimer) window.clearTimeout(scrollSettleTimer);
-      scrollSettleTimer = window.setTimeout(() => {
-        scrollSettleTimer = undefined;
-        if (isWorkAnimating || wheelIntent > 0 || wheelCommittedDirection !== 0) return;
-        const settledTargets = workTargets();
-        const settledIndex = nearestIndexFor(window.scrollY, settledTargets);
-        if (Math.abs(settledTargets[settledIndex] - window.scrollY) > anchorTolerance) {
-          animateTo(settledTargets[settledIndex], settledIndex);
-        }
-      }, 180);
-    }, { passive: true });
-
-    workEntries.forEach((entry, index) => {
-      entry.addEventListener("focusin", () => {
-        if (!desktopWork.matches) {
-          activateWork(index);
-          return;
-        }
-        if (!isWorkAnimating) animateTo(entryScrollTarget(entry), index);
-      });
-    });
-
-    window.addEventListener("resize", () => {
-      if (resizeSettleTimer) window.clearTimeout(resizeSettleTimer);
-      resizeSettleTimer = window.setTimeout(() => {
-        resizeSettleTimer = undefined;
-        setWorkPull(0);
-        if (!desktopWork.matches || !ownsViewportCenter()) return;
-        const targets = workTargets();
-        const nearestIndex = nearestIndexFor(window.scrollY, targets);
-        animateTo(targets[nearestIndex], nearestIndex);
-      }, 160);
-    }, { passive: true });
-
-    workStage.dataset.workNavigationState = "idle";
-    activateWork(0);
-  }
-</script>

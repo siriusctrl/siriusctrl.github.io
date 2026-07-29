@@ -1,10 +1,10 @@
 # siriusctrl.github.io
 
-Source for [siriusctrl.github.io](https://siriusctrl.github.io), a static home for selected software projects and public notes.
+Source for [siriusctrl.github.io](https://siriusctrl.github.io), a static working set of ideas expressed through software and writing.
 
 The site is intentionally split by ownership:
 
-- this repository owns the home page, project catalog, project detail pages, and Markdown notes;
+- this repository owns the home page, software catalog, detail pages, and Markdown writing;
 - interactive demos deploy from their own repositories and release independently;
 - terminal projects are represented with images captured from real emulator sessions;
 - GitHub Actions builds Astro and deploys only the generated `dist/` artifact to Pages.

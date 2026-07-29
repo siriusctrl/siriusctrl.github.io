@@ -15,7 +15,7 @@ const { Content } = await render(note);
 <BaseLayout title={note.data.title} description={note.data.description}>
   <main class="article-shell">
     <header class="article-header">
-      <a href="/notes/" class="back-link"><Icon name="arrow-left" /> Notes</a>
+      <a href="/notes/" class="back-link"><Icon name="arrow-left" /> Writing</a>
       <h1>{note.data.title}</h1>
       <p>{note.data.description}</p>
       <time datetime={note.data.publishedAt.toISOString()}>

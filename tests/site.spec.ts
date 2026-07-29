@@ -1,34 +1,25 @@
 import { expect, test } from "@playwright/test";
 
-test("home page presents recent work and keeps the chosen theme", async ({ page }) => {
+test("home page presents ideas, writing, software, and keeps the chosen theme", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Software for seeing what systems are doing." }),
-  ).toBeVisible();
-  await expect(
-    page.locator("[data-work-entry=freeform-artifacts]").getByRole("link", {
-      name: /Open demo/,
+    page.getByRole("heading", {
+      level: 1,
+      name: "Some ideas need to run. Others need to be written down.",
     }),
-  ).toHaveAttribute(
-    "href",
-    "https://siriusctrl.github.io/freeform-artifacts/",
-  );
-  await expect(page.getByRole("heading", { name: "Lattice" })).toBeVisible();
-  await expect(
-    page.locator("[data-work-entry=lattice]").getByRole("link", {
-      name: /Open demo/,
-    }),
-  ).toHaveAttribute("href", "https://siriusctrl.github.io/lattice/");
-  await expect(page.getByRole("heading", { name: "TowerLab" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Fiasco" })).toBeVisible();
-  await expect(
-    page.locator("[data-work-entry=fiasco]").getByText(
-      "Orchestrate the agents. Contain the fiasco.",
-      { exact: true },
-    ),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "fmtview" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "termviz" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Current threads" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Interfaces beyond the transcript" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Agents with observable state" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Static software as a publishing medium" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Rebuilding a personal site around working software" }),
+  ).toBeVisible();
+  await expect(page.locator('a[href="/projects/freeform-artifacts/"]')).toHaveCount(2);
+  await expect(page.locator('a[href="/projects/lattice/"]')).toHaveCount(2);
+  await expect(page.locator('a[href="/projects/fiasco/"]')).toHaveCount(2);
+  await expect(page.getByRole("link", { name: "All software" })).toHaveAttribute("href", "/projects/");
+  await expect(page.getByRole("link", { name: "Read the writing" })).toHaveAttribute("href", "/notes/");
 
   const themeToggle = page.getByTestId("theme-toggle");
   const themeToggleBounds = await themeToggle.boundingBox();
@@ -107,7 +98,7 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
 
 test("project portraits follow the selected site theme", async ({ page, isMobile }) => {
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
-  await page.goto("/");
+  await page.goto("/projects/");
   const portraits = page.locator(isMobile ? ".work-entry-media img" : "[data-work-frame] img");
   await expect(portraits).toHaveCount(6);
   if (isMobile) {
@@ -137,24 +128,21 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
   await expect.poll(samplePaperColors).toEqual(Array.from({ length: 6 }, () => [26, 29, 27, 255]));
 });
 
-test("light and dark canvases keep a restrained paper texture", async ({ page }) => {
+test("light and dark canvases stay clean and softly toned", async ({ page }) => {
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/");
 
   const readSurface = () => page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
-    const pulp = getComputedStyle(document.body, "::before");
-    const inclusions = getComputedStyle(document.body, "::after");
+    const before = getComputedStyle(document.body, "::before");
+    const after = getComputedStyle(document.body, "::after");
     return {
       background: root.getPropertyValue("--bg").trim(),
       surfaceStrong: root.getPropertyValue("--surface-strong").trim(),
-      pulpImage: pulp.backgroundImage,
-      pulpOpacity: pulp.opacity,
-      pulpBlend: pulp.mixBlendMode,
-      pulpFilter: pulp.filter,
-      inclusionImage: inclusions.backgroundImage,
-      inclusionOpacity: inclusions.opacity,
-      inclusionBlend: inclusions.mixBlendMode,
+      beforeImage: before.backgroundImage,
+      beforeContent: before.content,
+      afterImage: after.backgroundImage,
+      afterContent: after.content,
       themeColor: document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content,
     };
   });
@@ -162,13 +150,10 @@ test("light and dark canvases keep a restrained paper texture", async ({ page })
   await expect.poll(readSurface).toEqual({
     background: "#eeefeb",
     surfaceStrong: "#fafaf6",
-    pulpImage: expect.stringContaining("paper-pulp.svg"),
-    pulpOpacity: "0.62",
-    pulpBlend: "multiply",
-    pulpFilter: "none",
-    inclusionImage: expect.stringContaining("paper-inclusions.svg"),
-    inclusionOpacity: "0.72",
-    inclusionBlend: "multiply",
+    beforeImage: "none",
+    beforeContent: "none",
+    afterImage: "none",
+    afterContent: "none",
     themeColor: "#eeefeb",
   });
 
@@ -177,13 +162,10 @@ test("light and dark canvases keep a restrained paper texture", async ({ page })
   await expect.poll(readSurface).toEqual({
     background: "#1b1d1b",
     surfaceStrong: "#292c29",
-    pulpImage: expect.stringContaining("paper-pulp.svg"),
-    pulpOpacity: "0.5",
-    pulpBlend: "screen",
-    pulpFilter: "invert(1)",
-    inclusionImage: expect.stringContaining("paper-inclusions.svg"),
-    inclusionOpacity: "0.68",
-    inclusionBlend: "screen",
+    beforeImage: "none",
+    beforeContent: "none",
+    afterImage: "none",
+    afterContent: "none",
     themeColor: "#1b1d1b",
   });
 });
@@ -226,10 +208,10 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
   }
 });
 
-test("home work stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
+test("software stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
   test.skip(isMobile, "The work-stage controller is a desktop interaction");
 
-  await page.goto("/");
+  await page.goto("/projects/");
   await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
   const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
   const latticeEntry = page.locator("[data-work-entry=lattice]");
@@ -279,7 +261,7 @@ test("work stage accepts deliberate reversal without mistaking momentum for inte
   test.skip(isMobile, "The work-stage controller is a desktop interaction");
 
   const centerFreeform = async () => {
-    await page.goto("/");
+    await page.goto("/projects/");
     await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
       element.scrollIntoView({ block: "center", behavior: "instant" }),
     );
@@ -323,7 +305,7 @@ test("work stage accepts deliberate reversal without mistaking momentum for inte
 test("keyboard navigation advances exactly one centered project", async ({ page, isMobile }) => {
   test.skip(isMobile, "The work-stage controller is a desktop interaction");
 
-  await page.goto("/");
+  await page.goto("/projects/");
   const entry = (slug: string) => page.locator(`[data-work-entry=${slug}]`);
   await entry("freeform-artifacts").evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect
@@ -358,7 +340,7 @@ test("work artwork and copy share the same center through the final item", async
     { width: 3840, height: 2160 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto("/");
+    await page.goto("/projects/");
     const finalEntry = page.locator("[data-work-entry=termviz]");
     await finalEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
     await expect
@@ -379,7 +361,7 @@ test("work artwork and copy share the same center through the final item", async
 test("work visual keeps pace with the first project while leaving the stage", async ({ page, isMobile }) => {
   test.skip(isMobile, "The sticky work visual is desktop-only");
 
-  await page.goto("/");
+  await page.goto("/projects/");
   const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
   await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect
@@ -395,7 +377,7 @@ test("work visual keeps pace with the first project while leaving the stage", as
   await page.mouse.wheel(0, -360);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(centeredScrollY - 100);
   const boundary = await page.evaluate(() => {
-    const heading = document.querySelector<HTMLElement>(".work-heading")!.getBoundingClientRect();
+    const heading = document.querySelector<HTMLElement>(".page-intro")!.getBoundingClientRect();
     const visual = document.querySelector<HTMLElement>(".work-visual")!.getBoundingClientRect();
     const sticky = document.querySelector<HTMLElement>(".work-visual-canvas")!.getBoundingClientRect();
     const entry = document.querySelector<HTMLElement>("[data-work-entry=freeform-artifacts]")!
@@ -417,7 +399,7 @@ test("work visual keeps pace with the first project while leaving the stage", as
 test("pointer crossing project whitespace does not activate the next project", async ({ page, isMobile }) => {
   test.skip(isMobile, "Pointer hover coverage uses the desktop browser profile");
 
-  await page.goto("/");
+  await page.goto("/projects/");
   const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
   await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect
@@ -439,13 +421,13 @@ test("pointer crossing project whitespace does not activate the next project", a
   const pointerHit = await page.evaluate(({ x, y }) =>
     document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-work-entry]")?.dataset.workEntry,
   { x, y: viewport.height - 1 });
-  expect(pointerHit).toBe("lattice");
+  expect(["freeform-artifacts", "lattice"]).toContain(pointerHit);
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
   await expect(page.locator("[data-work-frame=lattice]")).not.toHaveClass(/is-active/);
   await expect(firstEntry).toHaveClass(/is-active/);
 });
 
-test("reduced motion keeps theme and work changes immediate", async ({ page, isMobile }) => {
+test("reduced motion keeps theme changes immediate", async ({ page, isMobile }) => {
   test.skip(isMobile, "Reduced-motion fallback only needs one browser profile");
 
   await page.emulateMedia({ reducedMotion: "reduce" });

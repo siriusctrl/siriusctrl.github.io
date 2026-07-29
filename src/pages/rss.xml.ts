@@ -5,7 +5,7 @@ export async function GET(context: { site: URL }) {
   const notes = (await getCollection("notes", ({ data }) => !data.draft))
     .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
   return rss({
-    title: "Sirius Ctrl notes",
+    title: "Working Set writing",
     description: "Writing about software architecture, interaction design, and practical experiments.",
     site: context.site,
     items: notes.map((note) => ({

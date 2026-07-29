@@ -41,8 +41,9 @@ try {
   await page.waitForTimeout(650);
   await page.getByTestId("theme-toggle").click();
   await page.waitForTimeout(900);
-  await page.getByRole("heading", { name: "Recent work" }).scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
+  await page.getByRole("link", { name: "Software", exact: true }).click();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(550);
   await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
     element.scrollIntoView({ block: "center" }),
   );
@@ -58,10 +59,10 @@ try {
   await page.waitForLoadState("networkidle");
   await page.getByText(/Browse a completed research DAG/).waitFor();
   await page.waitForTimeout(650);
-  await page.getByRole("link", { name: "Projects" }).click();
+  await page.getByRole("link", { name: "Software", exact: true }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
-  await page.getByRole("link", { name: "Notes" }).click();
+  await page.getByRole("link", { name: "Writing", exact: true }).click();
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(650);
@@ -76,7 +77,15 @@ try {
 
   const mobile = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   await mobile.goto(url);
+  await mobile.waitForLoadState("networkidle");
   await mobile.waitForTimeout(500);
+  const mobileHomeOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (mobileHomeOverflow > 0) {
+    throw new Error(`Mobile home overflowed by ${mobileHomeOverflow}px`);
+  }
+  await mobile.screenshot({ path: mobileScreenshotPath, fullPage: true });
+
+  await mobile.goto(`${url}/projects/`);
   for (const entry of await mobile.locator("[data-work-entry]").all()) {
     await entry.scrollIntoViewIfNeeded();
     await entry.locator("img").waitFor({ state: "visible" });
@@ -87,11 +96,10 @@ try {
   await mobile.waitForTimeout(2800);
   await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.waitForTimeout(900);
-  const mobileOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  if (mobileOverflow > 0) {
-    throw new Error(`Mobile home overflowed by ${mobileOverflow}px`);
+  const mobileSoftwareOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (mobileSoftwareOverflow > 0) {
+    throw new Error(`Mobile software index overflowed by ${mobileSoftwareOverflow}px`);
   }
-  await mobile.screenshot({ path: mobileScreenshotPath, fullPage: true });
   await mobile.close();
 
   const videos = readdirSync(videoDir).filter((file) => file.endsWith(".webm"));
@@ -122,11 +130,11 @@ try {
     actions: [
       "open home",
       "switch to dark mode with a radial reveal from the theme button",
-      "scroll to recent work",
+      "open the software index",
       "move one wheel step from Freeform Artifacts to the centered Lattice stage",
       "open Lattice detail and verify its graph research portrait and current copy",
-      "open project index",
-      "open notes index and article",
+      "return to the software index",
+      "open the writing index and article",
       "check desktop and mobile overflow",
     ],
     files: { gifPath, webmPath, screenshotPath, mobileScreenshotPath, contactSheetPath },
@@ -135,9 +143,9 @@ try {
   writeFileSync(
     inspectionPath,
     [
-      "Portfolio browser proof",
+      "Working Set browser proof",
       "",
-      "- Chromium rendered the home, project detail, project index, notes index, and article routes.",
+      "- Chromium rendered the home, project detail, software index, writing index, and article routes.",
       "- Theme switching persisted across internal navigation.",
       "- The radial theme reveal and one-project scroll snap were exercised.",
       "- SVG project portraits and real project media loaded before capture.",

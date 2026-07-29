@@ -1,6 +1,6 @@
 ---
 title: Rebuilding a personal site around working software
-description: A static portfolio can stay simple while giving interactive demos and terminal projects the space they need.
+description: A static personal site can stay simple while giving interactive demos and terminal projects the space they need.
 publishedAt: 2026-07-12
 tags:
   - architecture
