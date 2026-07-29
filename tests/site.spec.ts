@@ -184,8 +184,14 @@ test("article language follows the browser and remembers an explicit choice", as
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(page.getByRole("heading", { level: 1, name: "围绕可运行的软件，重做个人网站" })).toBeVisible();
   await expect.poll(() => page.evaluate(() =>
-    document.fonts.check('19px "Noto Serif SC Variable"', "围绕可运行的软件"),
+    document.fonts.check('17px "Noto Serif SC Variable"', "围绕可运行的软件"),
   )).toBe(true);
+  const chineseType = await page.evaluate(() => ({
+    title: Number.parseFloat(getComputedStyle(document.querySelector(".article-header h1")!).fontSize),
+    body: Number.parseFloat(getComputedStyle(document.querySelector(".prose p")!).fontSize),
+  }));
+  expect(chineseType.title).toBeLessThanOrEqual(60);
+  expect(chineseType.body).toBeLessThanOrEqual(17);
   await expect(page.getByRole("link", { name: "阅读中文版" })).toHaveAttribute("aria-current", "page");
   await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
     "href",
@@ -560,9 +566,22 @@ test("project and note routes render real content", async ({ page, isMobile }) =
     expect(artworkBounds.y).toBeGreaterThan(dateBounds.y + dateBounds.height);
     expect(artworkBounds.width).toBeLessThanOrEqual(240);
     expect(titleBounds.x).toBeGreaterThan(artworkBounds.x + artworkBounds.width);
+    const indexType = await noteRow.evaluate((row) => ({
+      title: Number.parseFloat(getComputedStyle(row.querySelector("h2")!).fontSize),
+      summary: Number.parseFloat(getComputedStyle(row.querySelector("p")!).fontSize),
+      paddingBottom: Number.parseFloat(getComputedStyle(row).paddingBottom),
+      height: row.getBoundingClientRect().height,
+    }));
+    expect(indexType.title).toBeLessThanOrEqual(42);
+    expect(indexType.summary).toBeLessThanOrEqual(15);
+    expect(indexType.paddingBottom).toBeLessThanOrEqual(52);
+    expect(indexType.height).toBeLessThanOrEqual(240);
   }
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Local-first demos" })).toBeVisible();
+  await expect.poll(() => page.locator(".prose p").first().evaluate((paragraph) =>
+    Number.parseFloat(getComputedStyle(paragraph).fontSize),
+  )).toBeLessThanOrEqual(17);
 });
 
 test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) => {

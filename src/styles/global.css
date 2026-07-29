@@ -838,12 +838,29 @@ a:hover > .project-artwork img {
   max-width: 1080px;
 }
 
+.writing-index {
+  padding-top: 76px;
+}
+
+.writing-index .page-intro {
+  margin-bottom: 72px;
+}
+
+.writing-index .page-intro h1 {
+  font-size: clamp(48px, 7vw, 84px);
+}
+
+.writing-index .page-intro p {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
 .notes-index-row {
   display: grid;
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
   gap: clamp(40px, 6vw, 76px);
   align-items: start;
-  padding-bottom: clamp(48px, 5vw, 64px);
+  padding-bottom: clamp(40px, 4vw, 52px);
   border-bottom: 1px solid var(--line);
 }
 
@@ -863,21 +880,21 @@ a:hover > .project-artwork img {
 .notes-index-row h2 {
   max-width: 650px;
   margin: 0;
-  font-size: clamp(32px, 3.8vw, 48px);
+  font-size: clamp(29px, 3.3vw, 42px);
   letter-spacing: -0.05em;
-  line-height: 1;
+  line-height: 1.02;
 }
 
 .notes-index-row p {
   max-width: 620px;
-  margin: 16px 0 0;
+  margin: 13px 0 0;
   color: var(--muted);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
 .notes-index-copy .text-link {
-  margin-top: 22px;
+  margin-top: 18px;
 }
 
 .empty-state {
@@ -886,12 +903,12 @@ a:hover > .project-artwork img {
 
 .article-shell {
   max-width: 1080px;
-  padding: 80px 0 120px;
+  padding: 72px 0 108px;
 }
 
 .article-header {
   max-width: 940px;
-  padding-bottom: 54px;
+  padding-bottom: 44px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -935,12 +952,18 @@ a:hover > .project-artwork img {
 }
 
 .article-header h1 {
-  margin-top: 42px;
-  font-size: clamp(45px, 7vw, 76px);
+  margin-top: 36px;
+  font-size: clamp(42px, 6vw, 68px);
+}
+
+.article-header > p {
+  margin-top: 20px;
+  font-size: 18px;
 }
 
 .article-shell.is-zh .article-header h1 {
   font-family: var(--font-zh);
+  font-size: clamp(38px, 5vw, 60px);
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.16;
@@ -956,51 +979,71 @@ a:hover > .project-artwork img {
 }
 
 .article-shell.is-zh .article-header > p {
-  font-size: 19px;
+  margin-top: 18px;
+  font-size: 17px;
   line-height: 1.75;
 }
 
 .article-header time {
   display: block;
-  margin-top: 26px;
+  margin-top: 22px;
 }
 
 .article-note-artwork {
   max-width: 760px;
-  margin-top: 54px;
+  margin-top: 44px;
 }
 
 .prose {
   max-width: 720px;
-  padding-top: 64px;
+  padding-top: 54px;
 }
 
 .prose h2 {
-  margin: 52px 0 18px;
-  font-size: 28px;
+  margin: 44px 0 16px;
+  font-size: 26px;
 }
 
 .prose p,
 .prose li {
   color: color-mix(in srgb, var(--text), var(--muted) 28%);
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.75;
+}
+
+.article-shell.is-zh .article-header {
+  padding-bottom: 40px;
+}
+
+.article-shell.is-zh .article-header h1 {
+  margin-top: 32px;
+}
+
+.article-shell.is-zh .article-header time {
+  margin-top: 20px;
+}
+
+.article-shell.is-zh .article-note-artwork {
+  margin-top: 40px;
 }
 
 .prose-zh {
   max-width: 760px;
+  padding-top: 50px;
   font-family: var(--font-zh);
 }
 
 .prose-zh h2 {
+  margin: 40px 0 14px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: 0;
 }
 
 .prose-zh p,
 .prose-zh li {
-  font-size: 19px;
-  line-height: 1.95;
+  font-size: 17px;
+  line-height: 1.9;
   letter-spacing: 0.012em;
 }
 
@@ -1256,7 +1299,7 @@ a:hover > .project-artwork img {
   .notes-index-row {
     grid-template-columns: 104px minmax(0, 1fr);
     gap: 20px;
-    padding-bottom: 48px;
+    padding-bottom: 40px;
   }
 
   .notes-index-visual time {
@@ -1265,16 +1308,17 @@ a:hover > .project-artwork img {
   }
 
   .notes-index-row h2 {
-    font-size: 30px;
+    font-size: 27px;
     line-height: 1.04;
   }
 
   .notes-index-row p {
-    font-size: 15px;
+    margin-top: 11px;
+    font-size: 14px;
   }
 
   .notes-index-copy .text-link {
-    margin-top: 18px;
+    margin-top: 15px;
   }
 
   .page-shell {
@@ -1283,6 +1327,23 @@ a:hover > .project-artwork img {
 
   .page-intro {
     margin-bottom: 64px;
+  }
+
+  .writing-index {
+    padding-top: 58px;
+  }
+
+  .writing-index .page-intro {
+    margin-bottom: 52px;
+  }
+
+  .writing-index .page-intro h1 {
+    font-size: 42px;
+  }
+
+  .writing-index .page-intro p {
+    margin-top: 17px;
+    font-size: 16px;
   }
 
   .page-intro h1,
@@ -1303,13 +1364,23 @@ a:hover > .project-artwork img {
   }
 
   .article-header h1 {
-    margin-top: 34px;
-    font-size: 42px;
+    margin-top: 30px;
+    font-size: 38px;
+  }
+
+  .article-shell.is-zh .article-header h1 {
+    margin-top: 28px;
+    font-size: 34px;
   }
 
   .prose p,
   .prose li {
     font-size: 17px;
+  }
+
+  .prose-zh p,
+  .prose-zh li {
+    font-size: 16px;
   }
 
   .site-footer {
