@@ -18,14 +18,9 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft && data.la
     <section class="notes-index" aria-label="Published notes">
       {notes.length === 0 ? (
         <p class="empty-state">No public notes yet.</p>
-      ) : notes.map((note) => (
+      ) : notes.map((note, index) => (
         <article class="notes-index-row">
-          {note.data.artwork && note.data.artworkAlt && (
-            <a class="notes-index-artwork" href={noteHref(note)} tabindex="-1" aria-hidden="true">
-              <NoteArtwork src={note.data.artwork} alt="" eager />
-            </a>
-          )}
-          <div class="notes-index-copy">
+          <div class="notes-index-visual">
             <time datetime={note.data.publishedAt.toISOString()}>
               {note.data.publishedAt.toLocaleDateString("en", {
                 month: "long",
@@ -33,6 +28,11 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft && data.la
                 year: "numeric",
               })}
             </time>
+            <a class="notes-index-artwork" href={noteHref(note)} tabindex="-1" aria-hidden="true">
+              <NoteArtwork src={note.data.artwork} alt="" eager={index === 0} />
+            </a>
+          </div>
+          <div class="notes-index-copy">
             <h2><a href={noteHref(note)}>{note.data.title}</a></h2>
             <p>{note.data.description}</p>
             <a class="text-link" href={noteHref(note)}>

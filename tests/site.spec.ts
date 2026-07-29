@@ -183,6 +183,9 @@ test("article language follows the browser and remembers an explicit choice", as
   await expect(page).toHaveURL(/\/zh\/notes\/rebuilding-the-site\/$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(page.getByRole("heading", { level: 1, name: "围绕可运行的软件，重做个人网站" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() =>
+    document.fonts.check('19px "Noto Serif SC Variable"', "围绕可运行的软件"),
+  )).toBe(true);
   await expect(page.getByRole("link", { name: "阅读中文版" })).toHaveAttribute("aria-current", "page");
   await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
     "href",
@@ -502,7 +505,7 @@ test("reduced motion keeps theme changes immediate", async ({ page, isMobile }) 
     .toBe("none");
 });
 
-test("project and note routes render real content", async ({ page }) => {
+test("project and note routes render real content", async ({ page, isMobile }) => {
   await page.goto("/projects/");
   await page.getByRole("link", { name: "Lattice", exact: true }).first().click();
   await expect(page).toHaveURL(/\/projects\/lattice\/$/);
@@ -537,7 +540,27 @@ test("project and note routes render real content", async ({ page }) => {
   await expect(page.getByAltText(/Fiasco orchestration trace/)).toBeVisible();
 
   await page.goto("/notes/");
-  await expect(page.locator(".notes-index-artwork img")).toBeVisible();
+  const noteRow = page.locator(".notes-index-row").first();
+  const noteArtwork = noteRow.locator(".notes-index-artwork");
+  const noteDate = noteRow.locator("time");
+  const noteTitle = noteRow.getByRole("heading", {
+    name: "Rebuilding a personal site around working software",
+  });
+  await expect(noteArtwork.locator("img")).toBeVisible();
+  if (!isMobile) {
+    const [artworkBounds, dateBounds, titleBounds] = await Promise.all([
+      noteArtwork.boundingBox(),
+      noteDate.boundingBox(),
+      noteTitle.boundingBox(),
+    ]);
+    if (!artworkBounds || !dateBounds || !titleBounds) {
+      throw new Error("Writing index did not expose its visual layout bounds");
+    }
+    expect(Math.abs(artworkBounds.x - dateBounds.x)).toBeLessThan(1);
+    expect(artworkBounds.y).toBeGreaterThan(dateBounds.y + dateBounds.height);
+    expect(artworkBounds.width).toBeLessThanOrEqual(240);
+    expect(titleBounds.x).toBeGreaterThan(artworkBounds.x + artworkBounds.width);
+  }
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Local-first demos" })).toBeVisible();
 });
@@ -545,7 +568,7 @@ test("project and note routes render real content", async ({ page }) => {
 test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile project only");
 
-  for (const route of ["/", "/projects/", "/projects/freeform-artifacts/", "/notes/rebuilding-the-site/"]) {
+  for (const route of ["/", "/projects/", "/projects/freeform-artifacts/", "/notes/", "/notes/rebuilding-the-site/"]) {
     await page.goto(route);
     await page.waitForLoadState("networkidle");
     const dimensions = await page.evaluate(() => ({

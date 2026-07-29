@@ -12,8 +12,8 @@ const notes = defineCollection({
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
-    artwork: z.string().optional(),
-    artworkAlt: z.string().optional(),
+    artwork: z.string(),
+    artworkAlt: z.string(),
     draft: z.boolean().default(false),
   }),
 });
