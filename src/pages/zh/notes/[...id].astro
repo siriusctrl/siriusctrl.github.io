@@ -1,12 +1,12 @@
 ---
 import { getCollection } from "astro:content";
-import ArticlePage from "../../components/ArticlePage.astro";
-import { noteSlug, noteTranslationHrefs } from "../../data/notes";
+import ArticlePage from "../../../components/ArticlePage.astro";
+import { noteSlug, noteTranslationHrefs } from "../../../data/notes";
 
 export async function getStaticPaths() {
   const notes = await getCollection("notes", ({ data }) => !data.draft);
   return notes
-    .filter((note) => note.data.language === "en")
+    .filter((note) => note.data.language === "zh")
     .map((note) => ({
       params: { id: noteSlug(note) },
       props: {

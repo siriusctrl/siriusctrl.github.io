@@ -24,7 +24,7 @@ Use `siriusctrl.github.io` as the source repository. GitHub Actions builds Astro
 - A failed site build blocks publishing until CI is fixed.
 - Repository history contains a deliberate transition from generated output to source.
 
-## ADR-0002: Use Astro for the portfolio and notes
+## ADR-0002: Use Astro for Working Set and writing
 
 Status: accepted
 
@@ -41,7 +41,7 @@ Use Astro's static output with content collections. Keep browser JavaScript limi
 - The content model is explicit and validated.
 - Notes produce static HTML with no client framework runtime.
 - GitHub Pages deployment is supported by Astro's official action.
-- Interactive products remain external instead of inflating the portfolio bundle.
+- Interactive products remain external instead of inflating the Working Set bundle.
 
 ### Trade-offs
 
@@ -56,11 +56,11 @@ Status: accepted
 
 Freeform and Lattice are interactive browser applications. TowerLab, fmtview,
 and termviz are terminal products. Their release cadence and verification needs
-differ from the portfolio.
+differ from Working Set.
 
 ### Decision
 
-Deploy browser demos from their own repositories as GitHub project Pages sites. The portfolio stores curated metadata and real media, then links to the demo and source repository.
+Deploy browser demos from their own repositories as GitHub project Pages sites. Working Set stores curated metadata and real media, then links to the demo and source repository.
 
 ### Why
 
@@ -80,7 +80,7 @@ Status: accepted
 
 ### Context
 
-The GitHub account contains experiments, course work, forks, private repositories, and projects that are not useful on a public portfolio.
+The GitHub account contains experiments, course work, forks, private repositories, and projects that do not belong in the public software index.
 
 ### Decision
 
@@ -122,3 +122,30 @@ behavior diagram.
 
 - Media updates require the corresponding runtime and capture tools.
 - Static images cannot demonstrate every interaction; repositories retain full proof recordings.
+
+## ADR-0006: Publish article translations as stable static routes
+
+Status: accepted
+
+### Context
+
+Articles may exist in English and Chinese. The site must remain statically buildable, preserve existing English URLs, expose correct document language metadata, and avoid runtime machine translation.
+
+### Decision
+
+Keep English as the unprefixed default at `/notes/<slug>/`. Publish Chinese translations at `/zh/notes/<slug>/`. Group translations with a required `translationKey`, store the language on each content entry, and generate both routes from the Astro content collection.
+
+On article routes, expose canonical and `hreflang` links for both versions. If the reader has not made a choice, select Chinese when the browser prefers a Chinese locale and English otherwise. Persist an explicit language choice in local storage.
+
+### Why
+
+- Existing article URLs and inbound links remain valid.
+- Each translation is authored, reviewable Markdown with its own title, description, and accessible artwork text.
+- Static HTML carries the correct `lang`, canonical, and alternate metadata.
+- The language switch works without a client framework or server runtime.
+
+### Trade-offs
+
+- Every translation is maintained as a separate content file.
+- The writing index and RSS remain English-first until dedicated localized indexes or feeds are justified.
+- Browser-language routing uses a small inline script on article pages.

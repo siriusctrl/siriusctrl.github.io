@@ -2,8 +2,10 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Icon from "../../components/Icon.astro";
+import NoteArtwork from "../../components/NoteArtwork.astro";
+import { noteHref } from "../../data/notes";
 
-const notes = (await getCollection("notes", ({ data }) => !data.draft))
+const notes = (await getCollection("notes", ({ data }) => !data.draft && data.language === "en"))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 ---
 
@@ -18,14 +20,25 @@ const notes = (await getCollection("notes", ({ data }) => !data.draft))
         <p class="empty-state">No public notes yet.</p>
       ) : notes.map((note) => (
         <article class="notes-index-row">
-          <time datetime={note.data.publishedAt.toISOString()}>
-            {note.data.publishedAt.toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" })}
-          </time>
-          <div>
-            <h2><a href={`/notes/${note.id}/`}>{note.data.title}</a></h2>
+          {note.data.artwork && note.data.artworkAlt && (
+            <a class="notes-index-artwork" href={noteHref(note)} tabindex="-1" aria-hidden="true">
+              <NoteArtwork src={note.data.artwork} alt="" eager />
+            </a>
+          )}
+          <div class="notes-index-copy">
+            <time datetime={note.data.publishedAt.toISOString()}>
+              {note.data.publishedAt.toLocaleDateString("en", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </time>
+            <h2><a href={noteHref(note)}>{note.data.title}</a></h2>
             <p>{note.data.description}</p>
+            <a class="text-link" href={noteHref(note)}>
+              Read the essay <Icon name="arrow-right" />
+            </a>
           </div>
-          <Icon name="arrow-up-right" />
         </article>
       ))}
     </section>

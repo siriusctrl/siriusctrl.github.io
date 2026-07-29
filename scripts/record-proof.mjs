@@ -65,6 +65,10 @@ try {
   await page.getByRole("link", { name: "Writing", exact: true }).click();
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
   await page.waitForLoadState("networkidle");
+  await page.locator(".article-note-artwork img").waitFor({ state: "visible" });
+  await page.getByRole("link", { name: "Read in Chinese" }).click();
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("heading", { name: "围绕可运行的软件，重做个人网站" }).waitFor();
   await page.waitForTimeout(650);
   await page.screenshot({ path: screenshotPath, fullPage: false });
 
@@ -78,7 +82,8 @@ try {
   const mobile = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   await mobile.goto(url);
   await mobile.waitForLoadState("networkidle");
-  await mobile.waitForTimeout(500);
+  await mobile.locator(".writing-artwork img").waitFor({ state: "visible" });
+  await mobile.waitForTimeout(1800);
   const mobileHomeOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (mobileHomeOverflow > 0) {
     throw new Error(`Mobile home overflowed by ${mobileHomeOverflow}px`);
@@ -135,6 +140,7 @@ try {
       "open Lattice detail and verify its graph research portrait and current copy",
       "return to the software index",
       "open the writing index and article",
+      "switch the article from English to Chinese",
       "check desktop and mobile overflow",
     ],
     files: { gifPath, webmPath, screenshotPath, mobileScreenshotPath, contactSheetPath },
@@ -148,7 +154,8 @@ try {
       "- Chromium rendered the home, project detail, software index, writing index, and article routes.",
       "- Theme switching persisted across internal navigation.",
       "- The radial theme reveal and one-project scroll snap were exercised.",
-      "- SVG project portraits and real project media loaded before capture.",
+      "- The article language switch selected the authored Chinese route and persisted the choice.",
+      "- SVG project and article portraits loaded in the selected theme before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",
       "- A contact sheet was generated for internal temporal inspection.",
       "",

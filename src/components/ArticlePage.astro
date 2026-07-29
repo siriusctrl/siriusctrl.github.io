@@ -1,0 +1,99 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "./Icon.astro";
+import NoteArtwork from "./NoteArtwork.astro";
+import type { NoteLanguage } from "../data/notes";
+
+interface Props {
+  note: CollectionEntry<"notes">;
+  translations: Partial<Record<NoteLanguage, string>>;
+}
+
+const { note, translations } = Astro.props;
+const { Content } = await render(note);
+const language = note.data.language;
+const locale = language === "zh" ? "zh-CN" : "en";
+const copy = language === "zh"
+  ? {
+      back: "写作",
+      languageLabel: "文章语言",
+      english: "阅读英文版",
+      chinese: "阅读中文版",
+    }
+  : {
+      back: "Writing",
+      languageLabel: "Article language",
+      english: "Read in English",
+      chinese: "Read in Chinese",
+    };
+const languageAlternates = [
+  translations.en && { hreflang: "en", href: translations.en },
+  translations.zh && { hreflang: "zh-CN", href: translations.zh },
+  translations.en && { hreflang: "x-default", href: translations.en },
+].filter(Boolean) as { hreflang: string; href: string }[];
+---
+
+<BaseLayout
+  title={note.data.title}
+  description={note.data.description}
+  lang={locale}
+  languageAlternates={languageAlternates}
+>
+  <main class:list={["article-shell", { "is-zh": language === "zh" }]}>
+    <header class="article-header">
+      <div class="article-toolbar">
+        <a href="/notes/" class="back-link"><Icon name="arrow-left" /> {copy.back}</a>
+        {translations.en && translations.zh && (
+          <nav class="language-switcher" aria-label={copy.languageLabel}>
+            <a
+              href={translations.en}
+              lang="en"
+              aria-label={copy.english}
+              aria-current={language === "en" ? "page" : undefined}
+              data-language-choice="en"
+            >EN</a>
+            <a
+              href={translations.zh}
+              lang="zh-CN"
+              aria-label={copy.chinese}
+              aria-current={language === "zh" ? "page" : undefined}
+              data-language-choice="zh"
+            >中文</a>
+          </nav>
+        )}
+      </div>
+      <h1>{note.data.title}</h1>
+      <p>{note.data.description}</p>
+      <time datetime={note.data.publishedAt.toISOString()}>
+        {note.data.publishedAt.toLocaleDateString(locale, {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </time>
+    </header>
+    {note.data.artwork && note.data.artworkAlt && (
+      <NoteArtwork
+        src={note.data.artwork}
+        alt={note.data.artworkAlt}
+        class="article-note-artwork"
+        eager
+      />
+    )}
+    <article class:list={["prose", { "prose-zh": language === "zh" }]}>
+      <Content />
+    </article>
+  </main>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>("[data-language-choice]").forEach((link) => {
+    link.addEventListener("click", () => {
+      const language = link.dataset.languageChoice;
+      if (language === "en" || language === "zh") {
+        window.localStorage.setItem("siriusctrl.language", language);
+      }
+    });
+  });
+</script>

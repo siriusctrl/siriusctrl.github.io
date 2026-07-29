@@ -170,6 +170,68 @@ test("light and dark canvases stay clean and softly toned", async ({ page }) => 
   });
 });
 
+test("article language follows the browser and remembers an explicit choice", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "language", { configurable: true, get: () => "zh-CN" });
+    Object.defineProperty(navigator, "languages", {
+      configurable: true,
+      get: () => ["zh-CN", "zh", "en"],
+    });
+  });
+
+  await page.goto("/notes/rebuilding-the-site/");
+  await expect(page).toHaveURL(/\/zh\/notes\/rebuilding-the-site\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+  await expect(page.getByRole("heading", { level: 1, name: "围绕可运行的软件，重做个人网站" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "阅读中文版" })).toHaveAttribute("aria-current", "page");
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/notes/rebuilding-the-site/",
+  );
+  await expect(page.locator('link[rel="alternate"][hreflang="zh-CN"]')).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/zh/notes/rebuilding-the-site/",
+  );
+
+  await page.getByRole("link", { name: "阅读英文版" }).click();
+  await expect(page).toHaveURL(/\/notes\/rebuilding-the-site\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Rebuilding a personal site around working software",
+  })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("siriusctrl.language"))).toBe("en");
+
+  await page.reload();
+  await expect(page).toHaveURL(/\/notes\/rebuilding-the-site\/$/);
+});
+
+test("article artwork follows the selected site theme", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("siriusctrl.language", "en");
+    window.localStorage.setItem("siriusctrl.theme", "light");
+  });
+  await page.goto("/notes/rebuilding-the-site/");
+  const artwork = page.locator(".article-note-artwork img");
+  await expect(artwork).toBeVisible();
+
+  const samplePaperColor = () => artwork.evaluate(async (image) => {
+    await (image as HTMLImageElement).decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = 1600;
+    canvas.height = 1000;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("Article artwork test could not create a canvas context");
+    context.drawImage(image as HTMLImageElement, 0, 0, canvas.width, canvas.height);
+    return Array.from(context.getImageData(10, 10, 1, 1).data);
+  });
+
+  await expect.poll(samplePaperColor).toEqual([239, 238, 233, 255]);
+  await page.getByTestId("theme-toggle").click();
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+  await expect.poll(samplePaperColor).toEqual([26, 29, 27, 255]);
+});
+
 test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isMobile }) => {
   test.skip(isMobile, "Browser zoom coverage uses the desktop browser profile");
 
@@ -475,6 +537,7 @@ test("project and note routes render real content", async ({ page }) => {
   await expect(page.getByAltText(/Fiasco orchestration trace/)).toBeVisible();
 
   await page.goto("/notes/");
+  await expect(page.locator(".notes-index-artwork img")).toBeVisible();
   await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Local-first demos" })).toBeVisible();
 });
@@ -491,4 +554,12 @@ test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) =
     }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.innerWidth);
   }
+
+  await page.evaluate(() => window.localStorage.setItem("siriusctrl.language", "zh"));
+  await page.goto("/zh/notes/rebuilding-the-site/");
+  const chineseDimensions = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+  }));
+  expect(chineseDimensions.scrollWidth).toBeLessThanOrEqual(chineseDimensions.innerWidth);
 });

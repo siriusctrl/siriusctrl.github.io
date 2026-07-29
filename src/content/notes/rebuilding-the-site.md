@@ -1,7 +1,11 @@
 ---
+translationKey: rebuilding-the-site
+language: en
 title: Rebuilding a personal site around working software
 description: A static personal site can stay simple while giving interactive demos and terminal projects the space they need.
 publishedAt: 2026-07-12
+artwork: /media/notes/rebuilding-the-site.svg
+artworkAlt: A source document passing through a static shell into independent reading and software surfaces
 tags:
   - architecture
   - publishing
@@ -12,14 +16,14 @@ A personal site does not need to become another application backend. Most of wha
 
 That leads to a small publishing model:
 
-- This repository owns the home page, project index, and Markdown notes.
+- This repository owns the home page, software index, and Markdown writing.
 - Interactive browser projects deploy from their own repositories.
 - Terminal projects are shown with recordings from real terminal emulators.
 - GitHub Actions builds and publishes the static output.
 
 ## Why the projects stay separate
 
-Copying every project build into the personal-site repository would couple unrelated releases. A change to a note should not rebuild a browser experiment, and a new Freeform release should not require touching the portfolio.
+Copying every project build into the personal-site repository would couple unrelated releases. A change to an essay should not rebuild a browser experiment, and a new Freeform release should not require touching Working Set.
 
 The home page is therefore a curated index. It owns the description and visual presentation, while each project remains the source of truth for its code, documentation, releases, and verification evidence.
 

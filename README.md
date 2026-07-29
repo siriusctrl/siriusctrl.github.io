@@ -28,6 +28,9 @@ The default development URL is `http://localhost:4321/`.
 
 - Add or revise projects in `src/data/projects.ts`.
 - Add public writing under `src/content/notes/` as Markdown or MDX.
+- Give every article a stable `translationKey` and `language`.
+- Keep the default English article at the existing path and place Chinese translations under `src/content/notes/zh/`.
+- Add a curated article portrait with `artwork` and localized `artworkAlt` when the idea benefits from a visual model.
 - Keep project media under `public/media/` and use real product output.
 - Use `scripts/capture-towerlab.sh` to refresh the TowerLab terminal capture.
 
@@ -53,4 +56,4 @@ The previous Hexo-generated site is preserved on the `archive/hexo-2023` branch.
 - Lattice as a graph-native AI research workspace with its own Pages deployment.
 - Fiasco as the multi-agent orchestration and background-job runtime.
 - TowerLab, fmtview, and termviz as selected terminal projects.
-- Markdown/MDX notes, RSS, sitemap, project detail pages, and responsive light/dark presentation.
+- English and Chinese Markdown/MDX writing, RSS, sitemap, detail pages, and responsive light/dark presentation.

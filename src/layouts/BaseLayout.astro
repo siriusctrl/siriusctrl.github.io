@@ -9,12 +9,16 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  lang?: string;
+  languageAlternates?: { hreflang: string; href: string }[];
 }
 
 const {
   title = "Working Set",
   description = "Ideas about agents, interfaces, and legible systems, expressed as software and writing.",
   image = "/media/freeform-artifacts.webp",
+  lang = "en",
+  languageAlternates = [],
 } = Astro.props;
 const pageTitle = title === "Working Set" ? title : `${title} | Working Set`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -22,7 +26,7 @@ const socialImage = new URL(image, Astro.site);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -30,6 +34,16 @@ const socialImage = new URL(image, Astro.site);
     <meta name="description" content={description} />
     <meta name="theme-color" content="#eeefeb" />
     <link rel="canonical" href={canonical} />
+    {languageAlternates.map((alternate) => (
+      <link
+        rel="alternate"
+        hreflang={alternate.hreflang}
+        href={new URL(alternate.href, Astro.site)}
+      />
+    ))}
+    {languageAlternates.length > 0 && (
+      <meta name="working-set-language" content={lang.startsWith("zh") ? "zh" : "en"} />
+    )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="Working Set writing" href="/rss.xml" />
     <meta property="og:type" content="website" />
@@ -50,6 +64,26 @@ const socialImage = new URL(image, Astro.site);
           "content",
           theme === "dark" ? "#1b1d1b" : "#eeefeb",
         );
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        const marker = document.querySelector('meta[name="working-set-language"]');
+        if (!marker) return;
+        const current = marker.getAttribute("content");
+        const saved = window.localStorage.getItem("siriusctrl.language");
+        const browserPrefersChinese = (navigator.languages || [navigator.language])
+          .some((language) => language.toLowerCase().startsWith("zh"));
+        const preferred = saved === "en" || saved === "zh"
+          ? saved
+          : browserPrefersChinese ? "zh" : "en";
+        if (preferred === current) return;
+        const hreflang = preferred === "zh" ? "zh-CN" : "en";
+        const alternate = document.querySelector(`link[rel="alternate"][hreflang="${hreflang}"]`);
+        if (alternate instanceof HTMLLinkElement) {
+          const target = new URL(alternate.href);
+          window.location.replace(`${target.pathname}${target.search}${target.hash}`);
+        }
       })();
     </script>
   </head>
