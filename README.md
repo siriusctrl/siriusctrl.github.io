@@ -50,6 +50,7 @@ The previous Hexo-generated site is preserved on the `archive/hexo-2023` branch.
 ## Current scope
 
 - Freeform Artifacts as the primary interactive demo.
+- Lattice as a graph-native AI research workspace with its own Pages deployment.
 - Fiasco as the multi-agent orchestration and background-job runtime.
 - TowerLab, fmtview, and termviz as selected terminal projects.
 - Markdown/MDX notes, RSS, sitemap, project detail pages, and responsive light/dark presentation.

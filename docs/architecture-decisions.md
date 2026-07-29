@@ -54,7 +54,9 @@ Status: accepted
 
 ### Context
 
-Freeform is an interactive browser application. TowerLab, fmtview, and termviz are terminal products. Their release cadence and verification needs differ from the portfolio.
+Freeform and Lattice are interactive browser applications. TowerLab, fmtview,
+and termviz are terminal products. Their release cadence and verification needs
+differ from the portfolio.
 
 ### Decision
 
@@ -105,7 +107,10 @@ CLI and TUI software does not benefit from a browser-shaped imitation. The site 
 
 ### Decision
 
-Capture terminal projects in real Kitty/Xvfb sessions and extract stable keyframes. Use the Freeform browser proof screenshot for its project media.
+Capture terminal projects in real Kitty/Xvfb sessions and extract stable
+keyframes. Use real browser proof for product screenshots, and use the
+site-native SVG portrait system when the project is best explained by a compact
+behavior diagram.
 
 ### Why
 

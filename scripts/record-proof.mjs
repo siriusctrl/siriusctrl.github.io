@@ -48,15 +48,15 @@ try {
   );
   await page.waitForTimeout(600);
   await page.mouse.wheel(0, 700);
-  await page.waitForFunction(() => document.querySelector("[data-work-frame=fiasco] img")?.complete);
+  await page.waitForFunction(() => document.querySelector("[data-work-frame=lattice] img")?.complete);
   await page.waitForTimeout(900);
-  await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
+  await page.locator("[data-work-entry=lattice]").evaluate((element) =>
     element.scrollIntoView({ block: "center" }),
   );
   await page.waitForTimeout(450);
-  await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();
+  await page.getByRole("link", { name: "Lattice", exact: true }).first().click();
   await page.waitForLoadState("networkidle");
-  await page.getByText(/Build with AI can install a trusted artifact bundle/).waitFor();
+  await page.getByText(/Browse a completed research DAG/).waitFor();
   await page.waitForTimeout(650);
   await page.getByRole("link", { name: "Projects" }).click();
   await page.waitForLoadState("networkidle");
@@ -123,8 +123,8 @@ try {
       "open home",
       "switch to dark mode with a radial reveal from the theme button",
       "scroll to recent work",
-      "move one wheel step from Freeform Artifacts to the centered Fiasco stage",
-      "open Freeform Artifacts detail and verify current copy",
+      "move one wheel step from Freeform Artifacts to the centered Lattice stage",
+      "open Lattice detail and verify its graph research portrait and current copy",
       "open project index",
       "open notes index and article",
       "check desktop and mobile overflow",

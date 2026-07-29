@@ -35,6 +35,25 @@ export const projects: Project[] = [
     featured: true,
   },
   {
+    slug: "lattice",
+    name: "Lattice",
+    kind: "Interactive lab",
+    summary:
+      "A graph-native AI research workspace that keeps side explorations as conversation cards and compiles them into one article.",
+    detail:
+      "Browse a completed research DAG without losing the natural rhythm of chat. Anchors open existing cards, the active trace moves through a stable graph, follow-up questions stay local to their card, and selected text can become a sourced node. The same material remains available as one continuous article with links back to every source conversation.",
+    year: "2026",
+    stack: ["React", "TypeScript", "DAG navigation", "Static export"],
+    portrait: "/media/portraits/lattice.svg",
+    portraitAlt:
+      "Minimal drawing of stacked research cards, one inline follow-up, and a complete connected graph",
+    image: "/media/portraits/lattice.svg",
+    imageAlt:
+      "Lattice interaction portrait showing a conversation card connected to a stable research graph",
+    repoUrl: "https://github.com/siriusctrl/lattice",
+    demoUrl: "https://siriusctrl.github.io/lattice/",
+  },
+  {
     slug: "fiasco",
     name: "Fiasco",
     kind: "Agent orchestrator",

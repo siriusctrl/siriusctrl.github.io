@@ -5,10 +5,20 @@ test("home page presents recent work and keeps the chosen theme", async ({ page 
   await expect(
     page.getByRole("heading", { level: 1, name: "Software for seeing what systems are doing." }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open demo/ })).toHaveAttribute(
+  await expect(
+    page.locator("[data-work-entry=freeform-artifacts]").getByRole("link", {
+      name: /Open demo/,
+    }),
+  ).toHaveAttribute(
     "href",
     "https://siriusctrl.github.io/freeform-artifacts/",
   );
+  await expect(page.getByRole("heading", { name: "Lattice" })).toBeVisible();
+  await expect(
+    page.locator("[data-work-entry=lattice]").getByRole("link", {
+      name: /Open demo/,
+    }),
+  ).toHaveAttribute("href", "https://siriusctrl.github.io/lattice/");
   await expect(page.getByRole("heading", { name: "TowerLab" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fiasco" })).toBeVisible();
   await expect(
@@ -99,7 +109,7 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/");
   const portraits = page.locator(isMobile ? ".work-entry-media img" : "[data-work-frame] img");
-  await expect(portraits).toHaveCount(5);
+  await expect(portraits).toHaveCount(6);
   if (isMobile) {
     for (const portrait of await portraits.all()) {
       await portrait.scrollIntoViewIfNeeded();
@@ -121,10 +131,10 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
     }),
   ));
 
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 5 }, () => [239, 238, 233, 255]));
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 6 }, () => [239, 238, 233, 255]));
   await page.getByTestId("theme-toggle").click();
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 5 }, () => [26, 29, 27, 255]));
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 6 }, () => [26, 29, 27, 255]));
 });
 
 test("light and dark canvases keep a restrained paper texture", async ({ page }) => {
@@ -222,7 +232,7 @@ test("home work stage rebounds small input and advances decisive input", async (
   await page.goto("/");
   await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
   const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
-  const fiascoEntry = page.locator("[data-work-entry=fiasco]");
+  const latticeEntry = page.locator("[data-work-entry=lattice]");
   await freeformEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
   await expect
@@ -242,7 +252,7 @@ test("home work stage rebounds small input and advances decisive input", async (
     )
     .toBeLessThan(-1);
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=lattice]")).not.toHaveClass(/is-active/);
   expect(Math.abs(await page.evaluate(() => window.scrollY) - centeredScrollY)).toBeLessThan(1);
   await expect
     .poll(() =>
@@ -255,10 +265,10 @@ test("home work stage rebounds small input and advances decisive input", async (
   }
   await expect(page.locator("html")).toHaveClass(/is-work-animating/);
   await page.mouse.wheel(0, 180); // Momentum tail must not skip another project.
-  await expect(page.locator("[data-work-frame=fiasco]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=towerlab]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=lattice]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
   await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
-  const finalCenterError = await fiascoEntry.evaluate((element) => {
+  const finalCenterError = await latticeEntry.evaluate((element) => {
     const bounds = element.getBoundingClientRect();
     return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
   });
@@ -300,10 +310,10 @@ test("work stage accepts deliberate reversal without mistaking momentum for inte
   await centerFreeform();
   await wheel([20, 25, 30, 30]);
   await wheel([-8, -12, -15]); // A small opposite bounce must not cancel the committed step.
-  await expect(page.locator("[data-work-frame=fiasco]")).toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=lattice]")).toHaveClass(/is-active/);
   await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
   await expect
-    .poll(() => page.locator("[data-work-entry=fiasco]").evaluate((element) => {
+    .poll(() => page.locator("[data-work-entry=lattice]").evaluate((element) => {
       const bounds = element.getBoundingClientRect();
       return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
     }))
@@ -324,9 +334,9 @@ test("keyboard navigation advances exactly one centered project", async ({ page,
     .toBeLessThan(1);
 
   for (const [key, slug] of [
+    ["ArrowDown", "lattice"],
     ["ArrowDown", "fiasco"],
-    ["ArrowDown", "towerlab"],
-    ["ArrowUp", "fiasco"],
+    ["ArrowUp", "lattice"],
   ] as const) {
     await page.keyboard.press(key);
     await expect(page.locator(`[data-work-frame=${slug}]`)).toHaveClass(/is-active/);
@@ -429,9 +439,9 @@ test("pointer crossing project whitespace does not activate the next project", a
   const pointerHit = await page.evaluate(({ x, y }) =>
     document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-work-entry]")?.dataset.workEntry,
   { x, y: viewport.height - 1 });
-  expect(pointerHit).toBe("fiasco");
+  expect(pointerHit).toBe("lattice");
   await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=lattice]")).not.toHaveClass(/is-active/);
   await expect(firstEntry).toHaveClass(/is-active/);
 });
 
@@ -449,6 +459,17 @@ test("reduced motion keeps theme and work changes immediate", async ({ page, isM
 });
 
 test("project and note routes render real content", async ({ page }) => {
+  await page.goto("/projects/");
+  await page.getByRole("link", { name: "Lattice", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/projects\/lattice\/$/);
+  await expect(page.getByRole("link", { name: /Open demo/ })).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/lattice/",
+  );
+  await expect(page.getByText(/Browse a completed research DAG/)).toBeVisible();
+  await expect(page.getByText("DAG navigation", { exact: true })).toBeVisible();
+  await expect(page.getByAltText(/conversation card connected to a stable research graph/)).toBeVisible();
+
   await page.goto("/projects/");
   await page.getByRole("link", { name: "Freeform Artifacts", exact: true }).first().click();
   await expect(page).toHaveURL(/\/projects\/freeform-artifacts\/$/);
