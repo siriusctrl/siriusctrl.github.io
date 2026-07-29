@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("home page presents ideas, writing, software, and keeps the chosen theme", async ({ page }) => {
+test("home page presents ideas, writing, projects, and keeps the chosen theme", async ({ page }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
@@ -18,7 +18,8 @@ test("home page presents ideas, writing, software, and keeps the chosen theme", 
   await expect(page.locator('a[href="/projects/freeform-artifacts/"]')).toHaveCount(2);
   await expect(page.locator('a[href="/projects/lattice/"]')).toHaveCount(2);
   await expect(page.locator('a[href="/projects/fiasco/"]')).toHaveCount(2);
-  await expect(page.getByRole("link", { name: "All software" })).toHaveAttribute("href", "/projects/");
+  await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "All projects" })).toHaveAttribute("href", "/projects/");
   await expect(page.getByRole("link", { name: "Read the writing" })).toHaveAttribute("href", "/notes/");
 
   const themeToggle = page.getByTestId("theme-toggle");
@@ -94,6 +95,38 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
   expect((radiusPercent / 100) * radiusBasis).toBeLessThan(100);
   expect(Math.abs(xPercent - ((bounds.x + bounds.width / 2) / viewport.width) * 100)).toBeLessThan(0.1);
   expect(Math.abs(yPercent - ((bounds.y + bounds.height / 2) / viewport.height) * 100)).toBeLessThan(0.1);
+});
+
+test("theme reveal yields immediately to vertical scrolling", async ({ page, isMobile }) => {
+  test.skip(isMobile, "Wheel and keyboard scrolling use the desktop browser profile");
+
+  await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
+  await page.goto("/notes/context-not-control/");
+  const supportsViewTransitions = await page.evaluate(() =>
+    "startViewTransition" in document && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  test.skip(!supportsViewTransitions, "Browser does not animate theme changes");
+
+  const toggle = page.getByTestId("theme-toggle");
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme-transition", "active");
+  await page.mouse.wheel(0, 520);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
+  await expect.poll(() => page.evaluate(() =>
+    document.getAnimations().filter((animation) => {
+      const effect = animation.effect as KeyframeEffect | null;
+      return effect?.pseudoElement?.includes("view-transition") && animation.playState === "running";
+    }).length,
+  )).toBe(0);
+
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme-transition", "active");
+  await page.keyboard.press("PageDown");
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
 });
 
 test("project portraits follow the selected site theme", async ({ page, isMobile }) => {
@@ -323,10 +356,11 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
   }
 });
 
-test("software stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
+test("projects stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
   test.skip(isMobile, "The work-stage controller is a desktop interaction");
 
   await page.goto("/projects/");
+  await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
   await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
   const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
   const latticeEntry = page.locator("[data-work-entry=lattice]");
@@ -590,7 +624,21 @@ test("project and note routes render real content", async ({ page, isMobile }) =
   await expect(page.getByAltText(/Fiasco orchestration trace/)).toBeVisible();
 
   await page.goto("/notes/");
-  const noteRow = page.locator(".notes-index-row").first();
+  const noteRows = page.locator(".notes-index-row");
+  expect(await noteRows.count()).toBeGreaterThanOrEqual(2);
+  const noteRow = noteRows.first();
+  const rowSpacing = await noteRows.evaluateAll((rows) => {
+    const first = getComputedStyle(rows[0]);
+    const second = getComputedStyle(rows[1]);
+    return {
+      firstPaddingTop: Number.parseFloat(first.paddingTop),
+      firstPaddingBottom: Number.parseFloat(first.paddingBottom),
+      secondPaddingTop: Number.parseFloat(second.paddingTop),
+    };
+  });
+  expect(rowSpacing.firstPaddingTop).toBe(0);
+  expect(rowSpacing.secondPaddingTop).toBeGreaterThanOrEqual(40);
+  expect(Math.abs(rowSpacing.firstPaddingBottom - rowSpacing.secondPaddingTop)).toBeLessThan(1);
   const noteArtwork = noteRow.locator(".notes-index-artwork");
   const noteDate = noteRow.locator("time");
   const noteTitle = noteRow.getByRole("heading", {

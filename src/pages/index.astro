@@ -13,10 +13,10 @@ if (!latestNote) throw new Error("Home page requires at least one published note
 const siteNote = notes.find((note) => note.data.translationKey === "rebuilding-the-site");
 if (!siteNote) throw new Error("Home page requires the rebuilding-the-site note");
 
-const softwareSlugs = ["freeform-artifacts", "lattice", "fiasco"];
-const selectedSoftware = softwareSlugs.map((slug) => {
+const projectSlugs = ["freeform-artifacts", "lattice", "fiasco"];
+const selectedProjects = projectSlugs.map((slug) => {
   const project = projects.find((candidate) => candidate.slug === slug);
-  if (!project) throw new Error(`Missing home page software entry: ${slug}`);
+  if (!project) throw new Error(`Missing home page project entry: ${slug}`);
   return project;
 });
 
@@ -118,13 +118,13 @@ const threads = [
       </div>
     </section>
 
-    <section class="section software-preview" aria-labelledby="software-title">
+    <section class="section software-preview" aria-labelledby="projects-title">
       <div class="section-heading compact-heading">
-        <h2 id="software-title">Software</h2>
+        <h2 id="projects-title">Projects</h2>
         <p>Working forms for the questions above.</p>
       </div>
       <div class="software-compact-list">
-        {selectedSoftware.map((project) => (
+        {selectedProjects.map((project) => (
           <a class="software-compact-row" href={`/projects/${project.slug}/`}>
             <span class="project-meta"><span>{project.kind}</span><span>{project.year}</span></span>
             <strong>{project.name}</strong>
@@ -133,7 +133,7 @@ const threads = [
           </a>
         ))}
       </div>
-      <a class="text-link" href="/projects/">All software <Icon name="arrow-right" /></a>
+      <a class="text-link" href="/projects/">All projects <Icon name="arrow-right" /></a>
     </section>
   </main>
 </BaseLayout>

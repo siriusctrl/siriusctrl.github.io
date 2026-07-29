@@ -41,7 +41,7 @@ try {
   await page.waitForTimeout(650);
   await page.getByTestId("theme-toggle").click();
   await page.waitForTimeout(900);
-  await page.getByRole("link", { name: "Software", exact: true }).click();
+  await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
   await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
@@ -59,7 +59,7 @@ try {
   await page.waitForLoadState("networkidle");
   await page.getByText(/Browse a completed research DAG/).waitFor();
   await page.waitForTimeout(650);
-  await page.getByRole("link", { name: "Software", exact: true }).click();
+  await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
   await page.getByRole("link", { name: "Writing", exact: true }).click();
@@ -107,9 +107,9 @@ try {
   await mobile.waitForTimeout(2800);
   await mobile.evaluate(() => window.scrollTo(0, 0));
   await mobile.waitForTimeout(900);
-  const mobileSoftwareOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  if (mobileSoftwareOverflow > 0) {
-    throw new Error(`Mobile software index overflowed by ${mobileSoftwareOverflow}px`);
+  const mobileProjectsOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (mobileProjectsOverflow > 0) {
+    throw new Error(`Mobile projects index overflowed by ${mobileProjectsOverflow}px`);
   }
   await mobile.close();
 
@@ -141,10 +141,10 @@ try {
     actions: [
       "open home",
       "switch to dark mode with a radial reveal from the theme button",
-      "open the software index",
+      "open the projects index",
       "move one wheel step from Freeform Artifacts to the centered Lattice stage",
       "open Lattice detail and verify its graph research portrait and current copy",
-      "return to the software index",
+      "return to the projects index",
       "open the writing index and article",
       "switch the article from English to Chinese",
       "check desktop and mobile overflow",
@@ -157,7 +157,7 @@ try {
     [
       "Working Set browser proof",
       "",
-      "- Chromium rendered the home, project detail, software index, writing index, and article routes.",
+      "- Chromium rendered the home, project detail, projects index, writing index, and article routes.",
       "- Theme switching persisted across internal navigation.",
       "- The radial theme reveal and one-project scroll snap were exercised.",
       "- The article language switch selected the authored Chinese route and persisted the choice.",

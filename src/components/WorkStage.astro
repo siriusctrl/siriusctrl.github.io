@@ -4,7 +4,7 @@ import ProjectArtwork from "./ProjectArtwork.astro";
 import { projects } from "../data/projects";
 
 const featuredProjects = projects.filter((project) => project.featured);
-if (featuredProjects.length !== 1) throw new Error("Software index requires exactly one featured project");
+if (featuredProjects.length !== 1) throw new Error("Projects index requires exactly one featured project");
 const featuredProject = featuredProjects[0];
 const recentProjects = projects.filter((project) => project !== featuredProject);
 const workProjects = [featuredProject, ...recentProjects];

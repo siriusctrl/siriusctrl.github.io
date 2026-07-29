@@ -95,6 +95,7 @@ const socialImage = new URL(image, Astro.site);
       type ThemeTransition = {
         ready: Promise<void>;
         finished: Promise<void>;
+        skipTransition: () => void;
       };
 
       const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
@@ -135,10 +136,35 @@ const socialImage = new URL(image, Astro.site);
         const radiusPercent = (value: number) => `${(value / radiusBasis) * 100}%`;
         const transition = transitionDocument.startViewTransition(applyTheme);
         document.documentElement.dataset.themeTransition = "active";
+        let revealAnimation: Animation | undefined;
+        let yieldedToScroll = false;
+        const scrollKeys = new Set([
+          "ArrowUp",
+          "ArrowDown",
+          "PageUp",
+          "PageDown",
+          "Home",
+          "End",
+          " ",
+        ]);
+        const yieldToScroll = () => {
+          if (yieldedToScroll) return;
+          yieldedToScroll = true;
+          revealAnimation?.cancel();
+          transition.skipTransition();
+        };
+        const yieldToScrollKey = (event: KeyboardEvent) => {
+          if (scrollKeys.has(event.key)) yieldToScroll();
+        };
+        const passiveListener = { passive: true } as const;
+        window.addEventListener("wheel", yieldToScroll, passiveListener);
+        window.addEventListener("touchmove", yieldToScroll, passiveListener);
+        window.addEventListener("scroll", yieldToScroll, passiveListener);
+        window.addEventListener("keydown", yieldToScrollKey);
 
         transition.ready
           .then(() => {
-            document.documentElement.animate(
+            revealAnimation = document.documentElement.animate(
               [
                 { clipPath: `circle(0% at ${position})`, offset: 0 },
                 { clipPath: `circle(${radiusPercent(buttonRadius)} at ${position})`, offset: 0.16 },
@@ -158,6 +184,10 @@ const socialImage = new URL(image, Astro.site);
 
         const clearTransitionState = () => {
           delete document.documentElement.dataset.themeTransition;
+          window.removeEventListener("wheel", yieldToScroll);
+          window.removeEventListener("touchmove", yieldToScroll);
+          window.removeEventListener("scroll", yieldToScroll);
+          window.removeEventListener("keydown", yieldToScrollKey);
         };
         transition.finished.then(clearTransitionState, clearTransitionState);
       });

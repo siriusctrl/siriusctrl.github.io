@@ -835,6 +835,8 @@ a:hover > .project-artwork img {
 }
 
 .notes-index {
+  --notes-row-space: clamp(40px, 4vw, 52px);
+
   max-width: 1080px;
 }
 
@@ -860,8 +862,12 @@ a:hover > .project-artwork img {
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
   gap: clamp(40px, 6vw, 76px);
   align-items: start;
-  padding-bottom: clamp(40px, 4vw, 52px);
+  padding: var(--notes-row-space) 0;
   border-bottom: 1px solid var(--line);
+}
+
+.notes-index-row:first-child {
+  padding-top: 0;
 }
 
 .notes-index-visual {
@@ -1353,7 +1359,10 @@ a:hover > .project-artwork img {
   .notes-index-row {
     grid-template-columns: 104px minmax(0, 1fr);
     gap: 20px;
-    padding-bottom: 40px;
+  }
+
+  .notes-index {
+    --notes-row-space: 40px;
   }
 
   .notes-index-visual time {
