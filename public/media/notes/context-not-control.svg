@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Context, not control</title>
+  <desc id="description">Objectives, context, and evaluation feed a persistent agent workforce. The workforce returns evidence and outcomes while evaluation closes the feedback loop.</desc>
+  <style>
+    :root {
+      --paper:#efeee9;
+      --ink:#202321;
+      --muted:#737873;
+      --faint:#c5c6c0;
+      --rule:#d2d2cc;
+      --accent:#b63d34;
+      --accent-soft:#e6cfca;
+    }
+    .paper{fill:var(--paper)}
+    .frame,.guide,.panel,.flow,.loop,.lane{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}
+    .guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .panel{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .panel.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .flow{stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .flow.active,.loop{stroke:var(--accent);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+    .lane{stroke:var(--faint);stroke-width:1.4}
+    .dot{fill:var(--ink)}
+    .dot.active{fill:var(--accent)}
+    .label,.micro,.panel-label,.lane-label,.state{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}
+    .micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .panel-label{font-size:17px;letter-spacing:.12em}
+    .lane-label{font-size:15px;letter-spacing:.08em}
+    .state{fill:var(--muted);font-size:12px;letter-spacing:.08em}
+    .accent-text{fill:var(--accent)}
+    .piece{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+    .inputs{animation:slide-right 900ms cubic-bezier(.16,1,.3,1) 80ms both}
+    .workforce{animation:rise 900ms cubic-bezier(.16,1,.3,1) 180ms both}
+    .outputs{animation:slide-left 900ms cubic-bezier(.16,1,.3,1) 300ms both}
+    .draw{stroke-dasharray:1800;animation:draw 1500ms cubic-bezier(.16,1,.3,1) 520ms both}
+    .pulse{animation:pulse 1800ms ease-in-out 900ms both}
+    @keyframes slide-right{from{transform:translateX(-48px)}to{transform:none}}
+    @keyframes slide-left{from{transform:translateX(48px)}to{transform:none}}
+    @keyframes rise{from{transform:translateY(30px)}to{transform:none}}
+    @keyframes draw{from{stroke-dashoffset:1800}to{stroke-dashoffset:0}}
+    @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+    @media(prefers-color-scheme:dark){
+      :root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}
+    }
+    @media(prefers-reduced-motion:reduce){.piece,.draw,.pulse{animation:none}}
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="var(--ink)"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect class="paper" width="1600" height="1000"/>
+  <rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">CONTEXT / NOT CONTROL</text>
+  <text class="micro" x="1508" y="102" text-anchor="end">MANAGE THE OUTCOME</text>
+  <path class="guide" d="M92 142H1508M92 858H1508"/>
+
+  <g class="piece inputs">
+    <text class="micro" x="150" y="190">HUMAN SETS THE CONDITIONS</text>
+    <rect class="panel" x="150" y="220" width="335" height="150"/>
+    <text class="panel-label" x="194" y="275">OBJECTIVE</text>
+    <path class="guide" d="M194 303H441"/>
+    <path class="flow" d="M194 330H410"/>
+
+    <rect class="panel active" x="150" y="405" width="335" height="150"/>
+    <text class="panel-label accent-text" x="194" y="460">CONTEXT</text>
+    <path class="guide" d="M194 488H441"/>
+    <path class="flow active" d="M194 515H425"/>
+
+    <rect class="panel" x="150" y="590" width="335" height="150"/>
+    <text class="panel-label" x="194" y="645">EVALUATION</text>
+    <path class="guide" d="M194 673H441"/>
+    <circle class="dot active pulse" cx="205" cy="704" r="6"/>
+    <path class="flow" d="M228 704H410"/>
+  </g>
+
+  <path class="flow draw" d="M485 295H575" marker-end="url(#arrow)"/>
+  <path class="flow active draw" d="M485 480H575" marker-end="url(#arrow-accent)"/>
+  <path class="flow draw" d="M485 665H575" marker-end="url(#arrow)"/>
+
+  <g class="piece workforce">
+    <rect class="panel active" x="610" y="170" width="440" height="660"/>
+    <text class="panel-label accent-text" x="660" y="228">AGENT WORKFORCE</text>
+    <text class="state" x="1000" y="228" text-anchor="end">PERSISTENT THREADS</text>
+    <path class="guide" d="M660 265H1000"/>
+
+    <g transform="translate(0 0)">
+      <circle class="dot active pulse" cx="680" cy="340" r="7"/>
+      <text class="lane-label" x="710" y="346">IMPLEMENT</text>
+      <path class="lane" d="M850 340H970"/>
+      <circle class="dot" cx="890" cy="340" r="4"/>
+      <text class="state" x="970" y="320" text-anchor="end">RUNNING</text>
+    </g>
+    <g transform="translate(0 118)">
+      <circle class="dot active" cx="680" cy="340" r="7"/>
+      <text class="lane-label" x="710" y="346">TEST</text>
+      <path class="lane" d="M850 340H970"/>
+      <circle class="dot active" cx="930" cy="340" r="4"/>
+      <text class="state" x="970" y="320" text-anchor="end">EVALUATING</text>
+    </g>
+    <g transform="translate(0 236)">
+      <circle class="dot" cx="680" cy="340" r="7"/>
+      <text class="lane-label" x="710" y="346">REVIEW</text>
+      <path class="lane" d="M850 340H970"/>
+      <circle class="dot" cx="865" cy="340" r="4"/>
+      <text class="state" x="970" y="320" text-anchor="end">WAITING</text>
+    </g>
+    <g transform="translate(0 354)">
+      <circle class="dot active" cx="680" cy="340" r="7"/>
+      <text class="lane-label" x="710" y="346">WRITE BACK</text>
+      <path class="lane" d="M850 340H970"/>
+      <circle class="dot active" cx="960" cy="340" r="4"/>
+      <text class="state" x="970" y="320" text-anchor="end">READY</text>
+    </g>
+  </g>
+
+  <path class="flow active draw" d="M1050 420H1140" marker-end="url(#arrow-accent)"/>
+  <path class="flow draw" d="M1050 630H1140" marker-end="url(#arrow)"/>
+
+  <g class="piece outputs">
+    <text class="micro" x="1150" y="235">HUMAN JUDGES THE RESULT</text>
+    <rect class="panel" x="1150" y="265" width="300" height="210"/>
+    <text class="panel-label" x="1195" y="325">EVIDENCE</text>
+    <path class="guide" d="M1195 355H1405"/>
+    <path class="flow" d="M1195 392H1390M1195 425H1345"/>
+
+    <rect class="panel active" x="1150" y="545" width="300" height="210"/>
+    <text class="panel-label accent-text" x="1195" y="605">OUTCOME</text>
+    <path class="guide" d="M1195 635H1405"/>
+    <circle class="dot active pulse" cx="1203" cy="684" r="7"/>
+    <path class="flow active" d="M1230 684H1388"/>
+  </g>
+
+  <path class="loop draw" d="M1150 370H1100V810H545V665H485" marker-end="url(#arrow-accent)"/>
+  <text class="micro accent-text" x="824" y="840" text-anchor="middle">FEEDBACK CLOSES THE LOOP</text>
+</svg>

@@ -63,12 +63,18 @@ try {
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
   await page.getByRole("link", { name: "Writing", exact: true }).click();
-  await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
+  await page.getByRole("link", { name: "Context, Not Control: Managing an Agent Workforce" }).click();
   await page.waitForLoadState("networkidle");
   await page.locator(".article-note-artwork img").waitFor({ state: "visible" });
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".prose img")].every((image) => image.complete && image.naturalWidth > 0),
+  );
   await page.getByRole("link", { name: "Read in Chinese" }).click();
   await page.waitForLoadState("networkidle");
-  await page.getByRole("heading", { name: "围绕可运行的软件，重做个人网站" }).waitFor();
+  await page.getByRole("heading", { name: "Context, Not Control：管理 Agent Workforce" }).waitFor();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".prose img")].every((image) => image.complete && image.naturalWidth > 0),
+  );
   await page.waitForTimeout(650);
   await page.screenshot({ path: screenshotPath, fullPage: false });
 

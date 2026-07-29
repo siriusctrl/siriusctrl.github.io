@@ -13,7 +13,7 @@ test("home page presents ideas, writing, software, and keeps the chosen theme", 
   await expect(page.getByRole("heading", { name: "Agents with observable state" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Static software as a publishing medium" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Rebuilding a personal site around working software" }),
+    page.getByRole("heading", { name: "Context, Not Control: Managing an Agent Workforce" }),
   ).toBeVisible();
   await expect(page.locator('a[href="/projects/freeform-artifacts/"]')).toHaveCount(2);
   await expect(page.locator('a[href="/projects/lattice/"]')).toHaveCount(2);
@@ -239,6 +239,50 @@ test("article artwork follows the selected site theme", async ({ page }) => {
   await page.getByTestId("theme-toggle").click();
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
   await expect.poll(samplePaperColor).toEqual([26, 29, 27, 255]);
+});
+
+test("context not control publishes complete bilingual media", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!window.localStorage.getItem("siriusctrl.language")) {
+      window.localStorage.setItem("siriusctrl.language", "en");
+    }
+  });
+  await page.goto("/notes/context-not-control/");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Context, Not Control: Managing an Agent Workforce",
+  })).toBeVisible();
+  await expect(page.locator(".article-note-artwork img")).toHaveAttribute(
+    "src",
+    "/media/notes/context-not-control.svg",
+  );
+
+  const bodyImages = page.locator(".prose img");
+  await expect(bodyImages).toHaveCount(3);
+  await expect(bodyImages.nth(0)).toHaveAttribute("src", "/media/notes/gymnasium-cart-pole.gif");
+  await expect(bodyImages.nth(1)).toHaveAttribute("src", "/media/notes/context-not-control-loop.svg");
+  await expect(bodyImages.nth(2)).toHaveAttribute(
+    "src",
+    "/media/notes/context-not-control-orchestrator.svg",
+  );
+  for (const image of await bodyImages.all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate((element) => {
+      const media = element as HTMLImageElement;
+      return media.complete && media.naturalWidth > 0 && media.naturalHeight > 0;
+    })).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+
+  await page.getByRole("link", { name: "Read in Chinese" }).click();
+  await expect(page).toHaveURL(/\/zh\/notes\/context-not-control\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Context, Not Control：管理 Agent Workforce",
+  })).toBeVisible();
+  await expect(page.locator(".prose img")).toHaveCount(3);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
 test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isMobile }) => {
@@ -550,7 +594,7 @@ test("project and note routes render real content", async ({ page, isMobile }) =
   const noteArtwork = noteRow.locator(".notes-index-artwork");
   const noteDate = noteRow.locator("time");
   const noteTitle = noteRow.getByRole("heading", {
-    name: "Rebuilding a personal site around working software",
+    name: "Context, Not Control: Managing an Agent Workforce",
   });
   await expect(noteArtwork.locator("img")).toBeVisible();
   if (!isMobile) {
@@ -577,8 +621,8 @@ test("project and note routes render real content", async ({ page, isMobile }) =
     expect(indexType.paddingBottom).toBeLessThanOrEqual(52);
     expect(indexType.height).toBeLessThanOrEqual(240);
   }
-  await page.getByRole("link", { name: "Rebuilding a personal site around working software" }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Local-first demos" })).toBeVisible();
+  await page.getByRole("link", { name: "Context, Not Control: Managing an Agent Workforce" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "AI as the Default Executor" })).toBeVisible();
   await expect.poll(() => page.locator(".prose p").first().evaluate((paragraph) =>
     Number.parseFloat(getComputedStyle(paragraph).fontSize),
   )).toBeLessThanOrEqual(17);
@@ -587,7 +631,14 @@ test("project and note routes render real content", async ({ page, isMobile }) =
 test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) => {
   test.skip(!isMobile, "Mobile project only");
 
-  for (const route of ["/", "/projects/", "/projects/freeform-artifacts/", "/notes/", "/notes/rebuilding-the-site/"]) {
+  for (const route of [
+    "/",
+    "/projects/",
+    "/projects/freeform-artifacts/",
+    "/notes/",
+    "/notes/context-not-control/",
+    "/notes/rebuilding-the-site/",
+  ]) {
     await page.goto(route);
     await page.waitForLoadState("networkidle");
     const dimensions = await page.evaluate(() => ({

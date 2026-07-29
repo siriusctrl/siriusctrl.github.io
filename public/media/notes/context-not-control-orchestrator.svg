@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Persistent orchestration and disposable evaluation</title>
+  <desc id="description">Events and durable task context enter a persistent orchestrator. Work continues through local persistent tools and disposable cloud sandboxes, then converges on evaluation, approval, delivery, and context write-back.</desc>
+  <style>
+    :root{--paper:#efeee9;--ink:#202321;--muted:#737873;--faint:#c5c6c0;--rule:#d2d2cc;--accent:#b63d34;--accent-soft:#e6cfca}
+    .paper{fill:var(--paper)}
+    .frame,.guide,.box,.flow,.loop{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}
+    .guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .box{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .box.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .flow{stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .flow.active,.loop{stroke:var(--accent);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+    .dot{fill:var(--ink)}.dot.active{fill:var(--accent)}
+    .label,.micro,.node-label,.state{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}
+    .micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .node-label{font-size:18px;letter-spacing:.06em}
+    .state{font-size:13px;letter-spacing:.08em}
+    .accent-text{fill:var(--accent)}
+    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="var(--ink)"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="var(--accent)"/></marker>
+  </defs>
+
+  <rect class="paper" width="1600" height="1000"/>
+  <rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">PERSISTENT ORCHESTRATION</text>
+  <text class="micro" x="1508" y="102" text-anchor="end">DISPOSABLE EVALUATION</text>
+  <path class="guide" d="M92 142H1508"/>
+
+  <rect class="box" x="110" y="205" width="300" height="120"/>
+  <text class="node-label" x="260" y="258" text-anchor="middle">WORK EVENTS</text>
+  <text class="micro" x="260" y="290" text-anchor="middle">GITHUB / LINEAR / SLACK</text>
+
+  <rect class="box" x="110" y="390" width="300" height="120"/>
+  <text class="node-label" x="260" y="443" text-anchor="middle">DURABLE STATE</text>
+  <text class="micro" x="260" y="475" text-anchor="middle">CONTEXT / POLICY / MEMORY</text>
+
+  <rect class="box active" x="565" y="255" width="470" height="205"/>
+  <text class="node-label accent-text" x="800" y="326" text-anchor="middle">PERSISTENT ORCHESTRATOR</text>
+  <path class="guide" d="M635 360H965"/>
+  <text class="micro" x="800" y="402" text-anchor="middle">THREADS / SCHEDULING / CREDENTIALS</text>
+
+  <path class="flow" d="M410 265H505V320H565" marker-end="url(#arrow)"/>
+  <path class="flow active" d="M410 450H505V395H565" marker-end="url(#arrow-accent)"/>
+
+  <rect class="box active" x="250" y="620" width="420" height="145"/>
+  <text class="node-label accent-text" x="460" y="680" text-anchor="middle">PERSISTENT TOOLS</text>
+  <text class="micro" x="460" y="716" text-anchor="middle">LOCAL WORKTREES / CACHES / APP STATE</text>
+
+  <rect class="box" x="930" y="620" width="420" height="145"/>
+  <text class="node-label" x="1140" y="680" text-anchor="middle">CLOUD SANDBOXES</text>
+  <text class="micro" x="1140" y="716" text-anchor="middle">CLEAN TESTS / UI / VIDEO / METRICS</text>
+
+  <path class="flow active" d="M720 460V545H460V620" marker-end="url(#arrow-accent)"/>
+  <path class="flow" d="M880 460V545H1140V620" marker-end="url(#arrow)"/>
+
+  <rect class="box active" x="565" y="820" width="470" height="105"/>
+  <text class="node-label accent-text" x="800" y="868" text-anchor="middle">EVALUATION + APPROVAL</text>
+  <text class="micro" x="800" y="897" text-anchor="middle">EVIDENCE / POLICY / HUMAN JUDGMENT</text>
+
+  <path class="flow active" d="M460 765V790H720V820" marker-end="url(#arrow-accent)"/>
+  <path class="flow" d="M1140 765V790H880V820" marker-end="url(#arrow)"/>
+
+  <rect class="box" x="1250" y="285" width="250" height="145"/>
+  <text class="node-label" x="1375" y="345" text-anchor="middle">DELIVERY</text>
+  <text class="micro" x="1375" y="381" text-anchor="middle">PR / REVIEW / MERGE</text>
+
+  <path class="flow active" d="M1035 872H1415V430" marker-end="url(#arrow-accent)"/>
+  <path class="loop" d="M1250 357H1100V205H800V255" marker-end="url(#arrow-accent)"/>
+  <text class="state accent-text" x="1100" y="188" text-anchor="middle">CONTEXT WRITE-BACK</text>
+</svg>
