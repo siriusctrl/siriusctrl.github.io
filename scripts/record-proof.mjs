@@ -46,7 +46,9 @@ try {
   }
   const revealStart = await page.evaluate(() => {
     const layer = document.querySelector("[data-theme-reveal]");
-    const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+    const animation = layer
+      ?.getAnimations({ subtree: true })
+      .find((candidate) => candidate.id === "theme-reveal");
     if (!layer || !animation) throw new Error("Theme reveal did not expose its render layer");
     window.__themeProofReference = { layer, animation };
     return Number(animation.currentTime);
@@ -58,7 +60,9 @@ try {
   await page.waitForTimeout(140);
   const revealAfterWheel = await page.evaluate(() => {
     const layer = document.querySelector("[data-theme-reveal]");
-    const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+    const animation = layer
+      ?.getAnimations({ subtree: true })
+      .find((candidate) => candidate.id === "theme-reveal");
     return {
       active: document.documentElement.dataset.themeTransition === "active",
       sameLayer: window.__themeProofReference?.layer === layer,

@@ -259,22 +259,50 @@ const socialImage = new URL(image, Astro.site);
         reveal.style.setProperty("--theme-reveal-start-radius", `${buttonRadius}px`);
         reveal.style.setProperty("--theme-reveal-end-radius", `${radius}px`);
 
-        const revealKeyframes = (centerX: number, centerY: number) => {
-          const circle = (value: number) =>
-            `circle(${value}px at ${centerX}px ${centerY}px)`;
-          return [
-            { clipPath: circle(buttonRadius), offset: 0 },
-            { clipPath: circle(Math.max(buttonRadius, radius * 0.025)), offset: 0.16 },
-            { clipPath: circle(Math.max(buttonRadius, radius * 0.1)), offset: 0.38 },
-            { clipPath: circle(Math.max(buttonRadius, radius * 0.31)), offset: 0.62 },
-            { clipPath: circle(Math.max(buttonRadius, radius * 0.65)), offset: 0.82 },
-            { clipPath: circle(radius), offset: 1 },
-          ];
-        };
+        const svgNamespace = "http://www.w3.org/2000/svg";
+        const definitions = document.createElementNS(svgNamespace, "svg");
+        const definitionGroup = document.createElementNS(svgNamespace, "defs");
+        const clip = document.createElementNS(svgNamespace, "clipPath");
+        const circle = document.createElementNS(svgNamespace, "circle");
+        definitions.classList.add("theme-reveal-defs");
+        definitions.setAttribute("aria-hidden", "true");
+        clip.id = "theme-reveal-clip";
+        clip.dataset.themeRevealClip = "";
+        clip.setAttribute("clipPathUnits", "userSpaceOnUse");
+        circle.dataset.themeRevealCircle = "";
+        circle.setAttribute("cx", `${x}`);
+        circle.setAttribute("cy", `${y}`);
+        circle.setAttribute("r", `${buttonRadius}`);
+        clip.append(circle);
+        definitionGroup.append(clip);
+        definitions.append(definitionGroup);
+        reveal.prepend(definitions);
+        reveal.style.clipPath = `url(#${clip.id})`;
+
+        const revealKeyframes = [
+          { r: `${buttonRadius}px`, offset: 0 },
+          {
+            r: `${Math.max(buttonRadius, radius * 0.025)}px`,
+            offset: 0.16,
+          },
+          {
+            r: `${Math.max(buttonRadius, radius * 0.1)}px`,
+            offset: 0.38,
+          },
+          {
+            r: `${Math.max(buttonRadius, radius * 0.31)}px`,
+            offset: 0.62,
+          },
+          {
+            r: `${Math.max(buttonRadius, radius * 0.65)}px`,
+            offset: 0.82,
+          },
+          { r: `${radius}px`, offset: 1 },
+        ];
         let revealAnimation: Animation;
         try {
-          revealAnimation = reveal.animate(
-            revealKeyframes(x, y),
+          revealAnimation = circle.animate(
+            revealKeyframes,
             { duration: revealDuration, easing: "linear", fill: "both" },
           );
         } catch {
@@ -349,8 +377,8 @@ const socialImage = new URL(image, Astro.site);
           const centerY = y + (scrollY - initialScrollY) / scaleY;
           reveal.style.setProperty("--theme-reveal-x", `${centerX}px`);
           reveal.style.setProperty("--theme-reveal-y", `${centerY}px`);
-          const effect = revealAnimation.effect;
-          if (effect instanceof KeyframeEffect) effect.setKeyframes(revealKeyframes(centerX, centerY));
+          circle.setAttribute("cx", `${centerX}`);
+          circle.setAttribute("cy", `${centerY}`);
         };
         window.addEventListener("scroll", syncRevealOrigin, { passive: true });
         window.addEventListener(workStageScrollFrameEvent, syncRevealOrigin);

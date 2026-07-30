@@ -42,12 +42,19 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
     const activeState = await page.getByTestId("theme-toggle").evaluate((element) => {
       (element as HTMLElement).click();
       const layer = document.querySelector<HTMLElement>("[data-theme-render-layer]");
-      const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+      const circle =
+        layer?.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
+      const animation = circle?.getAnimations()
+        .find((candidate) => candidate.id === "theme-reveal");
+      const style = layer ? getComputedStyle(layer) : undefined;
       return {
         active: document.documentElement.dataset.themeTransition,
         rootTheme: document.documentElement.dataset.theme,
         layerTheme: layer?.dataset.theme,
         animationTime: Number(animation?.currentTime ?? -1),
+        radius: Number.parseFloat(circle ? getComputedStyle(circle).r : ""),
+        maskImage: style?.maskImage,
+        clipPath: style?.clipPath,
       };
     });
     expect(activeState.active).toBe("active");
@@ -55,9 +62,17 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
     expect(activeState.layerTheme).toBe(layerTheme);
     expect(activeState.animationTime).toBeGreaterThanOrEqual(0);
     expect(activeState.animationTime).toBeLessThan(920);
+    expect(activeState.radius).toBeGreaterThan(0);
+    expect(activeState.maskImage).toBe("none");
+    expect(activeState.clipPath).toContain("theme-reveal-clip");
 
     const layer = page.locator("[data-theme-render-layer]");
     await expect(layer).toBeVisible();
+    await expect.poll(() => layer.evaluate((element) => {
+      const circle =
+        element.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
+      return Number.parseFloat(circle ? getComputedStyle(circle).r : "");
+    })).toBeGreaterThan(activeState.radius);
     const clonedArtwork = layer.locator(".work-frame img").first();
     await expect(clonedArtwork).toHaveAttribute(
       "src",

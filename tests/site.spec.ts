@@ -41,7 +41,8 @@ test("home page presents ideas, writing, projects, and keeps the chosen theme", 
       y: element.getBoundingClientRect().top
         + Number.parseFloat((element as HTMLElement).style.getPropertyValue("--theme-reveal-y"))
           * (element.getBoundingClientRect().height / (element as HTMLElement).offsetHeight),
-      animationId: element.getAnimations()[0]?.id,
+      animationId: element.getAnimations({ subtree: true })
+        .find((animation) => animation.id === "theme-reveal")?.id,
       pointerEvents: getComputedStyle(element).pointerEvents,
       rootTheme: document.documentElement.dataset.theme,
       layerTheme: (element as HTMLElement).dataset.theme,
@@ -88,7 +89,9 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
       layerTheme: (element as HTMLElement).dataset.theme,
       inert: (element as HTMLElement).inert,
       scripts: element.querySelectorAll("script").length,
-      duplicateHooks: element.querySelectorAll("[id], [data-testid], [data-theme-toggle]").length,
+      duplicateHooks: element.querySelectorAll(
+        "[id]:not([data-theme-reveal-clip]), [data-testid], [data-theme-toggle]",
+      ).length,
     };
   });
   const viewport = page.viewportSize();
@@ -111,10 +114,13 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
   expect(geometry.duplicateHooks).toBe(0);
 
   const readRadius = () => reveal.evaluate((element) => {
-    const clipPath = getComputedStyle(element).clipPath;
-    return Number(clipPath.match(/circle\(([\d.]+)px/)?.[1] ?? Number.NaN);
+    const circle = element.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
+    return Number.parseFloat(circle ? getComputedStyle(circle).r : "");
   });
-  await expect.poll(() => reveal.evaluate((element) => Number(element.getAnimations()[0]?.currentTime ?? -1)))
+  await expect.poll(() => reveal.evaluate((element) => Number(
+    element.getAnimations({ subtree: true })
+      .find((animation) => animation.id === "theme-reveal")?.currentTime ?? -1,
+  )))
     .toBeGreaterThan(20);
   const earlyRadius = await readRadius();
   await page.waitForTimeout(120);
@@ -190,7 +196,8 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
     toggle.addEventListener("click", () => {
       queueMicrotask(() => {
         const layer = document.querySelector<HTMLElement>("[data-theme-reveal]");
-        const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+        const animation = layer?.getAnimations({ subtree: true })
+          .find((candidate) => candidate.id === "theme-reveal");
         const original = document.querySelector<HTMLElement>("body > main .prose p");
         const clone = layer?.querySelector<HTMLElement>(":scope > main .prose p");
         if (!layer || !animation || !original || !clone) return;
@@ -221,7 +228,8 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
       proof.inputEventTime = event.timeStamp;
       const reference = proofWindow.__themeRevealReference;
       const layer = document.querySelector<HTMLElement>("[data-theme-reveal]");
-      const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+      const animation = layer?.getAnimations({ subtree: true })
+        .find((candidate) => candidate.id === "theme-reveal");
       proof.animationTimeAtInput = Number(animation?.currentTime ?? Number.NaN);
       proof.sameLayerAtInput = reference?.layer === layer;
       proof.sameAnimationAtInput = reference?.animation === animation;
@@ -244,14 +252,15 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
       __themeRevealReference?: RevealReference;
     }).__themeRevealReference;
     const reveal = document.querySelector<HTMLElement>("[data-theme-reveal]");
-    const animation = reveal?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+    const animation = reveal?.getAnimations({ subtree: true })
+      .find((candidate) => candidate.id === "theme-reveal");
     const original = document.querySelector<HTMLElement>("body > main .prose p");
     const clone = reveal?.querySelector<HTMLElement>(":scope > main .prose p");
     const layerBounds = reveal?.getBoundingClientRect();
+    const circle = reveal?.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
+    const x = Number.parseFloat(circle?.getAttribute("cx") ?? "");
+    const y = Number.parseFloat(circle?.getAttribute("cy") ?? "");
     const clipPath = reveal ? getComputedStyle(reveal).clipPath : "";
-    const clipCenter = clipPath.match(/at\s+([\d.]+)px\s+([\d.]+)px/);
-    const x = Number(clipCenter?.[1] ?? Number.NaN);
-    const y = Number(clipCenter?.[2] ?? Number.NaN);
     return {
       currentTime: Number(animation?.currentTime ?? -1),
       playState: animation?.playState ?? "missing",
@@ -720,7 +729,8 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
       return {
         x: bounds.left + Number.parseFloat(style.getPropertyValue("--theme-reveal-x")) * scaleX,
         y: bounds.top + Number.parseFloat(style.getPropertyValue("--theme-reveal-y")) * scaleY,
-        animationId: element.getAnimations()[0]?.id,
+        animationId: element.getAnimations({ subtree: true })
+          .find((animation) => animation.id === "theme-reveal")?.id,
         layerLeft: bounds.left,
         layerRight: bounds.right,
         layerWidth: bounds.width,
