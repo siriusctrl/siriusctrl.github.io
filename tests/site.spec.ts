@@ -103,6 +103,7 @@ test("theme reveal stays visibly anchored on a 4k viewport", async ({ page, isMo
     Math.max(expectedY, viewport.height - expectedY),
   );
   expect(geometry.endRadius * geometry.scale).toBeGreaterThanOrEqual(expectedRadius);
+  expect(geometry.endRadius * geometry.scale - expectedRadius).toBeLessThan(0.1);
   expect(geometry.rootTheme).toBe("light");
   expect(geometry.layerTheme).toBe("dark");
   expect(geometry.inert).toBe(true);
@@ -126,6 +127,18 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/notes/context-not-control/");
   const toggle = page.getByTestId("theme-toggle");
+  const toggleBounds = await toggle.boundingBox();
+  if (!toggleBounds) throw new Error("Theme toggle did not expose pointer coordinates");
+  const clickToggleThen = async (sendInput: () => Promise<void>) => {
+    await page.mouse.move(
+      toggleBounds.x + toggleBounds.width / 2,
+      toggleBounds.y + toggleBounds.height / 2,
+    );
+    await page.mouse.down();
+    const release = page.mouse.up();
+    const input = sendInput();
+    await Promise.all([release, input]);
+  };
 
   type RevealReference = {
     layer: HTMLElement;
@@ -329,8 +342,7 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
 
   await resetScroll();
   await installInputProof({ type: "wheel" });
-  await toggle.click();
-  await page.mouse.wheel(0, 520);
+  await clickToggleThen(() => page.mouse.wheel(0, 520));
   await assertActiveInputProof({
     rootTheme: "light",
     layerTheme: "dark",
@@ -340,8 +352,7 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
 
   await resetScroll();
   await installInputProof({ type: "key", key: "PageDown" });
-  await toggle.click();
-  await page.keyboard.press("PageDown");
+  await clickToggleThen(() => page.keyboard.press("PageDown"));
   await assertActiveInputProof({
     rootTheme: "dark",
     layerTheme: "light",
@@ -351,8 +362,7 @@ test("theme reveal and live content keep moving through wheel and keyboard scrol
 
   await resetScroll();
   await installInputProof({ type: "key", key: "ArrowDown" });
-  await toggle.click();
-  await page.keyboard.press("ArrowDown");
+  await clickToggleThen(() => page.keyboard.press("ArrowDown"));
   await assertActiveInputProof({
     rootTheme: "light",
     layerTheme: "dark",
@@ -689,8 +699,8 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
       return {
         absoluteX: bounds.left + bounds.width / 2,
         absoluteY: bounds.top + bounds.height / 2,
-        x: ((bounds.left + bounds.width / 2) / window.innerWidth) * 100,
-        y: ((bounds.top + bounds.height / 2) / window.innerHeight) * 100,
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
       };
     }, zoom);
 
@@ -700,15 +710,49 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
       const bounds = element.getBoundingClientRect();
       const scaleX = bounds.width / (element as HTMLElement).offsetWidth;
       const scaleY = bounds.height / (element as HTMLElement).offsetHeight;
+      const original = document.querySelector<HTMLElement>("body > main .home-intro h1");
+      const clone = element.querySelector<HTMLElement>(":scope > main .home-intro h1");
+      if (!original || !clone) throw new Error("Zoom reveal did not preserve the home title");
+      const originalBounds = original.getBoundingClientRect();
+      const cloneBounds = clone.getBoundingClientRect();
+      const originalStyle = getComputedStyle(original);
+      const cloneStyle = getComputedStyle(clone);
       return {
         x: bounds.left + Number.parseFloat(style.getPropertyValue("--theme-reveal-x")) * scaleX,
         y: bounds.top + Number.parseFloat(style.getPropertyValue("--theme-reveal-y")) * scaleY,
         animationId: element.getAnimations()[0]?.id,
+        layerLeft: bounds.left,
+        layerRight: bounds.right,
+        layerWidth: bounds.width,
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        title: {
+          x: Math.abs(originalBounds.x - cloneBounds.x),
+          y: Math.abs(originalBounds.y - cloneBounds.y),
+          width: Math.abs(originalBounds.width - cloneBounds.width),
+          height: Math.abs(originalBounds.height - cloneBounds.height),
+          fontSize: [originalStyle.fontSize, cloneStyle.fontSize],
+          lineHeight: [originalStyle.lineHeight, cloneStyle.lineHeight],
+          opacity: Math.abs(Number(originalStyle.opacity) - Number(cloneStyle.opacity)),
+          transform: [originalStyle.transform, cloneStyle.transform],
+        },
       };
     });
     expect(geometry.animationId).toBe("theme-reveal");
     expect(Math.abs(geometry.x - expected.absoluteX)).toBeLessThan(0.1);
     expect(Math.abs(geometry.y - expected.absoluteY)).toBeLessThan(0.1);
+    expect(Math.abs(geometry.layerLeft)).toBeLessThan(0.1);
+    expect(Math.abs(geometry.layerRight - expected.clientWidth)).toBeLessThan(0.1);
+    expect(Math.abs(geometry.layerWidth - expected.clientWidth)).toBeLessThan(0.1);
+    expect(geometry.scrollWidth).toBe(expected.scrollWidth);
+    expect(geometry.title.x).toBeLessThan(0.1);
+    expect(geometry.title.y).toBeLessThan(0.1);
+    expect(geometry.title.width).toBeLessThan(0.1);
+    expect(geometry.title.height).toBeLessThan(0.1);
+    expect(geometry.title.fontSize[1]).toBe(geometry.title.fontSize[0]);
+    expect(geometry.title.lineHeight[1]).toBe(geometry.title.lineHeight[0]);
+    expect(geometry.title.opacity).toBeLessThan(0.002);
+    expect(geometry.title.transform[1]).toBe(geometry.title.transform[0]);
     await expect(page.locator("[data-theme-reveal]")).toHaveCount(0);
   }
 });

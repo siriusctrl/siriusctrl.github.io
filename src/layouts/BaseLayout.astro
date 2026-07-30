@@ -96,6 +96,7 @@ const socialImage = new URL(image, Astro.site);
       const root = document.documentElement;
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       const revealDuration = 920;
+      const workStageScrollFrameEvent = "working-set:work-stage-scroll-frame";
       let themeTransitionRunning = false;
       const themeImagePreloads: HTMLImageElement[] = [];
 
@@ -156,8 +157,19 @@ const socialImage = new URL(image, Astro.site);
       };
 
       const cloneThemeSurface = (theme: "light" | "dark") => {
-        const documentWidth = Math.max(root.scrollWidth, document.body.scrollWidth, window.innerWidth);
-        const documentHeight = Math.max(root.scrollHeight, document.body.scrollHeight, window.innerHeight);
+        const rootZoom = Number.parseFloat(getComputedStyle(root).getPropertyValue("zoom")) || 1;
+        const documentWidth =
+          Math.max(
+            root.scrollWidth / rootZoom,
+            document.body.scrollWidth,
+            root.clientWidth / rootZoom,
+          );
+        const documentHeight =
+          Math.max(
+            root.scrollHeight / rootZoom,
+            document.body.scrollHeight,
+            root.clientHeight / rootZoom,
+          );
         const layer = document.createElement("div");
         layer.className = "theme-render-layer";
         layer.dataset.themeRenderLayer = "";
@@ -167,6 +179,25 @@ const socialImage = new URL(image, Astro.site);
         layer.inert = true;
         layer.style.setProperty("--theme-render-width", `${documentWidth}px`);
         layer.style.setProperty("--theme-render-height", `${documentHeight}px`);
+        const elementPairs: Array<{ source: HTMLElement; clone: HTMLElement }> = [];
+
+        const prepareClone = (source: HTMLElement, clone: HTMLElement) => {
+          elementPairs.push({ source, clone });
+          clone.removeAttribute("id");
+          clone.removeAttribute("autofocus");
+          for (const attribute of [...clone.attributes]) {
+            if (attribute.name.startsWith("data-")) clone.removeAttribute(attribute.name);
+          }
+          const sourceChildren = [...source.children]
+            .filter((element): element is HTMLElement => element instanceof HTMLElement
+              && element.tagName !== "SCRIPT");
+          const cloneChildren = [...clone.children]
+            .filter((element): element is HTMLElement => element instanceof HTMLElement);
+          sourceChildren.forEach((sourceChild, index) => {
+            const cloneChild = cloneChildren[index];
+            if (cloneChild) prepareClone(sourceChild, cloneChild);
+          });
+        };
 
         const sourceChildren = [...document.body.children].filter((element) =>
           element.tagName !== "SCRIPT" && !element.hasAttribute("data-theme-render-layer")
@@ -175,21 +206,14 @@ const socialImage = new URL(image, Astro.site);
           const clone = source.cloneNode(true) as HTMLElement;
           clone.querySelectorAll("script").forEach((script) => script.remove());
           syncThemeImages(clone, theme);
-          const clonedElements = [clone, ...clone.querySelectorAll<HTMLElement>("*")];
-          for (const element of clonedElements) {
-            element.removeAttribute("id");
-            element.removeAttribute("autofocus");
-            for (const attribute of [...element.attributes]) {
-              if (attribute.name.startsWith("data-")) element.removeAttribute(attribute.name);
-            }
-          }
+          prepareClone(source as HTMLElement, clone);
           layer.append(clone);
         }
 
         document.body.append(layer);
         const renderedHeight = Math.max(documentHeight, layer.scrollHeight);
         layer.style.setProperty("--theme-render-height", `${renderedHeight}px`);
-        return layer;
+        return { layer, elementPairs };
       };
 
       const initialTheme = root.dataset.theme === "dark" ? "dark" : "light";
@@ -211,8 +235,9 @@ const socialImage = new URL(image, Astro.site);
         const visualX = bounds.left + bounds.width / 2;
         const visualY = bounds.top + bounds.height / 2;
         let reveal: HTMLDivElement;
+        let elementPairs: Array<{ source: HTMLElement; clone: HTMLElement }>;
         try {
-          reveal = cloneThemeSurface(next);
+          ({ layer: reveal, elementPairs } = cloneThemeSurface(next));
         } catch {
           commitTheme(next);
           return;
@@ -225,8 +250,8 @@ const socialImage = new URL(image, Astro.site);
         const y = (visualY - layerBounds.top) / scaleY;
         const buttonRadius = Math.max(bounds.width / scaleX, bounds.height / scaleY) / 2;
         const visualRadius = Math.hypot(
-          Math.max(visualX, window.innerWidth - visualX),
-          Math.max(visualY, window.innerHeight - visualY),
+          Math.max(visualX, root.clientWidth - visualX),
+          Math.max(visualY, root.clientHeight - visualY),
         );
         const radius = visualRadius / Math.min(scaleX, scaleY);
         reveal.style.setProperty("--theme-reveal-x", `${x}px`);
@@ -234,19 +259,22 @@ const socialImage = new URL(image, Astro.site);
         reveal.style.setProperty("--theme-reveal-start-radius", `${buttonRadius}px`);
         reveal.style.setProperty("--theme-reveal-end-radius", `${radius}px`);
 
-        const circle = (value: number) =>
-          `circle(${value}px at var(--theme-reveal-x) var(--theme-reveal-y))`;
+        const revealKeyframes = (centerX: number, centerY: number) => {
+          const circle = (value: number) =>
+            `circle(${value}px at ${centerX}px ${centerY}px)`;
+          return [
+            { clipPath: circle(buttonRadius), offset: 0 },
+            { clipPath: circle(Math.max(buttonRadius, radius * 0.025)), offset: 0.16 },
+            { clipPath: circle(Math.max(buttonRadius, radius * 0.1)), offset: 0.38 },
+            { clipPath: circle(Math.max(buttonRadius, radius * 0.31)), offset: 0.62 },
+            { clipPath: circle(Math.max(buttonRadius, radius * 0.65)), offset: 0.82 },
+            { clipPath: circle(radius), offset: 1 },
+          ];
+        };
         let revealAnimation: Animation;
         try {
           revealAnimation = reveal.animate(
-            [
-              { clipPath: circle(buttonRadius), offset: 0 },
-              { clipPath: circle(Math.max(buttonRadius, radius * 0.025)), offset: 0.16 },
-              { clipPath: circle(Math.max(buttonRadius, radius * 0.1)), offset: 0.38 },
-              { clipPath: circle(Math.max(buttonRadius, radius * 0.31)), offset: 0.62 },
-              { clipPath: circle(Math.max(buttonRadius, radius * 0.65)), offset: 0.82 },
-              { clipPath: circle(radius), offset: 1 },
-            ],
+            revealKeyframes(x, y),
             { duration: revealDuration, easing: "linear", fill: "both" },
           );
         } catch {
@@ -257,33 +285,91 @@ const socialImage = new URL(image, Astro.site);
         revealAnimation.id = "theme-reveal";
         themeTransitionRunning = true;
         root.dataset.themeTransition = "active";
+
+        const pairBySource = new WeakMap<HTMLElement, HTMLElement>(
+          elementPairs.map(({ source, clone }) => [source, clone]),
+        );
+        const visualPairs = new Map<HTMLElement, { clone: HTMLElement; settledFrames: number }>();
+        const visualProperties = ["opacity", "transform", "translate", "rotate", "scale", "filter", "clip-path"];
+        const trackVisualPair = (source: HTMLElement, clone: HTMLElement) => {
+          visualPairs.set(source, { clone, settledFrames: 0 });
+        };
+        for (const { source, clone } of elementPairs) {
+          if (source.getAnimations().length > 0) trackVisualPair(source, clone);
+        }
+        const syncVisualState = () => {
+          for (const [source, state] of visualPairs) {
+            const sourceStyle = getComputedStyle(source);
+            for (const property of visualProperties) {
+              state.clone.style.setProperty(property, sourceStyle.getPropertyValue(property));
+            }
+            const active = source.getAnimations().some((animation) =>
+              animation.playState === "running" || animation.pending
+            );
+            state.settledFrames = active ? 0 : state.settledFrames + 1;
+            if (state.settledFrames > 1) visualPairs.delete(source);
+          }
+        };
+        syncVisualState();
+
+        const mirrorObserver = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (mutation.type !== "attributes" || !(mutation.target instanceof HTMLElement)) continue;
+            const source = mutation.target;
+            const clone = pairBySource.get(source);
+            const attribute = mutation.attributeName;
+            if (!clone || !attribute) continue;
+            const value = source.getAttribute(attribute);
+            if (value === null) clone.removeAttribute(attribute);
+            else clone.setAttribute(attribute, value);
+            trackVisualPair(source, clone);
+          }
+          syncVisualState();
+        });
+        for (const { source } of elementPairs) {
+          if (source.parentElement !== document.body) continue;
+          mirrorObserver.observe(source, {
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class", "style", "hidden"],
+          });
+        }
+
         const initialScrollX = window.scrollX;
         const initialScrollY = window.scrollY;
-        let lastScrollX = initialScrollX;
-        let lastScrollY = initialScrollY;
-        let syncFrame = 0;
+        let lastSyncedScrollX = initialScrollX;
+        let lastSyncedScrollY = initialScrollY;
         const syncRevealOrigin = () => {
-          if (window.scrollX !== lastScrollX || window.scrollY !== lastScrollY) {
-            lastScrollX = window.scrollX;
-            lastScrollY = window.scrollY;
-            reveal.style.setProperty(
-              "--theme-reveal-x",
-              `${x + (lastScrollX - initialScrollX) / scaleX}px`,
-            );
-            reveal.style.setProperty(
-              "--theme-reveal-y",
-              `${y + (lastScrollY - initialScrollY) / scaleY}px`,
-            );
-          }
-          if (themeTransitionRunning) syncFrame = requestAnimationFrame(syncRevealOrigin);
+          const scrollX = window.scrollX;
+          const scrollY = window.scrollY;
+          if (scrollX === lastSyncedScrollX && scrollY === lastSyncedScrollY) return;
+          lastSyncedScrollX = scrollX;
+          lastSyncedScrollY = scrollY;
+          const centerX = x + (scrollX - initialScrollX) / scaleX;
+          const centerY = y + (scrollY - initialScrollY) / scaleY;
+          reveal.style.setProperty("--theme-reveal-x", `${centerX}px`);
+          reveal.style.setProperty("--theme-reveal-y", `${centerY}px`);
+          const effect = revealAnimation.effect;
+          if (effect instanceof KeyframeEffect) effect.setKeyframes(revealKeyframes(centerX, centerY));
         };
-        syncFrame = requestAnimationFrame(syncRevealOrigin);
+        window.addEventListener("scroll", syncRevealOrigin, { passive: true });
+        window.addEventListener(workStageScrollFrameEvent, syncRevealOrigin);
+
+        let syncFrame = 0;
+        const syncThemeFrame = () => {
+          syncVisualState();
+          if (themeTransitionRunning) syncFrame = requestAnimationFrame(syncThemeFrame);
+        };
+        syncFrame = requestAnimationFrame(syncThemeFrame);
 
         let transitionStateCleared = false;
         const finishThemeTransition = () => {
           if (transitionStateCleared) return;
           transitionStateCleared = true;
           cancelAnimationFrame(syncFrame);
+          mirrorObserver.disconnect();
+          window.removeEventListener("scroll", syncRevealOrigin);
+          window.removeEventListener(workStageScrollFrameEvent, syncRevealOrigin);
           commitTheme(next);
           delete root.dataset.themeTransition;
           reveal.remove();

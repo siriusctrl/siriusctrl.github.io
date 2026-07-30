@@ -39,20 +39,8 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
     layerPixel: number[];
     finalSource: string;
   }) => {
-    await page.getByTestId("theme-toggle").click();
-    const layer = page.locator("[data-theme-render-layer]");
-    await expect(layer).toBeVisible();
-    const clonedArtwork = layer.locator(".work-frame img").first();
-    await expect(clonedArtwork).toHaveAttribute(
-      "src",
-      `/media/portraits/freeform-artifacts-${layerTheme}.svg`,
-    );
-    await expect.poll(() => samplePaper("body > main [data-work-frame=freeform-artifacts] img"))
-      .toEqual(originalPixel);
-    await expect.poll(() =>
-      samplePaper("[data-theme-render-layer] .work-frame img")
-    ).toEqual(layerPixel);
-    const activeState = await page.evaluate(() => {
+    const activeState = await page.getByTestId("theme-toggle").evaluate((element) => {
+      (element as HTMLElement).click();
       const layer = document.querySelector<HTMLElement>("[data-theme-render-layer]");
       const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
       return {
@@ -68,6 +56,18 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
     expect(activeState.animationTime).toBeGreaterThanOrEqual(0);
     expect(activeState.animationTime).toBeLessThan(920);
 
+    const layer = page.locator("[data-theme-render-layer]");
+    await expect(layer).toBeVisible();
+    const clonedArtwork = layer.locator(".work-frame img").first();
+    await expect(clonedArtwork).toHaveAttribute(
+      "src",
+      `/media/portraits/freeform-artifacts-${layerTheme}.svg`,
+    );
+    await expect.poll(() => samplePaper("body > main [data-work-frame=freeform-artifacts] img"))
+      .toEqual(originalPixel);
+    await expect.poll(() =>
+      samplePaper("[data-theme-render-layer] .work-frame img")
+    ).toEqual(layerPixel);
     await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
     await expect(original).toHaveAttribute("src", finalSource);
     await expect.poll(() => samplePaper("body > main [data-work-frame=freeform-artifacts] img"))

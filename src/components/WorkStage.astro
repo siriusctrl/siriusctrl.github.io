@@ -67,8 +67,15 @@ const workProjects = [featuredProject, ...recentProjects];
     const intentThreshold = 96;
     const gestureQuietTime = 180;
     const anchorTolerance = 2;
+    const workStageScrollFrameEvent = "working-set:work-stage-scroll-frame";
     const clamp = (value: number, minimum: number, maximum: number) =>
       Math.min(maximum, Math.max(minimum, value));
+    const scrollWorkTo = (top: number) => {
+      window.scrollTo(0, top);
+      if (root.dataset.themeTransition === "active") {
+        window.dispatchEvent(new Event(workStageScrollFrameEvent));
+      }
+    };
 
     let activeIndex = -1;
     let isWorkAnimating = false;
@@ -169,7 +176,7 @@ const workProjects = [featuredProject, ...recentProjects];
       settleWorkPull();
 
       const finish = () => {
-        window.scrollTo(0, target);
+        scrollWorkTo(target);
         if (targetIndex !== undefined) activateWork(targetIndex);
         isWorkAnimating = false;
         animationFrame = undefined;
@@ -215,7 +222,7 @@ const workProjects = [featuredProject, ...recentProjects];
         velocity += acceleration * deltaTime;
         position += velocity * deltaTime;
         animationVelocity = velocity;
-        window.scrollTo(0, position);
+        scrollWorkTo(position);
         activateWork(nearestIndexFor(position));
 
         if ((Math.abs(target - position) < 0.35 && Math.abs(velocity) < 4) || elapsed > 1200) {
