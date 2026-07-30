@@ -92,104 +92,207 @@ const socialImage = new URL(image, Astro.site);
     <slot />
     <SiteFooter />
     <script>
-      type ThemeTransition = {
-        ready: Promise<void>;
-        finished: Promise<void>;
-        skipTransition: () => void;
+      const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+      const root = document.documentElement;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const revealDuration = 920;
+      let themeTransitionRunning = false;
+      const themeImagePreloads: HTMLImageElement[] = [];
+
+      const registerThemeImages = (scope: ParentNode) => {
+        scope.querySelectorAll<HTMLImageElement>("img").forEach((image) => {
+          if (image.dataset.themeSrcLight && image.dataset.themeSrcDark) return;
+          const source = image.getAttribute("src");
+          const match = source?.match(/^(\/media\/(?:portraits|notes)\/.+)-(?:light|dark)\.svg$/);
+          if (!match) return;
+          image.dataset.themeSrcLight = `${match[1]}-light.svg`;
+          image.dataset.themeSrcDark = `${match[1]}-dark.svg`;
+        });
       };
 
-      const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-      const transitionDocument = document as Document & {
-        startViewTransition?: (update: () => void) => ThemeTransition;
+      const syncThemeImages = (scope: ParentNode, theme: "light" | "dark") => {
+        registerThemeImages(scope);
+        scope.querySelectorAll<HTMLImageElement>("[data-theme-src-light][data-theme-src-dark]")
+          .forEach((image) => {
+            const source = theme === "dark"
+              ? image.dataset.themeSrcDark
+              : image.dataset.themeSrcLight;
+            if (source && image.getAttribute("src") !== source) image.setAttribute("src", source);
+          });
       };
+
+      const preloadThemeImages = (scope: ParentNode, theme: "light" | "dark") => {
+        registerThemeImages(scope);
+        const sources = new Set<string>();
+        scope.querySelectorAll<HTMLImageElement>("[data-theme-src-light][data-theme-src-dark]")
+          .forEach((image) => {
+            const source = theme === "dark"
+              ? image.dataset.themeSrcLight
+              : image.dataset.themeSrcDark;
+            if (source) sources.add(source);
+          });
+        for (const source of sources) {
+          const preload = new Image();
+          preload.src = source;
+          void preload.decode().catch(() => undefined);
+          themeImagePreloads.push(preload);
+        }
+      };
+
+      const persistTheme = (theme: "light" | "dark") => {
+        document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
+          "content",
+          theme === "dark" ? "#1b1d1b" : "#eeefeb",
+        );
+        window.localStorage.setItem("siriusctrl.theme", theme);
+        const label = `Switch to ${theme === "dark" ? "light" : "dark"} mode`;
+        toggle?.setAttribute("aria-label", label);
+        toggle?.setAttribute("title", label);
+      };
+
+      const commitTheme = (theme: "light" | "dark") => {
+        syncThemeImages(document.body, theme);
+        root.dataset.theme = theme;
+      };
+
+      const cloneThemeSurface = (theme: "light" | "dark") => {
+        const documentWidth = Math.max(root.scrollWidth, document.body.scrollWidth, window.innerWidth);
+        const documentHeight = Math.max(root.scrollHeight, document.body.scrollHeight, window.innerHeight);
+        const layer = document.createElement("div");
+        layer.className = "theme-render-layer";
+        layer.dataset.themeRenderLayer = "";
+        layer.dataset.themeReveal = "";
+        layer.dataset.theme = theme;
+        layer.setAttribute("aria-hidden", "true");
+        layer.inert = true;
+        layer.style.setProperty("--theme-render-width", `${documentWidth}px`);
+        layer.style.setProperty("--theme-render-height", `${documentHeight}px`);
+
+        const sourceChildren = [...document.body.children].filter((element) =>
+          element.tagName !== "SCRIPT" && !element.hasAttribute("data-theme-render-layer")
+        );
+        for (const source of sourceChildren) {
+          const clone = source.cloneNode(true) as HTMLElement;
+          clone.querySelectorAll("script").forEach((script) => script.remove());
+          syncThemeImages(clone, theme);
+          const clonedElements = [clone, ...clone.querySelectorAll<HTMLElement>("*")];
+          for (const element of clonedElements) {
+            element.removeAttribute("id");
+            element.removeAttribute("autofocus");
+            for (const attribute of [...element.attributes]) {
+              if (attribute.name.startsWith("data-")) element.removeAttribute(attribute.name);
+            }
+          }
+          layer.append(clone);
+        }
+
+        document.body.append(layer);
+        const renderedHeight = Math.max(documentHeight, layer.scrollHeight);
+        layer.style.setProperty("--theme-render-height", `${renderedHeight}px`);
+        return layer;
+      };
+
+      const initialTheme = root.dataset.theme === "dark" ? "dark" : "light";
+      syncThemeImages(document.body, initialTheme);
+      preloadThemeImages(document.body, initialTheme);
 
       toggle?.addEventListener("click", () => {
-        const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-        const applyTheme = () => {
-          document.documentElement.dataset.theme = next;
-          document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
-            "content",
-            next === "dark" ? "#1b1d1b" : "#eeefeb",
-          );
-          window.localStorage.setItem("siriusctrl.theme", next);
-          const label = `Switch to ${next === "dark" ? "light" : "dark"} mode`;
-          toggle.setAttribute("aria-label", label);
-          toggle.setAttribute("title", label);
-        };
+        if (themeTransitionRunning) return;
 
-        if (!transitionDocument.startViewTransition || reducedMotion.matches) {
-          applyTheme();
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        persistTheme(next);
+
+        if (reducedMotion.matches) {
+          commitTheme(next);
           return;
         }
 
         const bounds = toggle.getBoundingClientRect();
-        const x = bounds.left + bounds.width / 2;
-        const y = bounds.top + bounds.height / 2;
-        const buttonRadius = Math.max(bounds.width, bounds.height) / 2;
-        const radius = Math.hypot(
-          Math.max(x, window.innerWidth - x),
-          Math.max(y, window.innerHeight - y),
+        const visualX = bounds.left + bounds.width / 2;
+        const visualY = bounds.top + bounds.height / 2;
+        let reveal: HTMLDivElement;
+        try {
+          reveal = cloneThemeSurface(next);
+        } catch {
+          commitTheme(next);
+          return;
+        }
+
+        const layerBounds = reveal.getBoundingClientRect();
+        const scaleX = layerBounds.width / reveal.offsetWidth || 1;
+        const scaleY = layerBounds.height / reveal.offsetHeight || scaleX;
+        const x = (visualX - layerBounds.left) / scaleX;
+        const y = (visualY - layerBounds.top) / scaleY;
+        const buttonRadius = Math.max(bounds.width / scaleX, bounds.height / scaleY) / 2;
+        const visualRadius = Math.hypot(
+          Math.max(visualX, window.innerWidth - visualX),
+          Math.max(visualY, window.innerHeight - visualY),
         );
-        const radiusBasis = Math.hypot(window.innerWidth, window.innerHeight) / Math.SQRT2;
-        const position = `${(x / window.innerWidth) * 100}% ${(y / window.innerHeight) * 100}%`;
-        const radiusPercent = (value: number) => `${(value / radiusBasis) * 100}%`;
-        const transition = transitionDocument.startViewTransition(applyTheme);
-        document.documentElement.dataset.themeTransition = "active";
-        let revealAnimation: Animation | undefined;
-        let yieldedToScroll = false;
-        const scrollKeys = new Set([
-          "ArrowUp",
-          "ArrowDown",
-          "PageUp",
-          "PageDown",
-          "Home",
-          "End",
-          " ",
-        ]);
-        const yieldToScroll = () => {
-          if (yieldedToScroll) return;
-          yieldedToScroll = true;
-          revealAnimation?.cancel();
-          transition.skipTransition();
-        };
-        const yieldToScrollKey = (event: KeyboardEvent) => {
-          if (scrollKeys.has(event.key)) yieldToScroll();
-        };
-        const passiveListener = { passive: true } as const;
-        window.addEventListener("wheel", yieldToScroll, passiveListener);
-        window.addEventListener("touchmove", yieldToScroll, passiveListener);
-        window.addEventListener("scroll", yieldToScroll, passiveListener);
-        window.addEventListener("keydown", yieldToScrollKey);
+        const radius = visualRadius / Math.min(scaleX, scaleY);
+        reveal.style.setProperty("--theme-reveal-x", `${x}px`);
+        reveal.style.setProperty("--theme-reveal-y", `${y}px`);
+        reveal.style.setProperty("--theme-reveal-start-radius", `${buttonRadius}px`);
+        reveal.style.setProperty("--theme-reveal-end-radius", `${radius}px`);
 
-        transition.ready
-          .then(() => {
-            revealAnimation = document.documentElement.animate(
-              [
-                { clipPath: `circle(0% at ${position})`, offset: 0 },
-                { clipPath: `circle(${radiusPercent(buttonRadius)} at ${position})`, offset: 0.16 },
-                { clipPath: `circle(${radiusPercent(radius * 0.08)} at ${position})`, offset: 0.38 },
-                { clipPath: `circle(${radiusPercent(radius * 0.28)} at ${position})`, offset: 0.62 },
-                { clipPath: `circle(${radiusPercent(radius * 0.62)} at ${position})`, offset: 0.82 },
-                { clipPath: `circle(${radiusPercent(radius)} at ${position})`, offset: 1 },
-              ],
-              {
-                duration: 860,
-                easing: "linear",
-                pseudoElement: "::view-transition-new(root)",
-              } as KeyframeAnimationOptions & { pseudoElement: string },
+        const circle = (value: number) =>
+          `circle(${value}px at var(--theme-reveal-x) var(--theme-reveal-y))`;
+        let revealAnimation: Animation;
+        try {
+          revealAnimation = reveal.animate(
+            [
+              { clipPath: circle(buttonRadius), offset: 0 },
+              { clipPath: circle(Math.max(buttonRadius, radius * 0.025)), offset: 0.16 },
+              { clipPath: circle(Math.max(buttonRadius, radius * 0.1)), offset: 0.38 },
+              { clipPath: circle(Math.max(buttonRadius, radius * 0.31)), offset: 0.62 },
+              { clipPath: circle(Math.max(buttonRadius, radius * 0.65)), offset: 0.82 },
+              { clipPath: circle(radius), offset: 1 },
+            ],
+            { duration: revealDuration, easing: "linear", fill: "both" },
+          );
+        } catch {
+          reveal.remove();
+          commitTheme(next);
+          return;
+        }
+        revealAnimation.id = "theme-reveal";
+        themeTransitionRunning = true;
+        root.dataset.themeTransition = "active";
+        const initialScrollX = window.scrollX;
+        const initialScrollY = window.scrollY;
+        let lastScrollX = initialScrollX;
+        let lastScrollY = initialScrollY;
+        let syncFrame = 0;
+        const syncRevealOrigin = () => {
+          if (window.scrollX !== lastScrollX || window.scrollY !== lastScrollY) {
+            lastScrollX = window.scrollX;
+            lastScrollY = window.scrollY;
+            reveal.style.setProperty(
+              "--theme-reveal-x",
+              `${x + (lastScrollX - initialScrollX) / scaleX}px`,
             );
-          })
-          .catch(() => undefined);
-
-        const clearTransitionState = () => {
-          delete document.documentElement.dataset.themeTransition;
-          window.removeEventListener("wheel", yieldToScroll);
-          window.removeEventListener("touchmove", yieldToScroll);
-          window.removeEventListener("scroll", yieldToScroll);
-          window.removeEventListener("keydown", yieldToScrollKey);
+            reveal.style.setProperty(
+              "--theme-reveal-y",
+              `${y + (lastScrollY - initialScrollY) / scaleY}px`,
+            );
+          }
+          if (themeTransitionRunning) syncFrame = requestAnimationFrame(syncRevealOrigin);
         };
-        transition.finished.then(clearTransitionState, clearTransitionState);
+        syncFrame = requestAnimationFrame(syncRevealOrigin);
+
+        let transitionStateCleared = false;
+        const finishThemeTransition = () => {
+          if (transitionStateCleared) return;
+          transitionStateCleared = true;
+          cancelAnimationFrame(syncFrame);
+          commitTheme(next);
+          delete root.dataset.themeTransition;
+          reveal.remove();
+          themeTransitionRunning = false;
+          window.removeEventListener("pagehide", finishThemeTransition);
+        };
+        revealAnimation.addEventListener("finish", finishThemeTransition, { once: true });
+        revealAnimation.addEventListener("cancel", finishThemeTransition, { once: true });
+        window.addEventListener("pagehide", finishThemeTransition, { once: true });
       });
     </script>
   </body>

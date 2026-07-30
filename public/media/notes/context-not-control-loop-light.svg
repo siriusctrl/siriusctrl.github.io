@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">Agent execution and evaluation loop</title>
+  <desc id="description">A task contract and context feed agent implementation. Programmatic and behavioral evaluation lead to independent review. Failed work returns to revision; successful work receives human approval and writes experience back to context.</desc>
+  <style>
+    :root{--paper:#efeee9;--ink:#202321;--muted:#737873;--faint:#c5c6c0;--rule:#d2d2cc;--accent:#b63d34;--accent-soft:#e6cfca}
+    .paper{fill:var(--paper)}
+    .frame,.guide,.box,.flow,.loop{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}
+    .guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .box{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .box.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .flow{stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .flow.active,.loop{stroke:var(--accent);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+    .dot{fill:var(--ink)}.dot.active{fill:var(--accent)}
+    .label,.micro,.node-label,.state{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}
+    .micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .node-label{font-size:18px;letter-spacing:.06em}
+    .state{font-size:13px;letter-spacing:.09em}
+    .accent-text{fill:var(--accent)}
+
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="var(--ink)"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="var(--accent)"/></marker>
+  </defs>
+
+  <rect class="paper" width="1600" height="900"/>
+  <rect class="frame" x="36.5" y="36.5" width="1527" height="827"/>
+  <text class="label" x="84" y="94">AGENT / EVALUATION LOOP</text>
+  <text class="micro" x="1516" y="94" text-anchor="end">EVIDENCE BEFORE APPROVAL</text>
+  <path class="guide" d="M84 130H1516"/>
+
+  <rect class="box" x="95" y="210" width="235" height="105"/>
+  <text class="node-label" x="212" y="258" text-anchor="middle">TASK CONTRACT</text>
+  <text class="micro" x="212" y="286" text-anchor="middle">OBJECTIVE / CONSTRAINTS</text>
+
+  <rect class="box active" x="95" y="390" width="235" height="105"/>
+  <text class="node-label accent-text" x="212" y="438" text-anchor="middle">CONTEXT</text>
+  <text class="micro" x="212" y="466" text-anchor="middle">TOOLS / MEMORY / STATE</text>
+
+  <rect class="box active" x="425" y="300" width="235" height="105"/>
+  <text class="node-label accent-text" x="542" y="348" text-anchor="middle">IMPLEMENT</text>
+  <text class="micro" x="542" y="376" text-anchor="middle">AGENT EXECUTION</text>
+
+  <rect class="box" x="755" y="210" width="235" height="105"/>
+  <text class="node-label" x="872" y="258" text-anchor="middle">PROGRAMMATIC</text>
+  <text class="micro" x="872" y="286" text-anchor="middle">TESTS / TYPES / CI</text>
+
+  <rect class="box" x="755" y="390" width="235" height="105"/>
+  <text class="node-label" x="872" y="438" text-anchor="middle">BEHAVIORAL</text>
+  <text class="micro" x="872" y="466" text-anchor="middle">UI / UX / ARTIFACTS</text>
+
+  <rect class="box" x="1085" y="300" width="235" height="105"/>
+  <text class="node-label" x="1202" y="348" text-anchor="middle">REVIEW</text>
+  <text class="micro" x="1202" y="376" text-anchor="middle">INDEPENDENT CONTEXT</text>
+
+  <rect class="box active" x="1370" y="300" width="145" height="105"/>
+  <text class="node-label accent-text" x="1442" y="348" text-anchor="middle">QUALITY</text>
+  <text class="micro" x="1442" y="376" text-anchor="middle">BAR</text>
+
+  <path class="flow" d="M330 262H380V335H425" marker-end="url(#arrow)"/>
+  <path class="flow active" d="M330 442H380V370H425" marker-end="url(#arrow-accent)"/>
+  <path class="flow" d="M660 352H705V262H755" marker-end="url(#arrow)"/>
+  <path class="flow" d="M660 352H705V442H755" marker-end="url(#arrow)"/>
+  <path class="flow" d="M990 262H1035V335H1085" marker-end="url(#arrow)"/>
+  <path class="flow" d="M990 442H1035V370H1085" marker-end="url(#arrow)"/>
+  <path class="flow active" d="M1320 352H1370" marker-end="url(#arrow-accent)"/>
+
+  <rect class="box" x="1085" y="615" width="235" height="105"/>
+  <text class="node-label" x="1202" y="663" text-anchor="middle">REVISE</text>
+  <text class="micro" x="1202" y="691" text-anchor="middle">REBUTTAL / RETRY</text>
+
+  <rect class="box active" x="1370" y="540" width="145" height="105"/>
+  <text class="node-label accent-text" x="1442" y="588" text-anchor="middle">HUMAN</text>
+  <text class="micro" x="1442" y="616" text-anchor="middle">APPROVAL</text>
+
+  <rect class="box" x="1370" y="690" width="145" height="105"/>
+  <text class="node-label" x="1442" y="738" text-anchor="middle">WRITE</text>
+  <text class="micro" x="1442" y="766" text-anchor="middle">BACK</text>
+
+  <path class="loop" d="M1442 405V475H1202V615" marker-end="url(#arrow-accent)"/>
+  <text class="state accent-text" x="1348" y="458" text-anchor="end">NO</text>
+  <path class="loop" d="M1085 668H872V495" marker-end="url(#arrow-accent)"/>
+  <path class="flow active" d="M1442 405V540" marker-end="url(#arrow-accent)"/>
+  <text class="state accent-text" x="1460" y="495">YES</text>
+  <path class="flow" d="M1442 645V690" marker-end="url(#arrow)"/>
+  <path class="loop" d="M1370 742H212V495" marker-end="url(#arrow-accent)"/>
+</svg>

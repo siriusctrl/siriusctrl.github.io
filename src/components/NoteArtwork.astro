@@ -7,11 +7,16 @@ interface Props {
 }
 
 const { src, alt, eager = false, class: className = "" } = Astro.props;
+const hasThemeVariants = src.endsWith(".svg") && src.startsWith("/media/notes/");
+const lightSource = hasThemeVariants ? src.replace(/\.svg$/, "-light.svg") : src;
+const darkSource = hasThemeVariants ? src.replace(/\.svg$/, "-dark.svg") : undefined;
 ---
 
 <figure class:list={["note-artwork", className]}>
   <img
-    src={src}
+    src={lightSource}
+    data-theme-src-light={hasThemeVariants ? lightSource : undefined}
+    data-theme-src-dark={darkSource}
     alt={alt}
     width="1600"
     height="1000"

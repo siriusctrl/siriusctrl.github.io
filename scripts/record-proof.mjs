@@ -40,7 +40,47 @@ try {
   await page.goto(url);
   await page.waitForTimeout(650);
   await page.getByTestId("theme-toggle").click();
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(55);
+  if (await page.locator("html[data-theme-transition=active]").count() !== 1) {
+    throw new Error("Theme transition ended before the live-scroll proof began");
+  }
+  const revealStart = await page.evaluate(() => {
+    const layer = document.querySelector("[data-theme-reveal]");
+    const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+    if (!layer || !animation) throw new Error("Theme reveal did not expose its render layer");
+    window.__themeProofReference = { layer, animation };
+    return Number(animation.currentTime);
+  });
+  if (revealStart >= 100) {
+    throw new Error(`Live-scroll proof started too late in the reveal: ${revealStart}ms`);
+  }
+  await page.mouse.wheel(0, 420);
+  await page.waitForTimeout(140);
+  const revealAfterWheel = await page.evaluate(() => {
+    const layer = document.querySelector("[data-theme-reveal]");
+    const animation = layer?.getAnimations().find((candidate) => candidate.id === "theme-reveal");
+    return {
+      active: document.documentElement.dataset.themeTransition === "active",
+      sameLayer: window.__themeProofReference?.layer === layer,
+      sameAnimation: window.__themeProofReference?.animation === animation,
+      currentTime: Number(animation?.currentTime ?? -1),
+    };
+  });
+  if (
+    !revealAfterWheel.active
+    || !revealAfterWheel.sameLayer
+    || !revealAfterWheel.sameAnimation
+    || revealAfterWheel.currentTime <= revealStart
+  ) {
+    throw new Error("Wheel scrolling interrupted the theme transition");
+  }
+  await page.keyboard.press("PageDown");
+  await page.waitForTimeout(120);
+  if (await page.locator("html[data-theme-transition=active]").count() !== 1) {
+    throw new Error("Keyboard scrolling interrupted the theme transition");
+  }
+  await page.waitForFunction(() => !document.documentElement.dataset.themeTransition);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
@@ -140,7 +180,8 @@ try {
     url,
     actions: [
       "open home",
-      "switch to dark mode with a radial reveal from the theme button",
+      "switch to dark mode with a live-DOM radial reveal from the theme button",
+      "wheel and PageDown while the uninterrupted theme reveal remains active",
       "open the projects index",
       "move one wheel step from Freeform Artifacts to the centered Lattice stage",
       "open Lattice detail and verify its graph research portrait and current copy",
@@ -159,7 +200,9 @@ try {
       "",
       "- Chromium rendered the home, project detail, projects index, writing index, and article routes.",
       "- Theme switching persisted across internal navigation.",
-      "- The radial theme reveal and one-project scroll snap were exercised.",
+      "- Wheel and PageDown moved the live page while the radial theme reveal remained active.",
+      "- The theme reveal finished naturally after both scroll inputs; no snapshot overlay or scroll lock was used.",
+      "- The projects index one-project scroll snap was exercised.",
       "- The article language switch selected the authored Chinese route and persisted the choice.",
       "- SVG project and article portraits loaded in the selected theme before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",

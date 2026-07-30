@@ -11,10 +11,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "serve:test": "node scripts/serve-test.mjs",
-    "check": "astro check && astro build",
+    "generate:theme-svg": "node scripts/generate-theme-svg-variants.mjs",
+    "check:theme-svg": "node scripts/generate-theme-svg-variants.mjs --check",
+    "check": "npm run check:theme-svg && astro check && astro build",
     "verify:ui": "playwright test",
     "verify:proof": "node scripts/record-proof.mjs",
-    "setup:browsers": "playwright install chromium"
+    "setup:browsers": "playwright install chromium webkit"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",

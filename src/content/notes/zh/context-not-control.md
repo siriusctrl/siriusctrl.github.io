@@ -46,7 +46,7 @@ Behavior cloning 中的 compounding error 可以帮助我们理解 evaluation �
 
 程序化检查覆盖不了全部质量问题，因此我还会启动不继承实现对话的 reviewer，让它独立运行测试、操作产品并检查代码。Reviewer 找到问题后，implementation agent 需要判断反馈是否成立，完成 rebuttal 和 revision，再重新运行 evaluation。另一个 agent 可以用第一次接触产品的视角检查 UX，maintenance agent 则在任务结束后更新文档、changelog 和 repo context。整个过程形成下面的闭环：
 
-![Agent workflow 从 task contract 和 context 出发，经过实现、evaluation、独立 review、human approval，最后将经验写回 context](/media/notes/context-not-control-loop.svg)
+![Agent workflow 从 task contract 和 context 出发，经过实现、evaluation、独立 review、human approval，最后将经验写回 context](/media/notes/context-not-control-loop-light.svg)
 
 *Evaluation 把没有达到 quality bar 的结果送回 revision loop，让 agent 能够持续迭代，而不是在第一次生成后结束任务。*
 
@@ -118,7 +118,7 @@ GitHub 仍然是这套系统里的重要组成部分。它很适合继续承载 
 
 Cloud 在这套架构中依然不可替代。它适合提供 clean environment、隔离执行、弹性并发和可复现 evaluation。本地或常驻节点更适合保存长期状态、调度 threads、管理 credentials、复用 cache，并为人提供持续可见的操作界面。这两个层次可以分别看作 control plane 和 execution plane：常驻 orchestrator 理解任务和历史，disposable sandbox 负责在干净环境中验证结果。
 
-![Persistent orchestrator 将任务分发到本地持久环境和 disposable cloud sandboxes，再经过 evaluation、approval、交付与 context write-back](/media/notes/context-not-control-orchestrator.svg)
+![Persistent orchestrator 将任务分发到本地持久环境和 disposable cloud sandboxes，再经过 evaluation、approval、交付与 context write-back](/media/notes/context-not-control-orchestrator-light.svg)
 
 *Persistent orchestrator 保存任务状态与 context，disposable cloud environment 提供干净、可复现的 evaluation。*
 

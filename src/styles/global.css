@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme-render-layer] {
   color-scheme: light;
   --bg: #eeefeb;
   --surface: #f5f5f1;
@@ -18,7 +19,8 @@
   --font-zh: "Noto Serif SC Variable", "Songti SC", STSong, serif;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+[data-theme-render-layer][data-theme="dark"] {
   color-scheme: dark;
   --bg: #1b1d1b;
   --surface: #222522;
@@ -43,23 +45,30 @@ html {
   scroll-behavior: smooth;
 }
 
-::view-transition-image-pair(root) {
-  isolation: auto;
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
+.theme-render-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 90;
   display: block;
-  animation: none;
-  mix-blend-mode: normal;
+  width: var(--theme-render-width);
+  min-height: var(--theme-render-height);
+  color: var(--text);
+  background: var(--bg);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+  isolation: isolate;
+  will-change: clip-path;
 }
 
-::view-transition-old(root) {
-  z-index: 1;
-}
-
-::view-transition-new(root) {
-  z-index: 2;
+.theme-render-layer *,
+.theme-render-layer *::before,
+.theme-render-layer *::after {
+  animation: none !important;
+  transition: none !important;
 }
 
 body {
@@ -91,6 +100,10 @@ button {
 img {
   display: block;
   max-width: 100%;
+}
+
+:root[data-theme="dark"] body > :not([data-theme-render-layer]) img[src$="-light.svg"] {
+  visibility: hidden;
 }
 
 .icon {
@@ -165,11 +178,13 @@ img {
   display: none;
 }
 
-:root[data-theme="dark"] .theme-moon {
+:root[data-theme="dark"] body > .site-header .theme-moon,
+[data-theme-render-layer][data-theme="dark"] > .site-header .theme-moon {
   display: none;
 }
 
-:root[data-theme="dark"] .theme-sun {
+:root[data-theme="dark"] body > .site-header .theme-sun,
+[data-theme-render-layer][data-theme="dark"] > .site-header .theme-sun {
   display: inline-block;
 }
 
@@ -1458,6 +1473,7 @@ a:hover > .project-artwork img {
     scroll-behavior: auto;
   }
 
+  .theme-render-layer,
   .work-frame,
   .work-entry,
   .project-artwork img,

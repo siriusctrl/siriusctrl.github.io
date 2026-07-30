@@ -12,11 +12,17 @@ const { project, eager = false, variant = "portrait", class: className = "" } = 
 const source = variant === "portrait" ? project.portrait : project.image;
 const alt = variant === "portrait" ? project.portraitAlt : project.imageAlt;
 const hasPortraitArt = source === project.portrait;
+const hasThemeVariants = source.endsWith(".svg")
+  && (source.startsWith("/media/portraits/") || source.startsWith("/media/notes/"));
+const lightSource = hasThemeVariants ? source.replace(/\.svg$/, "-light.svg") : source;
+const darkSource = hasThemeVariants ? source.replace(/\.svg$/, "-dark.svg") : undefined;
 ---
 
 <figure class:list={["project-artwork", `is-${variant}`, { "has-portrait-art": hasPortraitArt }, className]}>
   <img
-    src={source}
+    src={lightSource}
+    data-theme-src-light={hasThemeVariants ? lightSource : undefined}
+    data-theme-src-dark={darkSource}
     alt={alt}
     width="1600"
     height="1000"

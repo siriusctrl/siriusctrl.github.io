@@ -17,7 +17,20 @@ export default defineConfig({
     timeout: 120_000,
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    {
+      name: "desktop",
+      testIgnore: /theme-svg-webkit\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "mobile",
+      testIgnore: /theme-svg-webkit\.spec\.ts/,
+      use: { ...devices["Pixel 7"] },
+    },
+    {
+      name: "webkit-theme",
+      testMatch: /theme-svg-webkit\.spec\.ts/,
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
 });

@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Working Set publishing model</title>
+  <desc id="description">A source document passes through a small static shell, then branches into an article for reading and independent software that can run on its own.</desc>
+  <style>
+    :root{
+      --paper:#efeee9;
+      --ink:#202321;
+      --muted:#737873;
+      --faint:#c5c6c0;
+      --rule:#d2d2cc;
+      --accent:#b63d34;
+      --accent-soft:#e6cfca;
+    }
+    .paper{fill:var(--paper)}
+    .frame,.guide,.panel,.line,.path,.node{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}
+    .guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .panel{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .panel.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .line{stroke:var(--ink);stroke-width:1.7;stroke-linecap:round}
+    .line.soft{stroke:var(--faint)}
+    .path{stroke:var(--ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    .path.active{stroke:var(--accent);stroke-width:2.4}
+    .node{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+    .node.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+    .dot{fill:var(--ink)}
+    .dot.active{fill:var(--accent)}
+    .label,.micro,.panel-label{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}
+    .micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}
+    .panel-label{font-size:16px;letter-spacing:.12em}
+    .accent-text{fill:var(--accent)}
+    .piece{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+    .source{animation:source-in 950ms cubic-bezier(.16,1,.3,1) 80ms both}
+    .shell{animation:shell-in 900ms cubic-bezier(.16,1,.3,1) 180ms both}
+    .outputs{animation:outputs-in 1050ms cubic-bezier(.16,1,.3,1) 300ms both}
+    .draw{stroke-dasharray:1400;animation:draw 1250ms cubic-bezier(.16,1,.3,1) 650ms both}
+    @keyframes source-in{from{opacity:0;transform:translateX(-55px)}to{opacity:1;transform:none}}
+    @keyframes shell-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+    @keyframes outputs-in{from{opacity:0;transform:translateX(55px)}to{opacity:1;transform:none}}
+    @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
+
+    @media(prefers-reduced-motion:reduce){.piece,.draw{animation:none}}
+  </style>
+
+  <rect class="paper" width="1600" height="1000"/>
+  <rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">WORKING SET / PUBLISH</text>
+  <text class="micro" x="1508" y="102" text-anchor="end">SEPARATE RELEASES</text>
+  <path class="guide" d="M150 500H1450"/>
+
+  <g class="piece source">
+    <rect class="panel" x="165" y="245" width="355" height="510"/>
+    <text class="panel-label" x="215" y="305">SOURCE</text>
+    <path class="guide" d="M215 340H470"/>
+    <path class="line" d="M215 395H445M215 435H405M215 475H455"/>
+    <path class="line soft" d="M215 545H455M215 585H390M215 625H435M215 665H365"/>
+    <circle class="node active" cx="215" cy="705" r="13"/>
+    <circle class="dot active" cx="215" cy="705" r="4"/>
+    <path class="line" d="M248 705H405"/>
+    <circle class="dot" cx="520" cy="500" r="6"/>
+  </g>
+
+  <path class="path active draw" d="M520 500H665"/>
+
+  <g class="piece shell">
+    <rect class="panel active" x="665" y="320" width="270" height="360"/>
+    <text class="panel-label accent-text" x="800" y="382" text-anchor="middle">STATIC</text>
+    <path class="guide" d="M715 420H885"/>
+    <rect class="panel" x="715" y="455" width="170" height="72"/>
+    <path class="line" d="M745 485H845M745 506H815"/>
+    <rect class="panel" x="715" y="555" width="170" height="72"/>
+    <circle class="node" cx="750" cy="591" r="11"/>
+    <path class="line" d="M780 591H848"/>
+    <circle class="dot active" cx="665" cy="500" r="7"/>
+    <circle class="dot active" cx="935" cy="500" r="7"/>
+  </g>
+
+  <path class="path active draw" d="M935 500H1000V330H1080M1000 500V670H1080"/>
+  <circle class="node active" cx="1000" cy="500" r="13"/>
+  <circle class="dot active" cx="1000" cy="500" r="4"/>
+
+  <g class="piece outputs">
+    <rect class="panel" x="1080" y="210" width="330" height="240"/>
+    <text class="panel-label" x="1130" y="272">READ</text>
+    <path class="guide" d="M1130 305H1360"/>
+    <path class="line" d="M1130 345H1350M1130 378H1305M1130 411H1340"/>
+    <circle class="dot active" cx="1080" cy="330" r="7"/>
+
+    <rect class="panel" x="1080" y="550" width="330" height="240"/>
+    <text class="panel-label" x="1130" y="612">RUN</text>
+    <path class="guide" d="M1130 645H1360"/>
+    <path class="path" d="M1140 705H1340"/>
+    <circle class="node" cx="1140" cy="705" r="14"/>
+    <circle class="dot" cx="1140" cy="705" r="4"/>
+    <circle class="node active" cx="1240" cy="705" r="14"/>
+    <circle class="dot active" cx="1240" cy="705" r="4"/>
+    <circle class="node" cx="1340" cy="705" r="14"/>
+    <circle class="dot" cx="1340" cy="705" r="4"/>
+    <circle class="dot active" cx="1080" cy="670" r="7"/>
+  </g>
+</svg>
