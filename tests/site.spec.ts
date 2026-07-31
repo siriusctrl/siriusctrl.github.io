@@ -13,7 +13,7 @@ test("home page presents ideas, writing, projects, and keeps the chosen theme", 
   await expect(page.getByRole("heading", { name: "Agents with observable state" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Static software as a publishing medium" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Context, Not Control: Managing an Agent Workforce" }),
+    page.getByRole("heading", { name: "A Chat Log Is Not a Knowledge Structure" }),
   ).toBeVisible();
   await expect(page.locator('a[href="/projects/freeform-artifacts/"]')).toHaveCount(2);
   await expect(page.locator('a[href="/projects/lattice/"]')).toHaveCount(2);
@@ -629,8 +629,12 @@ test("article language follows the browser and remembers an explicit choice", as
 
 test("article artwork follows the selected site theme", async ({ page }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem("siriusctrl.language", "en");
-    window.localStorage.setItem("siriusctrl.theme", "light");
+    if (!window.localStorage.getItem("siriusctrl.language")) {
+      window.localStorage.setItem("siriusctrl.language", "en");
+    }
+    if (!window.localStorage.getItem("siriusctrl.theme")) {
+      window.localStorage.setItem("siriusctrl.theme", "light");
+    }
   });
   await page.goto("/notes/rebuilding-the-site/");
   const artwork = page.locator("body > main .article-note-artwork img");
@@ -694,6 +698,57 @@ test("context not control publishes complete bilingual media", async ({ page }) 
     name: "Context, Not Control：管理 Agent Workforce",
   })).toBeVisible();
   await expect(page.locator(".prose img")).toHaveCount(3);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+});
+
+test("beyond linear chat publishes as a bilingual Working Set essay", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!window.localStorage.getItem("siriusctrl.language")) {
+      window.localStorage.setItem("siriusctrl.language", "en");
+    }
+    if (!window.localStorage.getItem("siriusctrl.theme")) {
+      window.localStorage.setItem("siriusctrl.theme", "light");
+    }
+  });
+
+  await page.goto("/notes/beyond-linear-chat/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "A Chat Log Is Not a Knowledge Structure",
+  })).toBeVisible();
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "The timeline is not the enemy",
+  })).toBeVisible();
+  await expect(page.locator(".article-note-artwork img")).toHaveAttribute(
+    "src",
+    "/media/notes/beyond-linear-chat-light.svg",
+  );
+  await expect(page.getByRole("link", { name: "Lattice prototype" })).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/lattice/",
+  );
+  await expect(page.locator('link[rel="alternate"][hreflang="zh-CN"]')).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/zh/notes/beyond-linear-chat/",
+  );
+
+  await page.getByRole("link", { name: "Read in Chinese" }).click();
+  await expect(page).toHaveURL(/\/zh\/notes\/beyond-linear-chat\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "对话会分叉，阅读仍应成篇",
+  })).toBeVisible();
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "图谱负责方向与出处，不负责正文",
+  })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Lattice 原型" })).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/lattice/",
+  );
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
@@ -1053,7 +1108,7 @@ test("project and note routes render real content", async ({ page, isMobile }) =
   const noteArtwork = noteRow.locator(".notes-index-artwork");
   const noteDate = noteRow.locator("time");
   const noteTitle = noteRow.getByRole("heading", {
-    name: "Context, Not Control: Managing an Agent Workforce",
+    name: "A Chat Log Is Not a Knowledge Structure",
   });
   await expect(noteArtwork.locator("img")).toBeVisible();
   if (!isMobile) {
@@ -1080,8 +1135,8 @@ test("project and note routes render real content", async ({ page, isMobile }) =
     expect(indexType.paddingBottom).toBeLessThanOrEqual(52);
     expect(indexType.height).toBeLessThanOrEqual(240);
   }
-  await page.getByRole("link", { name: "Context, Not Control: Managing an Agent Workforce" }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "AI as the Default Executor" })).toBeVisible();
+  await page.getByRole("link", { name: "A Chat Log Is Not a Knowledge Structure" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "The timeline is not the enemy" })).toBeVisible();
   await expect.poll(() => page.locator(".prose p").first().evaluate((paragraph) =>
     Number.parseFloat(getComputedStyle(paragraph).fontSize),
   )).toBeLessThanOrEqual(17);
@@ -1097,6 +1152,7 @@ test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) =
     "/notes/",
     "/notes/context-not-control/",
     "/notes/rebuilding-the-site/",
+    "/notes/beyond-linear-chat/",
   ]) {
     await page.goto(route);
     await page.waitForLoadState("networkidle");
@@ -1108,7 +1164,7 @@ test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) =
   }
 
   await page.evaluate(() => window.localStorage.setItem("siriusctrl.language", "zh"));
-  await page.goto("/zh/notes/rebuilding-the-site/");
+  await page.goto("/zh/notes/beyond-linear-chat/");
   const chineseDimensions = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     innerWidth: window.innerWidth,
