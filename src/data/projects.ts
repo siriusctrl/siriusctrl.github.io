@@ -58,9 +58,9 @@ export const projects: Project[] = [
     name: "Classical Atlas",
     kind: "Interactive lab",
     summary:
-      "Scroll-driven map stories about the classical Greek and Roman world, starting with the Peloponnesian War.",
+      "Interactive map stories about the classical Greek and Roman world, starting with the Peloponnesian War.",
     detail:
-      "The first chapter follows one causal thread from 431 to 404 BC: Athens fed by sea and paid by tribute, Sparta wary of its helots, and a war that ended on the grain route at Aegospotami. Every frame is a pure function of story progress, so scrolling, autoplay, and frame capture agree. Influence fields, convoys, a Minard-style band for the Sicilian expedition, and openly licensed artifact photos sit on a Natural Earth base map, with Thucydides cited by book, chapter, and section. The story is written in Chinese.",
+      "The first chapter follows one causal thread from 431 to 404 BC: Athens fed by sea and paid by tribute, Sparta wary of its helots, and a war that ended on the grain route at Aegospotami. Readers step through it or let it autoplay like a documentary, and can leave the story at any point to pan the map and hover cities for cited notes. Every frame is a pure function of the step and its time, so navigation, autoplay, and frame capture agree. Influence fields, convoys, a Minard-style band for the Sicilian expedition, and openly licensed artifact photos sit on a Natural Earth base map, with Thucydides cited by book, chapter, and section. The story is written in Chinese.",
     year: "2026",
     stack: ["TypeScript", "Vite", "d3-geo", "Natural Earth / Pleiades"],
     portrait: "/media/portraits/classical-atlas.svg",
