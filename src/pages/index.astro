@@ -3,8 +3,15 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Icon from "../components/Icon.astro";
 import NoteArtwork from "../components/NoteArtwork.astro";
-import { projects } from "../data/projects";
-import { noteHref } from "../data/notes";
+import ProjectArtwork from "../components/ProjectArtwork.astro";
+import {
+  formatMonthYear,
+  isRecentProject,
+  projectDate,
+  projectsByDate,
+  type Project,
+} from "../data/projects";
+import { noteHref, type NoteEntry } from "../data/notes";
 
 const notes = (await getCollection("notes", ({ data }) => !data.draft && data.language === "en"))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
@@ -13,12 +20,18 @@ if (!latestNote) throw new Error("Home page requires at least one published note
 const siteNote = notes.find((note) => note.data.translationKey === "rebuilding-the-site");
 if (!siteNote) throw new Error("Home page requires the rebuilding-the-site note");
 
-const projectSlugs = ["freeform-artifacts", "lattice", "fiasco"];
-const selectedProjects = projectSlugs.map((slug) => {
-  const project = projects.find((candidate) => candidate.slug === slug);
-  if (!project) throw new Error(`Missing home page project entry: ${slug}`);
-  return project;
-});
+const buildDate = new Date();
+type RecentItem =
+  | { type: "project"; date: Date; project: Project }
+  | { type: "note"; date: Date; note: NoteEntry };
+const recentItems: RecentItem[] = [
+  ...projectsByDate().slice(0, 2).map((project) => ({
+    type: "project" as const,
+    date: projectDate(project),
+    project,
+  })),
+  { type: "note" as const, date: latestNote.data.publishedAt, note: latestNote },
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 
 const threads = [
   {
@@ -66,6 +79,44 @@ const threads = [
       </div>
     </section>
 
+    <section class="section recent-section" aria-labelledby="recent-title">
+      <div class="recent-heading">
+        <h2 id="recent-title">Recently</h2>
+        <a href="/projects/">All projects <Icon name="arrow-right" /></a>
+      </div>
+      <div class="recent-strip">
+        {recentItems.map((item, index) => item.type === "project" ? (
+          <article class="recent-item" data-recent-item="project">
+            <ProjectArtwork
+              project={item.project}
+              variant="runtime"
+              eager={index === 0}
+              class="catalog-thumb"
+            />
+            <h3>
+              <a href={`/projects/${item.project.slug}/`}>{item.project.name}</a>
+              {isRecentProject(item.project, buildDate) && <span class="badge-new">New</span>}
+            </h3>
+            <p>{item.project.summary}</p>
+            <span class="project-meta">
+              <span>{item.project.kind}</span>
+              <span><time datetime={item.project.date}>{formatMonthYear(item.date)}</time></span>
+            </span>
+          </article>
+        ) : (
+          <article class="recent-item" data-recent-item="note">
+            <NoteArtwork src={item.note.data.artwork} alt="" eager={index === 0} class="recent-note-artwork" />
+            <h3><a href={noteHref(item.note)}>{item.note.data.title}</a></h3>
+            <p>{item.note.data.description}</p>
+            <span class="project-meta">
+              <span>Essay</span>
+              <span><time datetime={item.date.toISOString()}>{formatMonthYear(item.date)}</time></span>
+            </span>
+          </article>
+        ))}
+      </div>
+    </section>
+
     <section class="section threads-section" id="ideas" aria-labelledby="threads-title">
       <div class="section-heading compact-heading">
         <h2 id="threads-title">Current threads</h2>
@@ -89,51 +140,6 @@ const threads = [
           </article>
         ))}
       </div>
-    </section>
-
-    <section class="section writing-feature" aria-labelledby="writing-title">
-      {latestNote.data.artwork && latestNote.data.artworkAlt && (
-        <a class="writing-artwork" href={noteHref(latestNote)} tabindex="-1" aria-hidden="true">
-          <NoteArtwork src={latestNote.data.artwork} alt="" />
-        </a>
-      )}
-      <div class="writing-copy">
-        <div class="writing-meta">
-          <p>Writing</p>
-          <time datetime={latestNote.data.publishedAt.toISOString()}>
-            {latestNote.data.publishedAt.toLocaleDateString("en", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </time>
-        </div>
-        <h2 id="writing-title">
-          <a href={noteHref(latestNote)}>{latestNote.data.title}</a>
-        </h2>
-        <p>{latestNote.data.description}</p>
-        <a class="text-link" href={noteHref(latestNote)}>
-          Read the essay <Icon name="arrow-right" />
-        </a>
-      </div>
-    </section>
-
-    <section class="section software-preview" aria-labelledby="projects-title">
-      <div class="section-heading compact-heading">
-        <h2 id="projects-title">Projects</h2>
-        <p>Working forms for the questions above.</p>
-      </div>
-      <div class="software-compact-list">
-        {selectedProjects.map((project) => (
-          <a class="software-compact-row" href={`/projects/${project.slug}/`}>
-            <span class="project-meta"><span>{project.kind}</span><span>{project.year}</span></span>
-            <strong>{project.name}</strong>
-            <span>{project.summary}</span>
-            <Icon name="arrow-right" />
-          </a>
-        ))}
-      </div>
-      <a class="text-link" href="/projects/">All projects <Icon name="arrow-right" /></a>
     </section>
   </main>
 </BaseLayout>

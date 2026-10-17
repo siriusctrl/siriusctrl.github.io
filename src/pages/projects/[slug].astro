@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Icon from "../../components/Icon.astro";
 import ProjectArtwork from "../../components/ProjectArtwork.astro";
-import { projects } from "../../data/projects";
+import { formatMonthYear, projectDate, projects } from "../../data/projects";
 
 export function getStaticPaths() {
   return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
@@ -14,7 +14,10 @@ const { project } = Astro.props;
 <BaseLayout title={project.name} description={project.summary} image={project.image}>
   <main class="page-shell project-detail">
     <header class="project-detail-header">
-      <div class="project-meta"><span>{project.kind}</span><span>{project.year}</span></div>
+      <div class="project-meta">
+        <span>{project.kind}</span>
+        <span><time datetime={project.date}>{formatMonthYear(projectDate(project))}</time></span>
+      </div>
       <h1>{project.name}</h1>
       <p>{project.summary}</p>
       <div class="detail-actions">

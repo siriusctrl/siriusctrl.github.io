@@ -88,17 +88,22 @@ try {
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(550);
-  await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
-    element.scrollIntoView({ block: "center" }),
+  await page.getByRole("button", { name: "Terminal", exact: true }).click();
+  await page.waitForTimeout(700);
+  if (await page.locator(".catalog-card:not([hidden])").count() >= await page.locator(".catalog-card").count()) {
+    throw new Error("Projects filter did not narrow the catalog");
+  }
+  await page.getByRole("button", { name: /^All \d+$/ }).click();
+  await page.waitForTimeout(500);
+  const latticeCard = page.locator(".catalog-card", {
+    has: page.getByRole("link", { name: "Lattice", exact: true }),
+  });
+  await latticeCard.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".catalog-thumb img")].every((image) => image.complete),
   );
-  await page.waitForTimeout(600);
-  await page.mouse.wheel(0, 700);
-  await page.waitForFunction(() => document.querySelector("[data-work-frame=lattice] img")?.complete);
-  await page.waitForTimeout(900);
-  await page.locator("[data-work-entry=lattice]").evaluate((element) =>
-    element.scrollIntoView({ block: "center" }),
-  );
-  await page.waitForTimeout(450);
+  await latticeCard.hover();
+  await page.waitForTimeout(650);
   await page.getByRole("link", { name: "Lattice", exact: true }).first().click();
   await page.waitForLoadState("networkidle");
   await page.getByText(/Browse a completed research DAG/).waitFor();
@@ -132,7 +137,7 @@ try {
   const mobile = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   await mobile.goto(url);
   await mobile.waitForLoadState("networkidle");
-  await mobile.locator(".writing-artwork img").waitFor({ state: "visible" });
+  await mobile.locator(".recent-section img").first().waitFor({ state: "visible" });
   await mobile.waitForTimeout(1800);
   const mobileHomeOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (mobileHomeOverflow > 0) {
@@ -141,12 +146,12 @@ try {
   await mobile.screenshot({ path: mobileScreenshotPath, fullPage: true });
 
   await mobile.goto(`${url}/projects/`);
-  for (const entry of await mobile.locator("[data-work-entry]").all()) {
+  for (const entry of await mobile.locator("[data-catalog-item]").all()) {
     await entry.scrollIntoViewIfNeeded();
     await entry.locator("img").waitFor({ state: "visible" });
   }
   await mobile.waitForFunction(() =>
-    [...document.querySelectorAll(".work-entry-media img")].every((image) => image.complete),
+    [...document.querySelectorAll(".catalog-thumb img")].every((image) => image.complete),
   );
   await mobile.waitForTimeout(2800);
   await mobile.evaluate(() => window.scrollTo(0, 0));
@@ -187,8 +192,8 @@ try {
       "switch to dark mode with a live-DOM radial reveal from the theme button",
       "wheel and PageDown while the uninterrupted theme reveal remains active",
       "open the projects index",
-      "move one wheel step from Freeform Artifacts to the centered Lattice stage",
-      "open Lattice detail and verify its graph research portrait and current copy",
+      "filter the catalog to Terminal projects, then restore All",
+      "hover the Lattice card and open its detail page with the real runtime screenshot",
       "return to the projects index",
       "open the writing index and article",
       "switch the article from English to Chinese",
@@ -206,7 +211,7 @@ try {
       "- Theme switching persisted across internal navigation.",
       "- Wheel and PageDown moved the live page while the radial theme reveal remained active.",
       "- The theme reveal finished naturally after both scroll inputs; no snapshot overlay or scroll lock was used.",
-      "- The projects index one-project scroll snap was exercised.",
+      "- The projects catalog filter narrowed and restored the grid, and card hover was exercised.",
       "- The article language switch selected the authored Chinese route and persisted the choice.",
       "- SVG project and article portraits loaded in the selected theme before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",

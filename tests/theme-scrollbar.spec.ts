@@ -633,328 +633,70 @@ test("theme reveal mirrors the unfinished home entrance animation on every frame
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 
-test("projects stage and reveal remain frame-aligned during keyboard navigation", async ({
+test("projects catalog stays mirrored in the theme reveal while filtering", async ({
   page,
 }) => {
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/projects/");
-  const firstEntry = page.locator(".work-entry").first();
-  await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
-  await expect.poll(() => firstEntry.evaluate((element) => {
-    const bounds = element.getBoundingClientRect();
-    return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-  })).toBeLessThan(0.75);
-  await expect(page.locator("[data-work-stage]")).toHaveAttribute(
-    "data-work-navigation-state",
-    "idle",
-  );
+  await expect(page.locator("body > main .catalog-card").first()).toBeVisible();
 
-  await page.evaluate(() => {
-    const proof = {
-      done: false,
-      samples: 0,
-      movingSamples: 0,
-      activeIndexChanges: 0,
-      layerChanges: 0,
-      missingPairs: 0,
-      classMismatches: 0,
-      maxRectDelta: 0,
-      maxOpacityDelta: 0,
-      maxTransformDelta: 0,
-      maxOriginDelta: 0,
-      missingCircleSamples: 0,
-      animationChanges: 0,
-      animationTimeRegressions: 0,
-      maxHorizontalOverflow: 0,
-      maxLayerWidthDelta: 0,
-      scrollWidthChanges: 0,
-      initialScrollY: window.scrollY,
-      finalScrollY: window.scrollY,
-      expectedOriginX: Number.NaN,
-      expectedOriginY: Number.NaN,
-      initialRootScrollWidth: document.documentElement.scrollWidth,
-      initialBodyScrollWidth: document.body.scrollWidth,
-      firstAnimationTime: Number.NaN,
-      lastAnimationTime: Number.NaN,
-      previousAnimationTime: Number.NaN,
-      finishEvents: 0,
-      finishAnimationTime: Number.NaN,
-      finishAnimationEndTime: Number.NaN,
-      finishAnimationProgress: Number.NaN,
-      finishAnimationPlayState: "",
-      finishAnimationIdentityMatched: false,
-      revealStartedAt: Number.NaN,
-      finishRecordedAt: Number.NaN,
-      finishPlaybackRate: Number.NaN,
-      previousActiveIndex: -1,
+  await page.getByTestId("theme-toggle").click();
+  const layer = page.locator("[data-theme-render-layer]");
+  await expect(layer).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-theme-transition", "active");
+
+  // The render layer is inert and pointer-transparent, so the live chip receives the click.
+  await page.getByRole("button", { name: "Terminal", exact: true }).click();
+
+  const readPairs = () => page.evaluate(() => {
+    const layerElement = document.querySelector<HTMLElement>("[data-theme-render-layer]");
+    if (!layerElement) return null;
+    const pick = (scope: ParentNode, selector: string) =>
+      [...scope.querySelectorAll<HTMLElement>(selector)];
+    const originalItems = pick(document.body.querySelector(":scope > main")!, ".catalog-lead, .catalog-card");
+    const cloneItems = pick(layerElement, ":scope > main .catalog-lead, :scope > main .catalog-card");
+    const originalChips = pick(document.body.querySelector(":scope > main")!, ".catalog-filter");
+    const cloneChips = pick(layerElement, ":scope > main .catalog-filter");
+    let maxRectDelta = 0;
+    originalItems.forEach((item, index) => {
+      const clone = cloneItems[index];
+      if (!clone || item.hidden) return;
+      const a = item.getBoundingClientRect();
+      const b = clone.getBoundingClientRect();
+      maxRectDelta = Math.max(
+        maxRectDelta,
+        Math.abs(a.x - b.x),
+        Math.abs(a.y - b.y),
+        Math.abs(a.width - b.width),
+        Math.abs(a.height - b.height),
+      );
+    });
+    return {
+      active: document.documentElement.dataset.themeTransition === "active",
+      rootTheme: document.documentElement.dataset.theme,
+      layerTheme: layerElement.dataset.theme,
+      itemCounts: [originalItems.length, cloneItems.length],
+      originalHidden: originalItems.map((item) => item.hidden),
+      cloneHidden: cloneItems.map((item) => item.hidden),
+      originalChipClasses: originalChips.map((chip) => chip.className),
+      cloneChipClasses: cloneChips.map((chip) => chip.className),
+      maxRectDelta,
     };
-    const proofWindow = window as typeof window & {
-      __themeWorkFrameProof?: typeof proof;
-    };
-    proofWindow.__themeWorkFrameProof = proof;
-
-    const matrixValues = (value: string) => {
-      const matrix = value === "none"
-        ? new DOMMatrixReadOnly()
-        : new DOMMatrixReadOnly(value);
-      return [
-        matrix.m11, matrix.m12, matrix.m13, matrix.m14,
-        matrix.m21, matrix.m22, matrix.m23, matrix.m24,
-        matrix.m31, matrix.m32, matrix.m33, matrix.m34,
-        matrix.m41, matrix.m42, matrix.m43, matrix.m44,
-      ];
-    };
-    const selectors = [
-      ".work-stage",
-      ".work-visual-pin",
-      ".work-visual-canvas",
-    ];
-    const toggle = document.querySelector<HTMLElement>("[data-theme-toggle]");
-    if (!toggle) throw new Error("Theme toggle was unavailable");
-    const toggleBounds = toggle.getBoundingClientRect();
-    proof.expectedOriginX = toggleBounds.left + toggleBounds.width / 2;
-    proof.expectedOriginY = toggleBounds.top + toggleBounds.height / 2;
-    proof.revealStartedAt = performance.now();
-    toggle.click();
-    const referenceLayer =
-      document.querySelector<HTMLElement>("[data-theme-render-layer]");
-    if (!referenceLayer) throw new Error("Theme reveal was not created synchronously");
-    const referenceAnimation = referenceLayer.getAnimations({ subtree: true })
-      .find((animation) => animation.id === "theme-reveal");
-    if (!referenceAnimation) throw new Error("Theme reveal animation was not created synchronously");
-    referenceAnimation.addEventListener("finish", (event) => {
-      const timing = referenceAnimation.effect?.getComputedTiming();
-      proof.finishEvents += 1;
-      proof.finishAnimationTime = Number(referenceAnimation.currentTime);
-      proof.finishAnimationEndTime = Number(timing?.endTime);
-      proof.finishAnimationProgress = Number(timing?.progress);
-      proof.finishAnimationPlayState = referenceAnimation.playState;
-      proof.finishAnimationIdentityMatched = event.target === referenceAnimation;
-      proof.finishRecordedAt = performance.now();
-      proof.finishPlaybackRate = referenceAnimation.playbackRate;
-    }, { once: true });
-
-    window.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowDown") return;
-      const samplePairs = (
-        originals: HTMLElement[],
-        clones: HTMLElement[],
-      ) => {
-        if (originals.length !== clones.length) {
-          proof.missingPairs += Math.abs(originals.length - clones.length) || 1;
-        }
-        for (let index = 0; index < Math.min(originals.length, clones.length); index += 1) {
-          const original = originals[index];
-          const clone = clones[index];
-          if (!original || !clone) continue;
-          const originalRect = original.getBoundingClientRect();
-          const cloneRect = clone.getBoundingClientRect();
-          proof.maxRectDelta = Math.max(
-            proof.maxRectDelta,
-            Math.abs(originalRect.x - cloneRect.x),
-            Math.abs(originalRect.y - cloneRect.y),
-            Math.abs(originalRect.width - cloneRect.width),
-            Math.abs(originalRect.height - cloneRect.height),
-          );
-          const originalStyle = getComputedStyle(original);
-          const cloneStyle = getComputedStyle(clone);
-          proof.maxOpacityDelta = Math.max(
-            proof.maxOpacityDelta,
-            Math.abs(Number(originalStyle.opacity) - Number(cloneStyle.opacity)),
-          );
-          const originalMatrix = matrixValues(originalStyle.transform);
-          const cloneMatrix = matrixValues(cloneStyle.transform);
-          for (let matrixIndex = 0; matrixIndex < originalMatrix.length; matrixIndex += 1) {
-            proof.maxTransformDelta = Math.max(
-              proof.maxTransformDelta,
-              Math.abs(originalMatrix[matrixIndex]! - cloneMatrix[matrixIndex]!),
-            );
-          }
-          if (original.className !== clone.className) proof.classMismatches += 1;
-        }
-      };
-
-      const sample = () => {
-        const layer = document.querySelector<HTMLElement>("[data-theme-render-layer]");
-        if (!layer) {
-          proof.finalScrollY = window.scrollY;
-          proof.done = true;
-          return;
-        }
-        proof.samples += 1;
-        if (layer !== referenceLayer) proof.layerChanges += 1;
-        if (Math.abs(window.scrollY - proof.initialScrollY) > 0.5) proof.movingSamples += 1;
-        const layerBounds = layer.getBoundingClientRect();
-        const scaleX = layerBounds.width / layer.offsetWidth;
-        const scaleY = layerBounds.height / layer.offsetHeight;
-        proof.maxLayerWidthDelta = Math.max(
-          proof.maxLayerWidthDelta,
-          Math.abs(layerBounds.width - document.documentElement.clientWidth),
-        );
-        proof.maxHorizontalOverflow = Math.max(
-          proof.maxHorizontalOverflow,
-          document.documentElement.scrollWidth - document.documentElement.clientWidth,
-          document.body.scrollWidth - document.documentElement.clientWidth,
-        );
-        if (
-          document.documentElement.scrollWidth !== proof.initialRootScrollWidth
-          || document.body.scrollWidth !== proof.initialBodyScrollWidth
-        ) {
-          proof.scrollWidthChanges += 1;
-        }
-        const originalMain = document.body.querySelector<HTMLElement>(":scope > main");
-        if (!originalMain) {
-          proof.missingPairs += 1;
-          requestAnimationFrame(sample);
-          return;
-        }
-        const revealAnimation = layer.getAnimations({ subtree: true })
-          .find((animation) => animation.id === "theme-reveal");
-        if (revealAnimation !== referenceAnimation) proof.animationChanges += 1;
-        const animationTime = Number(revealAnimation?.currentTime ?? Number.NaN);
-        if (Number.isNaN(proof.firstAnimationTime)) proof.firstAnimationTime = animationTime;
-        if (
-          !Number.isNaN(proof.previousAnimationTime)
-          && animationTime + 0.1 < proof.previousAnimationTime
-        ) {
-          proof.animationTimeRegressions += 1;
-        }
-        proof.previousAnimationTime = animationTime;
-        proof.lastAnimationTime = animationTime;
-        const circle =
-          layer.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
-        const centerX = Number.parseFloat(circle?.getAttribute("cx") ?? "");
-        const centerY = Number.parseFloat(circle?.getAttribute("cy") ?? "");
-        const radius = Number.parseFloat(circle ? getComputedStyle(circle).r : "");
-        if (
-          !getComputedStyle(layer).clipPath.includes("theme-reveal-clip")
-          || !circle
-          || !Number.isFinite(centerX)
-          || !Number.isFinite(centerY)
-          || !Number.isFinite(radius)
-        ) {
-          proof.missingCircleSamples += 1;
-        } else {
-          const originX = layerBounds.left + centerX * scaleX;
-          const originY = layerBounds.top + centerY * scaleY;
-          proof.maxOriginDelta = Math.max(
-            proof.maxOriginDelta,
-            Math.abs(originX - proof.expectedOriginX),
-            Math.abs(originY - proof.expectedOriginY),
-          );
-        }
-
-        const activeIndex = [...originalMain.querySelectorAll(".work-entry")]
-          .findIndex((entry) => entry.classList.contains("is-active"));
-        if (
-          proof.previousActiveIndex >= 0
-          && activeIndex >= 0
-          && activeIndex !== proof.previousActiveIndex
-        ) {
-          proof.activeIndexChanges += 1;
-        }
-        proof.previousActiveIndex = activeIndex;
-
-        for (const selector of selectors) {
-          const original = originalMain.querySelector<HTMLElement>(selector);
-          const clone = layer.querySelector<HTMLElement>(selector);
-          samplePairs(original ? [original] : [], clone ? [clone] : []);
-        }
-        samplePairs(
-          [...originalMain.querySelectorAll<HTMLElement>(".work-frame")],
-          [...layer.querySelectorAll<HTMLElement>(".work-frame")],
-        );
-        samplePairs(
-          [...originalMain.querySelectorAll<HTMLElement>(".work-entry")],
-          [...layer.querySelectorAll<HTMLElement>(".work-entry")],
-        );
-        requestAnimationFrame(sample);
-      };
-      requestAnimationFrame(sample);
-    }, { once: true });
   });
 
-  await page.keyboard.press("ArrowDown");
-  await expect.poll(() => page.evaluate(() => {
-    const proofWindow = window as typeof window & {
-      __themeWorkFrameProof?: { done: boolean };
-    };
-    return proofWindow.__themeWorkFrameProof?.done;
-  })).toBe(true);
-  await expect(page.locator("[data-work-stage]")).toHaveAttribute(
-    "data-work-navigation-state",
-    "idle",
-  );
+  const state = await readPairs();
+  if (!state) throw new Error("Theme reveal finished before the filter state could be compared");
+  expect(state.active).toBe(true);
+  expect(state.rootTheme).toBe("light");
+  expect(state.layerTheme).toBe("dark");
+  expect(state.itemCounts[1]).toBe(state.itemCounts[0]);
+  expect(state.originalHidden.some(Boolean)).toBe(true);
+  expect(state.cloneHidden).toEqual(state.originalHidden);
+  expect(state.cloneChipClasses).toEqual(state.originalChipClasses);
+  expect(state.maxRectDelta).toBeLessThan(0.1);
 
-  const proof = await page.evaluate(() => {
-    const proofWindow = window as typeof window & {
-      __themeWorkFrameProof?: {
-        done: boolean;
-        samples: number;
-        movingSamples: number;
-        activeIndexChanges: number;
-        layerChanges: number;
-        missingPairs: number;
-        classMismatches: number;
-        maxRectDelta: number;
-        maxOpacityDelta: number;
-        maxTransformDelta: number;
-        maxOriginDelta: number;
-        missingCircleSamples: number;
-        animationChanges: number;
-        animationTimeRegressions: number;
-        maxHorizontalOverflow: number;
-        maxLayerWidthDelta: number;
-        scrollWidthChanges: number;
-        initialScrollY: number;
-        finalScrollY: number;
-        expectedOriginX: number;
-        expectedOriginY: number;
-        firstAnimationTime: number;
-        lastAnimationTime: number;
-        finishEvents: number;
-        finishAnimationTime: number;
-        finishAnimationEndTime: number;
-        finishAnimationProgress: number;
-        finishAnimationPlayState: string;
-        finishAnimationIdentityMatched: boolean;
-        revealStartedAt: number;
-        finishRecordedAt: number;
-        finishPlaybackRate: number;
-      };
-    };
-    return proofWindow.__themeWorkFrameProof;
-  });
-  if (!proof) throw new Error("Projects frame proof was unavailable");
-  expect(proof.samples).toBeGreaterThanOrEqual(8);
-  expect(proof.movingSamples).toBe(proof.samples);
-  expect(proof.activeIndexChanges).toBeGreaterThan(0);
-  expect(proof.layerChanges).toBe(0);
-  expect(proof.missingPairs).toBe(0);
-  expect(proof.classMismatches).toBe(0);
-  expect(proof.maxRectDelta).toBeLessThan(0.1);
-  expect(proof.maxOpacityDelta).toBeLessThan(0.002);
-  expect(proof.maxTransformDelta).toBeLessThan(0.1);
-  expect(proof.missingCircleSamples).toBe(0);
-  expect(proof.maxOriginDelta).toBeLessThan(0.1);
-  expect(proof.animationChanges).toBe(0);
-  expect(proof.animationTimeRegressions).toBe(0);
-  expect(proof.maxHorizontalOverflow).toBe(0);
-  expect(proof.maxLayerWidthDelta).toBeLessThan(0.1);
-  expect(proof.scrollWidthChanges).toBe(0);
-  expect(Number.isFinite(proof.expectedOriginX)).toBe(true);
-  expect(Number.isFinite(proof.expectedOriginY)).toBe(true);
-  expect(proof.finalScrollY - proof.initialScrollY).toBeGreaterThan(100);
-  expect(proof.firstAnimationTime).toBeGreaterThanOrEqual(0);
-  expect(proof.lastAnimationTime).toBeGreaterThan(proof.firstAnimationTime);
-  expect(proof.finishEvents).toBe(1);
-  expect(proof.finishAnimationIdentityMatched).toBe(true);
-  expect(proof.finishAnimationPlayState).toBe("finished");
-  expect(proof.finishAnimationEndTime).toBe(920);
-  expect(proof.finishAnimationProgress).toBe(1);
-  expect(proof.finishAnimationTime).toBeGreaterThanOrEqual(proof.finishAnimationEndTime);
-  expect(proof.finishPlaybackRate).toBe(1);
-  expect(proof.finishRecordedAt - proof.revealStartedAt).toBeGreaterThanOrEqual(880);
-  await expect(page.locator(".work-entry").nth(1)).toHaveClass(/is-active/);
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
+  await expect(layer).toHaveCount(0);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("button", { name: "Terminal", exact: true })).toHaveAttribute("aria-pressed", "true");
 });

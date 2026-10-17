@@ -8,11 +8,14 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
 
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/projects/");
-  const original = page.locator("body > main [data-work-frame=freeform-artifacts] img");
+  const originalSelector = "body > main [data-catalog-item=fiasco] img";
+  const layerSelector = "[data-theme-render-layer] .catalog-thumb.has-portrait-art img";
+  const original = page.locator(originalSelector);
   await expect(original).toHaveAttribute(
     "src",
-    "/media/portraits/freeform-artifacts-light.svg",
+    "/media/portraits/fiasco-light.svg",
   );
+  await original.scrollIntoViewIfNeeded();
 
   const samplePaper = (selector: string) => page.locator(selector).first().evaluate(async (element) => {
     const image = element as HTMLImageElement;
@@ -73,19 +76,17 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
         element.querySelector<SVGCircleElement>("[data-theme-reveal-circle]");
       return Number.parseFloat(circle ? getComputedStyle(circle).r : "");
     })).toBeGreaterThan(activeState.radius);
-    const clonedArtwork = layer.locator(".work-frame img").first();
+    const clonedArtwork = page.locator(layerSelector).first();
     await expect(clonedArtwork).toHaveAttribute(
       "src",
-      `/media/portraits/freeform-artifacts-${layerTheme}.svg`,
+      `/media/portraits/fiasco-${layerTheme}.svg`,
     );
-    await expect.poll(() => samplePaper("body > main [data-work-frame=freeform-artifacts] img"))
+    await expect.poll(() => samplePaper(originalSelector))
       .toEqual(originalPixel);
-    await expect.poll(() =>
-      samplePaper("[data-theme-render-layer] .work-frame img")
-    ).toEqual(layerPixel);
+    await expect.poll(() => samplePaper(layerSelector)).toEqual(layerPixel);
     await expect(page.locator("html")).not.toHaveAttribute("data-theme-transition", "active");
     await expect(original).toHaveAttribute("src", finalSource);
-    await expect.poll(() => samplePaper("body > main [data-work-frame=freeform-artifacts] img"))
+    await expect.poll(() => samplePaper(originalSelector))
       .toEqual(layerPixel);
   };
 
@@ -94,14 +95,14 @@ test("WebKit reveal uses explicit old and next-theme SVG assets in both directio
     layerTheme: "dark",
     originalPixel: [239, 238, 233, 255],
     layerPixel: [26, 29, 27, 255],
-    finalSource: "/media/portraits/freeform-artifacts-dark.svg",
+    finalSource: "/media/portraits/fiasco-dark.svg",
   });
   await verifyDirection({
     rootTheme: "dark",
     layerTheme: "light",
     originalPixel: [26, 29, 27, 255],
     layerPixel: [239, 238, 233, 255],
-    finalSource: "/media/portraits/freeform-artifacts-light.svg",
+    finalSource: "/media/portraits/fiasco-light.svg",
   });
 });
 

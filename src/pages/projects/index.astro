@@ -1,16 +1,115 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import WorkStage from "../../components/WorkStage.astro";
+import Icon from "../../components/Icon.astro";
+import ProjectArtwork from "../../components/ProjectArtwork.astro";
+import {
+  formatMonthYear,
+  isRecentProject,
+  projectDate,
+  projectGroup,
+  projectGroups,
+  projectsByDate,
+} from "../../data/projects";
+
+const buildDate = new Date();
+const [leadProject, ...gridProjects] = projectsByDate();
+if (!leadProject) throw new Error("Projects index requires at least one project");
+const allProjects = [leadProject, ...gridProjects];
+const detailHref = (slug: string) => `/projects/${slug}/`;
 ---
 
 <BaseLayout title="Projects" description="Working software for exploring agents, interfaces, and complex systems.">
-  <main class="page-shell">
-    <header class="page-intro">
-      <h1>Projects</h1>
-      <p>Ideas given a working form, from spatial interfaces to agent runtimes and terminal tools.</p>
+  <main class="page-shell catalog-page">
+    <header class="catalog-intro">
+      <div class="catalog-intro-copy">
+        <h1>Projects</h1>
+        <p>Ideas given a working form, from spatial interfaces to agent runtimes and terminal tools.</p>
+      </div>
+      <div class="catalog-filters" role="group" aria-label="Filter projects" data-catalog-filters hidden>
+        <button class="catalog-filter is-selected" type="button" aria-pressed="true" data-filter="all">
+          All <span>{allProjects.length}</span>
+        </button>
+        {projectGroups.map((group) => (
+          <button class="catalog-filter" type="button" aria-pressed="false" data-filter={group.id}>
+            {group.label}
+          </button>
+        ))}
+      </div>
+      <script is:inline>
+        document.querySelector("[data-catalog-filters]")?.removeAttribute("hidden");
+      </script>
     </header>
+
     <section aria-label="Projects index">
-      <WorkStage />
+      <article class="catalog-lead" data-catalog-item={leadProject.slug} data-group={projectGroup(leadProject)}>
+        <a class="catalog-lead-media" href={detailHref(leadProject.slug)} tabindex="-1" aria-hidden="true">
+          <ProjectArtwork project={leadProject} eager variant="runtime" class="catalog-thumb" />
+        </a>
+        <div class="catalog-lead-copy">
+          <div class="catalog-lead-meta">
+            {isRecentProject(leadProject, buildDate) && <span class="badge-new">New</span>}
+            <span class="project-meta">
+              <span>{leadProject.kind}</span>
+              <span><time datetime={leadProject.date}>{formatMonthYear(projectDate(leadProject))}</time></span>
+            </span>
+          </div>
+          <h2><a href={detailHref(leadProject.slug)}>{leadProject.name}</a></h2>
+          <p>{leadProject.summary}</p>
+          <div class="catalog-lead-actions">
+            {leadProject.demoUrl && (
+              <a class="button button-primary button-compact" href={leadProject.demoUrl}>
+                Open demo <Icon name="arrow-up-right" />
+              </a>
+            )}
+            <a class="button button-outline button-compact" href={detailHref(leadProject.slug)}>Details</a>
+            <a class="catalog-source-link" href={leadProject.repoUrl}>
+              Source <Icon name="arrow-up-right" />
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <div class="catalog-grid">
+        {gridProjects.map((project) => (
+          <article class="catalog-card" data-catalog-item={project.slug} data-group={projectGroup(project)}>
+            <ProjectArtwork project={project} variant="runtime" class="catalog-thumb" />
+            <h3>
+              <a href={detailHref(project.slug)}>{project.name}</a>
+              {isRecentProject(project, buildDate) && <span class="badge-new">New</span>}
+            </h3>
+            <p>{project.summary}</p>
+            <span class="project-meta">
+              <span>{project.kind}</span>
+              <span><time datetime={project.date}>{formatMonthYear(projectDate(project))}</time></span>
+            </span>
+          </article>
+        ))}
+      </div>
+      <p class="visually-hidden" aria-live="polite" data-catalog-status></p>
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  const filters = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-filter]"));
+  const items = Array.from(document.querySelectorAll<HTMLElement>("[data-catalog-item]"));
+  const status = document.querySelector<HTMLElement>("[data-catalog-status]");
+
+  filters.forEach((filter) => {
+    filter.addEventListener("click", () => {
+      const selected = filter.dataset.filter ?? "all";
+      filters.forEach((candidate) => {
+        const active = candidate === filter;
+        candidate.setAttribute("aria-pressed", String(active));
+        candidate.classList.toggle("is-selected", active);
+      });
+      let visible = 0;
+      items.forEach((item) => {
+        const show = selected === "all" || item.dataset.group === selected;
+        item.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (status) status.textContent = `Showing ${visible} project${visible === 1 ? "" : "s"}`;
+    });
+  });
+</script>

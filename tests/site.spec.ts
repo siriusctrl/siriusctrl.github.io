@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import { isRecentProject, projectGroups, projects, projectsByDate } from "../src/data/projects";
 
 test("home page presents ideas, writing, projects, and keeps the chosen theme", async ({ page }) => {
   await page.goto("/");
@@ -15,10 +16,10 @@ test("home page presents ideas, writing, projects, and keeps the chosen theme", 
   await expect(
     page.getByRole("heading", { name: "A Chat Log Is Not a Knowledge Structure" }),
   ).toBeVisible();
-  await expect(page.locator('a[href="/projects/freeform-artifacts/"]')).toHaveCount(2);
-  await expect(page.locator('a[href="/projects/lattice/"]')).toHaveCount(2);
-  await expect(page.locator('a[href="/projects/fiasco/"]')).toHaveCount(2);
-  await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
+  for (const slug of ["freeform-artifacts", "lattice", "fiasco", "towerlab"]) {
+    await expect(page.locator(`.thread-links a[href="/projects/${slug}/"]`)).toHaveCount(1);
+  }
+  await expect(page.getByRole("heading", { name: "Recently", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "All projects" })).toHaveAttribute("href", "/projects/");
   await expect(page.getByRole("link", { name: "Read the writing" })).toHaveAttribute("href", "/notes/");
 
@@ -506,20 +507,19 @@ test("theme changes keep primary and muted copy readable for every reveal frame"
   }
 });
 
-test("project portraits follow the selected site theme", async ({ page, isMobile }) => {
+test("project portraits follow the selected site theme", async ({ page }) => {
   await page.addInitScript(() => window.localStorage.setItem("siriusctrl.theme", "light"));
   await page.goto("/projects/");
-  const portraits = page.locator(
-    isMobile ? "body > main .work-entry-media img" : "body > main [data-work-frame] img",
-  );
-  await expect(portraits).toHaveCount(7);
-  if (isMobile) {
-    for (const portrait of await portraits.all()) {
-      await portrait.scrollIntoViewIfNeeded();
-      await expect.poll(() => portrait.evaluate((image) => (
-        (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0
-      ))).toBe(true);
-    }
+  const portraitProjects = projects.filter((project) => project.image === project.portrait);
+  expect(portraitProjects.length).toBeGreaterThan(0);
+  const portraits = page.locator("body > main .catalog-thumb.has-portrait-art img");
+  await expect(portraits).toHaveCount(portraitProjects.length);
+  for (const portrait of await portraits.all()) {
+    await portrait.scrollIntoViewIfNeeded();
+    await expect(portrait).toHaveAttribute("src", /^\/media\/portraits\/.+-light\.svg$/);
+    await expect.poll(() => portrait.evaluate((image) => (
+      (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0
+    ))).toBe(true);
   }
   const samplePaperColors = () => portraits.evaluateAll(async (images) => Promise.all(
     images.map(async (image) => {
@@ -534,10 +534,15 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
     }),
   ));
 
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 7 }, () => [239, 238, 233, 255]));
+  const count = portraitProjects.length;
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: count }, () => [239, 238, 233, 255]));
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByTestId("theme-toggle").click();
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 7 }, () => [26, 29, 27, 255]));
+  for (const portrait of await portraits.all()) {
+    await expect(portrait).toHaveAttribute("src", /^\/media\/portraits\/.+-dark\.svg$/);
+  }
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: count }, () => [26, 29, 27, 255]));
 });
 
 test("light and dark canvases stay clean and softly toned", async ({ page }) => {
@@ -822,224 +827,153 @@ test("theme reveal stays anchored across Chrome zoom levels", async ({ page, isM
   }
 });
 
-test("projects stage rebounds small input and advances decisive input", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The work-stage controller is a desktop interaction");
+// Card thumbnails sit under the card's stretched title link; click where a pointer would.
+const clickCenter = async (page: Page, target: Locator) => {
+  await target.scrollIntoViewIfNeeded();
+  const bounds = await target.boundingBox();
+  if (!bounds) throw new Error("Card thumbnail did not expose its bounds");
+  await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+};
 
+test("projects index shows the whole catalog at a glance without hijacking scroll", async ({ page, isMobile }) => {
   await page.goto("/projects/");
   await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
-  await expect(page.locator("[data-inspection-stage]")).toHaveCount(0);
-  const freeformEntry = page.locator("[data-work-entry=freeform-artifacts]");
-  const latticeEntry = page.locator("[data-work-entry=lattice]");
-  await freeformEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
-  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect
-    .poll(() =>
-      freeformEntry.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }),
-    )
-    .toBeLessThan(0.75);
+  const ordered = projectsByDate();
+  const items = page.locator("body > main [data-catalog-item]");
+  await expect(items).toHaveCount(projects.length);
+  for (const item of await items.all()) await expect(item).toBeVisible();
+  expect(await items.evaluateAll((elements) =>
+    elements.map((element) => (element as HTMLElement).dataset.catalogItem)
+  )).toEqual(ordered.map((project) => project.slug));
 
-  const centeredScrollY = await page.evaluate(() => window.scrollY);
-  await page.mouse.wheel(0, 45);
-  await expect
-    .poll(() =>
-      freeformEntry.evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m42),
-    )
-    .toBeLessThan(-1);
-  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=lattice]")).not.toHaveClass(/is-active/);
-  expect(Math.abs(await page.evaluate(() => window.scrollY) - centeredScrollY)).toBeLessThan(1);
-  await expect
-    .poll(() =>
-      freeformEntry.evaluate((element) => Math.abs(new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)),
-    )
-    .toBeLessThan(0.5);
+  const lead = page.locator(".catalog-lead");
+  await expect(lead.getByRole("heading", { level: 2 })).toHaveText(ordered[0]!.name);
+  if (isRecentProject(ordered[0]!)) await expect(lead.locator(".badge-new")).toHaveText(/new/i);
 
-  for (const delta of [4, 8, 12, 18, 24, 30, 25, 18, 10, 5, 2]) {
-    await page.mouse.wheel(0, delta);
-  }
-  await expect(page.locator("html")).toHaveClass(/is-work-animating/);
-  await page.mouse.wheel(0, 180); // Momentum tail must not skip another project.
-  await expect(page.locator("[data-work-frame=lattice]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=classical-atlas]")).not.toHaveClass(/is-active/);
-  await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
-  const finalCenterError = await latticeEntry.evaluate((element) => {
-    const bounds = element.getBoundingClientRect();
-    return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-  });
-  expect(finalCenterError).toBeLessThan(1);
-});
-
-test("work stage accepts deliberate reversal without mistaking momentum for intent", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The work-stage controller is a desktop interaction");
-
-  const centerFreeform = async () => {
-    await page.goto("/projects/");
-    await page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) =>
-      element.scrollIntoView({ block: "center", behavior: "instant" }),
-    );
-    await expect
-      .poll(() => page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }))
-      .toBeLessThan(1);
-  };
-  const wheel = async (deltas: number[]) => {
-    for (const delta of deltas) await page.mouse.wheel(0, delta);
-  };
-
-  await centerFreeform();
-  await wheel([20, 25, 30, 30]);
-  await expect(page.locator("html")).toHaveClass(/is-work-animating/);
-  await wheel([-10, -20, -30, -40]);
-  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
-  await expect
-    .poll(() => page.locator("[data-work-entry=freeform-artifacts]").evaluate((element) => {
-      const bounds = element.getBoundingClientRect();
-      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-    }))
-    .toBeLessThan(1);
-
-  await centerFreeform();
-  await wheel([20, 25, 30, 30]);
-  await wheel([-8, -12, -15]); // A small opposite bounce must not cancel the committed step.
-  await expect(page.locator("[data-work-frame=lattice]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
-  await expect
-    .poll(() => page.locator("[data-work-entry=lattice]").evaluate((element) => {
-      const bounds = element.getBoundingClientRect();
-      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-    }))
-    .toBeLessThan(1);
-});
-
-test("keyboard navigation advances exactly one centered project", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The work-stage controller is a desktop interaction");
-
-  await page.goto("/projects/");
-  const entry = (slug: string) => page.locator(`[data-work-entry=${slug}]`);
-  await entry("freeform-artifacts").evaluate((element) => element.scrollIntoView({ block: "center" }));
-  await expect
-    .poll(() => entry("freeform-artifacts").evaluate((element) => {
-      const bounds = element.getBoundingClientRect();
-      return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-    }))
-    .toBeLessThan(1);
-
-  for (const [key, slug] of [
-    ["ArrowDown", "lattice"],
-    ["ArrowDown", "classical-atlas"],
-    ["ArrowUp", "lattice"],
-  ] as const) {
-    await page.keyboard.press(key);
-    await expect(page.locator(`[data-work-frame=${slug}]`)).toHaveClass(/is-active/);
-    await expect(page.locator("[data-work-stage]")).toHaveAttribute("data-work-navigation-state", "idle");
-    await expect
-      .poll(() => entry(slug).evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }))
-      .toBeLessThan(1);
-  }
-});
-
-test("work artwork and copy share the same center through the final item", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The sticky work visual is desktop-only");
-
-  for (const viewport of [
-    { width: 1440, height: 900 },
-    { width: 3840, height: 2160 },
-  ]) {
-    await page.setViewportSize(viewport);
-    await page.goto("/projects/");
-    const finalEntry = page.locator("[data-work-entry=termviz]");
-    await finalEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
-    await expect
-      .poll(() => page.evaluate(() => {
-        const entry = document.querySelector<HTMLElement>("[data-work-entry=termviz]")!.getBoundingClientRect();
-        const canvas = document.querySelector<HTMLElement>(".work-visual-canvas")!.getBoundingClientRect();
-        const viewportCenter = window.innerHeight / 2;
-        return Math.max(
-          Math.abs(entry.top + entry.height / 2 - viewportCenter),
-          Math.abs(canvas.top + canvas.height / 2 - viewportCenter),
-        );
-      }))
-      .toBeLessThan(1);
-    await expect(page.locator("[data-work-frame=termviz]")).toHaveClass(/is-active/);
-  }
-});
-
-test("work visual keeps pace with the first project while leaving the stage", async ({ page, isMobile }) => {
-  test.skip(isMobile, "The sticky work visual is desktop-only");
-
-  await page.goto("/projects/");
-  const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
-  await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
-  await expect
-    .poll(() =>
-      firstEntry.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }),
-    )
-    .toBeLessThan(1);
-
-  const centeredScrollY = await page.evaluate(() => window.scrollY);
-  await page.mouse.wheel(0, -360);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(centeredScrollY - 100);
-  const boundary = await page.evaluate(() => {
-    const heading = document.querySelector<HTMLElement>(".page-intro")!.getBoundingClientRect();
-    const visual = document.querySelector<HTMLElement>(".work-visual")!.getBoundingClientRect();
-    const sticky = document.querySelector<HTMLElement>(".work-visual-canvas")!.getBoundingClientRect();
-    const entry = document.querySelector<HTMLElement>("[data-work-entry=freeform-artifacts]")!
-      .getBoundingClientRect();
+  const layout = await page.evaluate(() => {
+    const main = document.querySelector("body > main")!;
+    const pinned = [...main.querySelectorAll("*")].filter((element) =>
+      ["sticky", "fixed"].includes(getComputedStyle(element).position)
+    ).length;
+    const cards = [...document.querySelectorAll<HTMLElement>(".catalog-card")];
     return {
-      relativeCenterOffset: Math.abs(
-        sticky.top + sticky.height / 2 - (entry.top + entry.height / 2),
-      ),
-      stickyCrossesStageBoundary: sticky.top < visual.top,
-      stickyOverlapsHeading: sticky.top < heading.bottom,
+      pinned,
+      tallestCard: Math.max(...cards.map((card) => card.getBoundingClientRect().height)),
+      columns: new Set(cards.map((card) => Math.round(card.getBoundingClientRect().left))).size,
+      viewport: window.innerHeight,
     };
   });
+  expect(layout.pinned).toBe(0);
+  expect(layout.tallestCard).toBeLessThan(layout.viewport);
+  expect(layout.columns).toBe(isMobile ? 1 : 3);
 
-  expect(boundary.relativeCenterOffset).toBeLessThan(1);
-  expect(boundary.stickyCrossesStageBoundary).toBe(false);
-  expect(boundary.stickyOverlapsHeading).toBe(false);
+  if (!isMobile) {
+    await page.mouse.move(400, 400);
+    await page.mouse.wheel(0, 320);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(280);
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThan(360);
+  }
 });
 
-test("pointer crossing project whitespace does not activate the next project", async ({ page, isMobile }) => {
-  test.skip(isMobile, "Pointer hover coverage uses the desktop browser profile");
-
+test("project filters show the matching subset and All restores the catalog", async ({ page }) => {
   await page.goto("/projects/");
-  const firstEntry = page.locator("[data-work-entry=freeform-artifacts]");
-  await firstEntry.evaluate((element) => element.scrollIntoView({ block: "center" }));
-  await expect
-    .poll(() =>
-      firstEntry.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        return Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2);
-      }),
-    )
-    .toBeLessThan(1);
+  const filters = page.getByRole("group", { name: "Filter projects" });
+  await expect(filters).toBeVisible();
+  const visibleSlugs = () => page.locator("body > main [data-catalog-item]").evaluateAll((elements) =>
+    elements
+      .filter((element) => !(element as HTMLElement).hidden && (element as HTMLElement).offsetParent !== null)
+      .map((element) => (element as HTMLElement).dataset.catalogItem)
+  );
+  const allButton = filters.getByRole("button", { name: `All ${projects.length}` });
+  await expect(allButton).toHaveAttribute("aria-pressed", "true");
+  const ordered = projectsByDate();
 
-  const entriesBounds = await page.locator(".work-entries").boundingBox();
-  const viewport = page.viewportSize();
-  if (!entriesBounds || !viewport) throw new Error("Work hover test did not expose its geometry");
-  const x = entriesBounds.x + entriesBounds.width / 2;
-  await page.mouse.move(x, viewport.height / 2);
-  await page.mouse.move(x, viewport.height - 1, { steps: 12 });
+  for (const group of projectGroups) {
+    const button = filters.getByRole("button", { name: group.label, exact: true });
+    await button.click();
+    await expect(button).toHaveAttribute("aria-pressed", "true");
+    await expect(allButton).toHaveAttribute("aria-pressed", "false");
+    const expected = ordered
+      .filter((project) => (group.kinds as ReadonlyArray<string>).includes(project.kind))
+      .map((project) => project.slug);
+    expect(expected.length).toBeGreaterThan(0);
+    await expect.poll(visibleSlugs).toEqual(expected);
+  }
 
-  const pointerHit = await page.evaluate(({ x, y }) =>
-    document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-work-entry]")?.dataset.workEntry,
-  { x, y: viewport.height - 1 });
-  expect(["freeform-artifacts", "lattice"]).toContain(pointerHit);
-  await expect(page.locator("[data-work-frame=freeform-artifacts]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=lattice]")).not.toHaveClass(/is-active/);
-  await expect(firstEntry).toHaveClass(/is-active/);
+  await allButton.click();
+  await expect(allButton).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(visibleSlugs).toEqual(ordered.map((project) => project.slug));
+});
+
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("projects index keeps every card visible", async ({ page }) => {
+    await page.goto("/projects/");
+    const items = page.locator("body > main [data-catalog-item]");
+    await expect(items).toHaveCount(projects.length);
+    for (const item of await items.all()) await expect(item).toBeVisible();
+    await expect(page.locator("[data-catalog-filters]")).toBeHidden();
+  });
+});
+
+test("catalog cards link to their detail pages", async ({ page }) => {
+  await page.goto("/projects/");
+  const [lead, ...rest] = projectsByDate();
+  const leadCard = page.locator(".catalog-lead");
+  await expect(leadCard.getByRole("link", { name: lead!.name, exact: true }))
+    .toHaveAttribute("href", `/projects/${lead!.slug}/`);
+  await expect(leadCard.getByRole("link", { name: "Details" })).toHaveAttribute("href", `/projects/${lead!.slug}/`);
+  await expect(leadCard.getByRole("link", { name: /Source/ })).toHaveAttribute("href", lead!.repoUrl);
+  if (lead!.demoUrl) {
+    await expect(leadCard.getByRole("link", { name: /Open demo/ })).toHaveAttribute("href", lead!.demoUrl);
+  }
+
+  for (const project of rest) {
+    await expect(page.locator(".catalog-card").getByRole("link", { name: project.name, exact: true }))
+      .toHaveAttribute("href", `/projects/${project.slug}/`);
+  }
+
+  const target = rest[rest.length - 1]!;
+  const thumb = page.locator(".catalog-card", { has: page.getByRole("link", { name: target.name, exact: true }) })
+    .locator(".catalog-thumb");
+  await clickCenter(page, thumb);
+  await expect(page).toHaveURL(new RegExp(`/projects/${target.slug}/$`));
+  await expect(page.getByRole("heading", { level: 1, name: target.name })).toBeVisible();
+});
+
+test("home Recently strip shows the two newest projects and the newest note", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const section = page.locator(".recent-section");
+  await expect(section.getByRole("heading", { level: 2, name: "Recently" })).toBeVisible();
+  await expect(section.getByRole("link", { name: "All projects" })).toHaveAttribute("href", "/projects/");
+
+  const items = section.locator(".recent-item");
+  await expect(items).toHaveCount(3);
+  const summary = await items.evaluateAll((elements) => elements.map((element) => ({
+    type: (element as HTMLElement).dataset.recentItem,
+    date: element.querySelector("time")?.getAttribute("datetime") ?? "",
+    href: element.querySelector("h3 a")?.getAttribute("href") ?? "",
+    width: element.getBoundingClientRect().width,
+  })));
+  expect(summary.filter((item) => item.type === "project").map((item) => item.href).sort())
+    .toEqual(projectsByDate().slice(0, 2).map((project) => `/projects/${project.slug}/`).sort());
+  expect(summary.filter((item) => item.type === "note")).toHaveLength(1);
+  const times = summary.map((item) => Date.parse(item.date));
+  expect(times).toEqual([...times].sort((a, b) => b - a));
+  if (!isMobile) expect(summary[0]!.width).toBeGreaterThan(summary[1]!.width * 1.2);
+
+  const note = summary.find((item) => item.type === "note")!;
+  expect(note.href).toBe("/notes/beyond-linear-chat/");
+  await section.locator(`h3 a[href="${note.href}"]`).click();
+  await expect(page).toHaveURL(/\/notes\/beyond-linear-chat\/$/);
+  await expect(page.getByRole("heading", { level: 1, name: "A Chat Log Is Not a Knowledge Structure" })).toBeVisible();
+
+  await page.goto("/");
+  const first = summary[0]!;
+  await clickCenter(page, items.first().locator(".catalog-thumb, .note-artwork"));
+  await expect(page).toHaveURL(new RegExp(`${first.href}$`));
 });
 
 test("reduced motion keeps theme changes immediate", async ({ page, isMobile }) => {
