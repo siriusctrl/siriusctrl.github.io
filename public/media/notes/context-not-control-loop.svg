@@ -18,7 +18,6 @@
     .node-label{font-size:18px;letter-spacing:.06em}
     .state{font-size:13px;letter-spacing:.09em}
     .accent-text{fill:var(--accent)}
-    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
   </style>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="var(--ink)"/></marker>

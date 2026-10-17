@@ -1,6 +1,4 @@
 ---
-import Icon from "./Icon.astro";
-
 const path = Astro.url.pathname;
 const nav = [
   { href: "/projects/", label: "Projects" },
@@ -15,16 +13,5 @@ const nav = [
       <a href={item.href} aria-current={path.startsWith(item.href) ? "page" : undefined}>{item.label}</a>
     ))}
     <a class="github-link" href="https://github.com/siriusctrl">GitHub</a>
-    <button
-      class="icon-button"
-      type="button"
-      data-theme-toggle
-      data-testid="theme-toggle"
-      aria-label="Switch color mode"
-      title="Switch color mode"
-    >
-      <Icon name="moon" class="theme-moon" />
-      <Icon name="sun" class="theme-sun" />
-    </button>
   </nav>
 </header>

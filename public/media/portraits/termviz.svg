@@ -15,7 +15,6 @@
     @keyframes plot-in{0%{opacity:0;transform:translateY(65px) rotate(-.8deg)}72%{opacity:1;transform:translateY(-4px)}100%{opacity:1;transform:none}}
     @keyframes draw{from{stroke-dashoffset:1600}to{stroke-dashoffset:0}}
     @keyframes focus-in{0%{opacity:0;transform:scale(.45)}72%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
-    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
     @media(prefers-reduced-motion:reduce){.plot,.draw-a,.draw-b,.focus-window{animation:none}}
   </style>
   <rect class="paper" width="1600" height="1000"/><rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>

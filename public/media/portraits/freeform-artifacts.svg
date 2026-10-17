@@ -29,7 +29,6 @@
     @keyframes chart-in{0%{opacity:0;transform:translate(75px,-55px) rotate(1.4deg)}72%{opacity:1;transform:translate(-4px,3px)}100%{opacity:1;transform:none}}
     @keyframes pipeline-in{0%{opacity:0;transform:translate(45px,75px) rotate(-1deg)}72%{opacity:1;transform:translate(-3px,-4px)}100%{opacity:1;transform:none}}
     @keyframes draw{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
-    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
     @media(prefers-reduced-motion:reduce){.piece,.draw{animation:none}}
   </style>
   <rect class="paper" width="1600" height="1000"/>

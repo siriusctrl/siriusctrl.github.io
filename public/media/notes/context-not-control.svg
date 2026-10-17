@@ -33,17 +33,6 @@
     .index{fill:var(--muted);font-size:12px;letter-spacing:.12em}
     .lane-label{fill:var(--muted);font-size:12px;letter-spacing:.1em}
     .accent-text{fill:var(--accent)}
-    @media(prefers-color-scheme:dark){
-      :root {
-        --paper:#1a1d1b;
-        --ink:#e8e9e4;
-        --muted:#9da39e;
-        --faint:#454a46;
-        --rule:#343835;
-        --accent:#e0675c;
-        --accent-soft:#57332f;
-      }
-    }
   </style>
 
   <defs>

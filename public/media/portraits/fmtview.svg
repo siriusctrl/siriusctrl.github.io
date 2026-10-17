@@ -15,7 +15,6 @@
     @keyframes tree-in{0%{opacity:0;transform:translate(85px,-40px) rotate(1.2deg)}72%{opacity:1;transform:translate(-4px,2px)}100%{opacity:1;transform:none}}
     @keyframes draw{from{stroke-dashoffset:700}to{stroke-dashoffset:0}}
     @keyframes scan{0%{opacity:0;transform:translateX(-150px)}25%,75%{opacity:1}100%{opacity:0;transform:translateX(150px)}}
-    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
     @media(prefers-reduced-motion:reduce){.piece,.rail-draw,.scan-line{animation:none}.scan-line{display:none}}
   </style>
   <rect class="paper" width="1600" height="1000"/><rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>

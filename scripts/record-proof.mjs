@@ -39,51 +39,13 @@ try {
   const page = await context.newPage();
   await page.goto(url);
   await page.waitForTimeout(650);
-  await page.getByTestId("theme-toggle").click();
-  await page.waitForTimeout(55);
-  if (await page.locator("html[data-theme-transition=active]").count() !== 1) {
-    throw new Error("Theme transition ended before the live-scroll proof began");
-  }
-  const revealStart = await page.evaluate(() => {
-    const layer = document.querySelector("[data-theme-reveal]");
-    const animation = layer
-      ?.getAnimations({ subtree: true })
-      .find((candidate) => candidate.id === "theme-reveal");
-    if (!layer || !animation) throw new Error("Theme reveal did not expose its render layer");
-    window.__themeProofReference = { layer, animation };
-    return Number(animation.currentTime);
-  });
-  if (revealStart >= 100) {
-    throw new Error(`Live-scroll proof started too late in the reveal: ${revealStart}ms`);
+  if (await page.locator("[data-theme-toggle], .site-header button").count() !== 0) {
+    throw new Error("The light-only site still renders a theme toggle");
   }
   await page.mouse.wheel(0, 420);
-  await page.waitForTimeout(140);
-  const revealAfterWheel = await page.evaluate(() => {
-    const layer = document.querySelector("[data-theme-reveal]");
-    const animation = layer
-      ?.getAnimations({ subtree: true })
-      .find((candidate) => candidate.id === "theme-reveal");
-    return {
-      active: document.documentElement.dataset.themeTransition === "active",
-      sameLayer: window.__themeProofReference?.layer === layer,
-      sameAnimation: window.__themeProofReference?.animation === animation,
-      currentTime: Number(animation?.currentTime ?? -1),
-    };
-  });
-  if (
-    !revealAfterWheel.active
-    || !revealAfterWheel.sameLayer
-    || !revealAfterWheel.sameAnimation
-    || revealAfterWheel.currentTime <= revealStart
-  ) {
-    throw new Error("Wheel scrolling interrupted the theme transition");
-  }
+  await page.waitForTimeout(400);
   await page.keyboard.press("PageDown");
-  await page.waitForTimeout(120);
-  if (await page.locator("html[data-theme-transition=active]").count() !== 1) {
-    throw new Error("Keyboard scrolling interrupted the theme transition");
-  }
-  await page.waitForFunction(() => !document.documentElement.dataset.themeTransition);
+  await page.waitForTimeout(500);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await page.getByRole("link", { name: "Projects", exact: true }).click();
   await page.waitForLoadState("networkidle");
@@ -189,8 +151,8 @@ try {
     url,
     actions: [
       "open home",
-      "switch to dark mode with a live-DOM radial reveal from the theme button",
-      "wheel and PageDown while the uninterrupted theme reveal remains active",
+      "confirm the light-only header has no theme toggle",
+      "scroll the home page with wheel and PageDown",
       "open the projects index",
       "filter the catalog to Terminal projects, then restore All",
       "hover the Lattice card and open its detail page with the real runtime screenshot",
@@ -208,12 +170,11 @@ try {
       "Working Set browser proof",
       "",
       "- Chromium rendered the home, project detail, projects index, writing index, and article routes.",
-      "- Theme switching persisted across internal navigation.",
-      "- Wheel and PageDown moved the live page while the radial theme reveal remained active.",
-      "- The theme reveal finished naturally after both scroll inputs; no snapshot overlay or scroll lock was used.",
+      "- The light-only header rendered without a theme toggle.",
+      "- Wheel and PageDown scrolled the home page without a scroll lock.",
       "- The projects catalog filter narrowed and restored the grid, and card hover was exercised.",
       "- The article language switch selected the authored Chinese route and persisted the choice.",
-      "- SVG project and article portraits loaded in the selected theme before capture.",
+      "- SVG project and article portraits loaded before capture.",
       "- Desktop and mobile width checks found no horizontal overflow.",
       "- A contact sheet was generated for internal temporal inspection.",
       "",

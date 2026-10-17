@@ -1,6 +1,6 @@
 ---
 interface Props {
-  name: "arrow-left" | "arrow-right" | "arrow-up-right" | "moon" | "sun";
+  name: "arrow-left" | "arrow-right" | "arrow-up-right";
   class?: string;
 }
 
@@ -8,8 +8,6 @@ const paths = {
   "arrow-left": "M19 12H5m6 6-6-6 6-6",
   "arrow-right": "M5 12h14m-6-6 6 6-6 6",
   "arrow-up-right": "M7 17 17 7M9 7h8v8",
-  moon: "M20.5 14.2A7.5 7.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z",
-  sun: "M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.64 5.64 6.7 6.7m10.6 10.6 1.06 1.06M18.36 5.64 17.3 6.7M6.7 17.3l-1.06 1.06M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
 } as const;
 
 const { name, class: className } = Astro.props;

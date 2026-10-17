@@ -47,7 +47,7 @@ My workflow evolved in stages. I began with interactive collaboration: the agent
 
 Programmatic checks cannot cover every dimension of quality, so I also start a reviewer that does not inherit the implementation conversation. It runs the tests, operates the product, and inspects the code independently. The implementation agent then has to decide which findings are valid, rebut the ones that are not, revise the work, and run the evaluation again. Another agent can approach the product as a first-time user and look for points of hesitation in the UX. A maintenance agent can update documentation, the changelog, and repository context after the task is complete. The overall loop looks like this:
 
-![An agent workflow moving from task contract and context through implementation, evaluation, independent review, human approval, and context write-back](/media/notes/context-not-control-loop-light.svg)
+![An agent workflow moving from task contract and context through implementation, evaluation, independent review, human approval, and context write-back](/media/notes/context-not-control-loop.svg)
 
 *The agent can keep iterating because evaluation returns a failed result to the revision loop instead of ending the task.*
 
@@ -119,7 +119,7 @@ The fourth reason is portability and vendor lock-in. GitHub is the default choic
 
 Cloud infrastructure remains essential in this architecture. It is well suited to clean environments, isolated execution, elastic concurrency, and reproducible evaluation. A local or persistent node is better suited to retaining durable state, scheduling threads, managing credentials, reusing caches, and providing a continuously visible interface for the person. These layers form a control plane and an execution plane: the persistent orchestrator understands the task and its history, while disposable sandboxes validate the result in a clean environment.
 
-![A persistent orchestrator routing work into local persistent tools and disposable cloud sandboxes before evaluation, approval, delivery, and context write-back](/media/notes/context-not-control-orchestrator-light.svg)
+![A persistent orchestrator routing work into local persistent tools and disposable cloud sandboxes before evaluation, approval, delivery, and context write-back](/media/notes/context-not-control-orchestrator.svg)
 
 *Persistent orchestration retains task state and context; disposable cloud environments provide clean, reproducible evaluation.*
 

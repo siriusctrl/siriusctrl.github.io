@@ -24,7 +24,6 @@
     @keyframes ruler-in{0%{opacity:0;transform:translateX(-60px)}72%{opacity:1;transform:translateX(4px)}100%{opacity:1;transform:none}}
     @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
     @keyframes pulse{0%,100%{opacity:.28;transform:scale(.82)}50%{opacity:.85;transform:scale(1.08)}}
-    @media(prefers-color-scheme:dark){:root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}}
     @media(prefers-reduced-motion:reduce){.piece,.draw,.orbit{animation:none}}
   </style>
 

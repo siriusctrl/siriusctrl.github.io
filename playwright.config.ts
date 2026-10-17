@@ -19,27 +19,11 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testIgnore: /theme-(?:scrollbar|svg-webkit)\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "mobile",
-      testIgnore: /theme-(?:scrollbar|svg-webkit)\.spec\.ts/,
       use: { ...devices["Pixel 7"] },
-    },
-    {
-      name: "desktop-scrollbar",
-      testMatch: /theme-scrollbar\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 3840, height: 2160 },
-        launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] },
-      },
-    },
-    {
-      name: "webkit-theme",
-      testMatch: /theme-svg-webkit\.spec\.ts/,
-      use: { ...devices["Desktop Safari"] },
     },
   ],
 });
