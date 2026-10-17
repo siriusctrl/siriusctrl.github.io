@@ -54,6 +54,25 @@ export const projects: Project[] = [
     demoUrl: "https://siriusctrl.github.io/lattice/",
   },
   {
+    slug: "classical-atlas",
+    name: "Classical Atlas",
+    kind: "Interactive lab",
+    summary:
+      "Scroll-driven map stories about the classical Greek and Roman world, starting with the Peloponnesian War.",
+    detail:
+      "The first chapter follows one causal thread from 431 to 404 BC: Athens fed by sea and paid by tribute, Sparta wary of its helots, and a war that ended on the grain route at Aegospotami. Every frame is a pure function of story progress, so scrolling, autoplay, and frame capture agree. Influence fields, convoys, a Minard-style band for the Sicilian expedition, and openly licensed artifact photos sit on a Natural Earth base map, with Thucydides cited by book, chapter, and section. The story is written in Chinese.",
+    year: "2026",
+    stack: ["TypeScript", "Vite", "d3-geo", "Natural Earth / Pleiades"],
+    portrait: "/media/portraits/classical-atlas.svg",
+    portraitAlt:
+      "Minimal drawing of a grain route running from a narrow strait past allied coasts into one harbour, set by a progress ruler",
+    image: "/media/classical-atlas.webp",
+    imageAlt:
+      "Classical Atlas map story showing the Sicilian expedition as a blue band from Athens around the Peloponnese to Syracuse, beside a Chinese story card",
+    repoUrl: "https://github.com/siriusctrl/classical-atlas",
+    demoUrl: "https://siriusctrl.github.io/classical-atlas/",
+  },
+  {
     slug: "fiasco",
     name: "Fiasco",
     kind: "Agent orchestrator",

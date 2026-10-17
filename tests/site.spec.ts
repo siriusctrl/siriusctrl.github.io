@@ -512,7 +512,7 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
   const portraits = page.locator(
     isMobile ? "body > main .work-entry-media img" : "body > main [data-work-frame] img",
   );
-  await expect(portraits).toHaveCount(6);
+  await expect(portraits).toHaveCount(7);
   if (isMobile) {
     for (const portrait of await portraits.all()) {
       await portrait.scrollIntoViewIfNeeded();
@@ -534,10 +534,10 @@ test("project portraits follow the selected site theme", async ({ page, isMobile
     }),
   ));
 
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 6 }, () => [239, 238, 233, 255]));
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 7 }, () => [239, 238, 233, 255]));
   await page.getByTestId("theme-toggle").click();
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
-  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 6 }, () => [26, 29, 27, 255]));
+  await expect.poll(samplePaperColors).toEqual(Array.from({ length: 7 }, () => [26, 29, 27, 255]));
 });
 
 test("light and dark canvases stay clean and softly toned", async ({ page }) => {
@@ -863,7 +863,7 @@ test("projects stage rebounds small input and advances decisive input", async ({
   await expect(page.locator("html")).toHaveClass(/is-work-animating/);
   await page.mouse.wheel(0, 180); // Momentum tail must not skip another project.
   await expect(page.locator("[data-work-frame=lattice]")).toHaveClass(/is-active/);
-  await expect(page.locator("[data-work-frame=fiasco]")).not.toHaveClass(/is-active/);
+  await expect(page.locator("[data-work-frame=classical-atlas]")).not.toHaveClass(/is-active/);
   await expect(page.locator("html")).not.toHaveClass(/is-work-animating/);
   const finalCenterError = await latticeEntry.evaluate((element) => {
     const bounds = element.getBoundingClientRect();
@@ -932,7 +932,7 @@ test("keyboard navigation advances exactly one centered project", async ({ page,
 
   for (const [key, slug] of [
     ["ArrowDown", "lattice"],
-    ["ArrowDown", "fiasco"],
+    ["ArrowDown", "classical-atlas"],
     ["ArrowUp", "lattice"],
   ] as const) {
     await page.keyboard.press(key);
@@ -1076,6 +1076,15 @@ test("project and note routes render real content", async ({ page, isMobile }) =
   await expect(page.getByText("IndexedDB", { exact: true })).toBeVisible();
   await expect(page.getByAltText(/Dark-mode Freeform Artifacts canvas/)).toBeVisible();
 
+  await page.goto("/projects/classical-atlas/");
+  await expect(page.getByRole("heading", { level: 1, name: "Classical Atlas" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Open demo/ })).toHaveAttribute(
+    "href",
+    "https://siriusctrl.github.io/classical-atlas/",
+  );
+  await expect(page.getByText("d3-geo", { exact: true })).toBeVisible();
+  await expect(page.getByAltText(/Sicilian expedition as a blue band/)).toBeVisible();
+
   await page.goto("/projects/picoagent/");
   await expect(page).toHaveURL(/\/projects\/fiasco\/$/);
   await expect(page.getByRole("heading", { level: 1, name: "Fiasco" })).toBeVisible();
@@ -1149,6 +1158,7 @@ test("mobile layouts do not overflow the viewport", async ({ page, isMobile }) =
     "/",
     "/projects/",
     "/projects/freeform-artifacts/",
+    "/projects/classical-atlas/",
     "/notes/",
     "/notes/context-not-control/",
     "/notes/rebuilding-the-site/",

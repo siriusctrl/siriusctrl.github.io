@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Classical Atlas grain route portrait</title>
+  <desc id="description">A grain route runs from a narrow strait across a sea of allied coasts into one harbour, with a progress ruler that sets the frame.</desc>
+  <style>
+    :root{--paper:#1a1d1b;--ink:#e8e9e4;--muted:#9da39e;--faint:#454a46;--rule:#343835;--accent:#e0675c;--accent-soft:#57332f}
+    .paper{fill:var(--paper)}.frame,.guide,.coast,.route,.wake,.node,.halo,.orbit,.tick{fill:none;vector-effect:non-scaling-stroke}
+    .frame{stroke:var(--rule);stroke-width:1}.guide{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 12}
+    .coast{stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}.coast.soft{stroke:var(--muted);stroke-width:1.2}
+    .island{fill:var(--paper);stroke:var(--ink);stroke-width:1.3;vector-effect:non-scaling-stroke}
+    .route{stroke:var(--accent);stroke-width:2.6;stroke-linecap:round}.wake{stroke:var(--accent-soft);stroke-width:14;stroke-linecap:round}
+    .node{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.node.active{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+    .halo{stroke:var(--faint);stroke-width:1}.orbit{stroke:var(--accent);stroke-width:1.4}
+    .dot{fill:var(--ink)}.dot.accent{fill:var(--accent)}.convoy{fill:var(--accent)}
+    .tick{stroke:var(--ink);stroke-width:1.2}.tick.done{stroke:var(--accent);stroke-width:2.2}
+    .marker{fill:var(--paper);stroke:var(--accent);stroke-width:2;vector-effect:non-scaling-stroke}
+    .label,.micro{font-family:"Geist Mono","SFMono-Regular",Consolas,monospace;fill:var(--ink)}
+    .label{font-size:17px;letter-spacing:.13em}.micro{fill:var(--muted);font-size:13px;letter-spacing:.11em}.accent-text{fill:var(--accent)}
+    .piece{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+    .sea{animation:sea-in 1100ms cubic-bezier(.16,1,.3,1) 80ms both}
+    .ruler{animation:ruler-in 1100ms cubic-bezier(.16,1,.3,1) 220ms both}
+    .draw{stroke-dasharray:1400;animation:draw 1500ms cubic-bezier(.16,1,.3,1) 620ms both}
+    .orbit{animation:pulse 2200ms ease-in-out 1600ms infinite}
+    @keyframes sea-in{0%{opacity:0;transform:translateY(48px)}72%{opacity:1;transform:translateY(-4px)}100%{opacity:1;transform:none}}
+    @keyframes ruler-in{0%{opacity:0;transform:translateX(-60px)}72%{opacity:1;transform:translateX(4px)}100%{opacity:1;transform:none}}
+    @keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
+    @keyframes pulse{0%,100%{opacity:.28;transform:scale(.82)}50%{opacity:.85;transform:scale(1.08)}}
+
+    @media(prefers-reduced-motion:reduce){.piece,.draw,.orbit{animation:none}}
+  </style>
+
+  <rect class="paper" width="1600" height="1000"/>
+  <rect class="frame" x="44.5" y="44.5" width="1511" height="911"/>
+  <text class="label" x="92" y="102">CLASSICAL ATLAS / GRAIN ROUTE</text>
+  <text class="micro" x="1508" y="102" text-anchor="end">431 – 404 BC</text>
+
+  <g class="piece sea">
+    <path class="coast" d="M220 170C238 260 214 340 236 420C256 492 232 548 268 600C306 654 380 664 446 662C498 660 528 676 536 706C544 740 500 760 446 770C380 782 318 800 280 838"/>
+    <path class="coast" d="M390 168C470 214 560 200 640 226C716 250 792 236 866 248C950 262 1030 236 1104 226C1140 220 1170 214 1200 204C1268 182 1340 152 1420 132"/>
+    <path class="coast" d="M1232 262C1300 240 1370 214 1440 190"/>
+    <path class="coast" d="M1232 262C1214 300 1240 340 1228 384C1214 436 1250 476 1262 528C1276 590 1240 640 1268 700C1294 756 1352 790 1380 846"/>
+
+    <ellipse class="island" cx="640" cy="560" rx="34" ry="20" transform="rotate(-18 640 560)"/>
+    <ellipse class="island" cx="760" cy="640" rx="22" ry="14"/>
+    <ellipse class="island" cx="1060" cy="470" rx="42" ry="22" transform="rotate(24 1060 470)"/>
+    <ellipse class="island" cx="1110" cy="640" rx="26" ry="15" transform="rotate(-10 1110 640)"/>
+    <ellipse class="island" cx="900" cy="350" rx="30" ry="16" transform="rotate(12 900 350)"/>
+
+    <path class="wake draw" d="M1214 232C1150 270 1060 320 990 390C920 460 820 520 720 586C650 632 590 668 536 694"/>
+    <path class="route draw" d="M1214 232C1150 270 1060 320 990 390C920 460 820 520 720 586C650 632 590 668 536 694"/>
+    <circle class="convoy" cx="1104" cy="296" r="6"/>
+    <circle class="convoy" cx="940" cy="440" r="6"/>
+    <circle class="convoy" cx="760" cy="560" r="6"/>
+
+    <circle class="halo" cx="640" cy="226" r="46"/><circle class="node" cx="640" cy="226" r="8"/><circle class="dot" cx="640" cy="226" r="2.8"/>
+    <circle class="halo" cx="866" cy="248" r="40"/><circle class="node" cx="866" cy="248" r="8"/><circle class="dot" cx="866" cy="248" r="2.8"/>
+    <circle class="halo" cx="1229" cy="384" r="52"/><circle class="node" cx="1229" cy="384" r="8"/><circle class="dot" cx="1229" cy="384" r="2.8"/>
+    <circle class="halo" cx="1262" cy="560" r="44"/><circle class="node" cx="1262" cy="560" r="8"/><circle class="dot" cx="1262" cy="560" r="2.8"/>
+    <circle class="halo" cx="1060" cy="470" r="62"/><circle class="dot" cx="1060" cy="470" r="3.2"/>
+
+    <circle class="node" cx="1214" cy="232" r="10"/><circle class="dot accent" cx="1214" cy="232" r="3.5"/>
+    <circle class="node active" cx="536" cy="694" r="16"/><circle class="dot accent" cx="536" cy="694" r="5"/>
+    <circle class="orbit" cx="536" cy="694" r="28"/>
+
+    <text class="micro" x="1262" y="300">HELLESPONT</text>
+    <text class="micro accent-text" x="566" y="742">PIRAEUS</text>
+    <text class="micro" x="830" y="470" transform="rotate(-36 830 470)">GRAIN · TRIBUTE</text>
+  </g>
+
+  <g class="piece ruler">
+    <path class="guide" d="M220 868H1380"/>
+    <path class="tick done" d="M220 868H938"/>
+    <path class="tick" d="M220 856V880M510 860V876M800 860V876M1090 860V876M1380 856V880"/>
+    <rect class="marker" x="928" y="858" width="20" height="20" transform="rotate(45 938 868)"/>
+    <text class="micro" x="220" y="912">PROGRESS</text>
+    <text class="micro accent-text" x="1380" y="912" text-anchor="end">FRAME = F(P)</text>
+  </g>
+</svg>
