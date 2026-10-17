@@ -30,11 +30,11 @@ Status: accepted
 
 ### Context
 
-Most pages are static, while the site still needs Markdown/MDX, RSS, sitemap generation, reusable layouts, and a small color-mode interaction.
+Most pages are static, while the site still needs Markdown/MDX, RSS, sitemap generation, reusable layouts, and a small color-mode interaction (later removed by ADR-0008).
 
 ### Decision
 
-Use Astro's static output with content collections. Keep browser JavaScript limited to the theme toggle and verification hooks.
+Use Astro's static output with content collections. Keep browser JavaScript limited to small progressive enhancements and verification hooks.
 
 ### Why
 
@@ -187,3 +187,40 @@ the separate latest-writing feature and the compact project list.
 - Project dates are curated by hand and must be updated with meaningful releases.
 - The "New" badge is computed at build time, so it changes only when the site is rebuilt.
 
+## ADR-0008: Make the site light-only
+
+Status: accepted
+
+### Context
+
+The site shipped light and dark palettes, a theme toggle in the header, and a
+circular reveal animation that cloned the page to animate the switch. Every
+portrait and note SVG carried a dark palette, and a generator produced explicit
+`-light.svg` and `-dark.svg` variants so artwork could follow the toggle. The
+reveal script was the largest piece of client JavaScript left on the site, and
+theme coverage (contrast per reveal frame, zoom, 4k, WebKit SVG swaps,
+scrollbar geometry) made up a large share of the browser tests.
+
+### Decision
+
+Ship a single light palette. Remove the theme toggle, the stored-theme and
+`prefers-color-scheme` handling, the reveal animation, the dark tokens, and the
+dark SVG variants. Declare `color-scheme: only light` and a single light
+`theme-color`. Portrait and note SVGs are served directly as single light
+assets, with no variant generator. Interactive demos deployed from their own
+repositories, such as Classical Atlas, keep whatever themes they provide.
+
+### Why
+
+- Simpler: less client JavaScript, CSS, generated media, and test surface.
+- The warm light palette suits long-form writing and the diagram artwork.
+- Real product screenshots (terminal captures, demo screenshots) cannot follow
+  the site theme, so a dark site mixed themed chrome with fixed media.
+
+### Trade-offs
+
+- Readers who prefer dark mode get the light site; the OS preference is
+  intentionally ignored.
+- The theme toggle and its reveal animation are gone.
+- The former `-light.svg` and `-dark.svg` media URLs no longer exist; pages
+  reference the unsuffixed SVGs.

@@ -3,7 +3,7 @@
 ## Source map
 
 - `src/pages/`: route entrypoints for home, projects, notes, RSS, and compatibility redirects.
-- `src/layouts/BaseLayout.astro`: document metadata, global assets, theme initialization, and shared shell.
+- `src/layouts/BaseLayout.astro`: document metadata, global assets, language redirect, and shared shell.
 - `src/components/`: small presentational site components.
 - `src/data/projects.ts`: curated public project catalog and links.
 - `src/content/notes/`: public Markdown/MDX notes.
@@ -21,7 +21,7 @@
 - Use real screenshots or recordings from project runtimes. Do not recreate terminal products as fake browser UI.
 - Keep project metadata curated. Do not turn the home page into an automatic dump of GitHub repositories.
 - Preserve published note and project routes, or add explicit redirects when a slug changes.
-- Support desktop/mobile and light/dark modes together.
+- The site is light-only; support desktop and mobile. Do not reintroduce a dark theme or theme toggle without a new ADR.
 - Do not commit generated `dist/`, test output, or local verification artifacts.
 
 ## Task routing
@@ -42,7 +42,7 @@ npm run verify:ui
 npm run verify:proof
 ```
 
-Inspect desktop/mobile screenshots and the proof contact sheet. A successful build alone does not prove layout, navigation, theme, or image quality.
+Inspect desktop/mobile screenshots and the proof contact sheet. A successful build alone does not prove layout, navigation, color, or image quality.
 
 ## Documentation updates
 
