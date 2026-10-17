@@ -976,6 +976,59 @@ test("home Recently strip shows the two newest projects and the newest note", as
   await expect(page).toHaveURL(new RegExp(`${first.href}$`));
 });
 
+test("Recently strip and projects grid align thumbnails, titles, summaries, and meta per row", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "Row alignment applies to the multi-column desktop layouts");
+
+  const rowEdges = (selector: string) => page.locator(selector).evaluateAll((cards) =>
+    cards.map((card) => {
+      const box = (part: string) => card.querySelector(part)!.getBoundingClientRect();
+      return {
+        thumbHeight: box("figure").height,
+        thumbTop: box("figure").top,
+        title: box("h3").top,
+        summary: box("p").top,
+        meta: box(".project-meta").top,
+      };
+    }));
+  const expectAligned = (values: number[]) => {
+    expect(Math.max(...values) - Math.min(...values)).toBeLessThanOrEqual(1);
+  };
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const recent = await rowEdges(".recent-item");
+  expect(recent).toHaveLength(3);
+  for (const edge of ["thumbHeight", "thumbTop", "title", "summary", "meta"] as const) {
+    expectAligned(recent.map((item) => item[edge]));
+  }
+  const recentWidths = await page.locator(".recent-item").evaluateAll((items) =>
+    items.map((item) => item.getBoundingClientRect().width)
+  );
+  expect(recentWidths[0]!).toBeGreaterThan(recentWidths[1]! * 1.2);
+
+  await page.goto("/projects/");
+  // A longer summary in one card must not push its neighbours' rows out of line.
+  await page.locator(".catalog-grid .catalog-card p").first().evaluate((summary) => {
+    summary.textContent += " An intentionally longer summary that wraps onto several more lines than the rest.";
+  });
+  const cards = await rowEdges(".catalog-grid .catalog-card");
+  expect(cards.length).toBeGreaterThanOrEqual(3);
+  const rows = new Map<number, typeof cards>();
+  for (const card of cards) {
+    const key = Math.round(card.thumbTop);
+    rows.set(key, [...(rows.get(key) ?? []), card]);
+  }
+  expect([...rows.values()].some((row) => row.length > 1)).toBe(true);
+  for (const row of rows.values()) {
+    for (const edge of ["title", "summary", "meta"] as const) {
+      expectAligned(row.map((card) => card[edge]));
+    }
+  }
+});
+
 test("reduced motion keeps theme changes immediate", async ({ page, isMobile }) => {
   test.skip(isMobile, "Reduced-motion fallback only needs one browser profile");
 

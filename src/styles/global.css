@@ -548,12 +548,29 @@ a:hover > .project-artwork img {
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Cards are row-aligned through subgrid: every card spans the same four parent
+   rows (thumbnail / title / summary / meta), so titles, summaries, and meta lines
+   share a top edge across a row whatever their text length. The parent grids keep
+   row-gap at 0 (a gap would also open between a card's own rows, and Chromium and
+   WebKit disagree on how a subgrid row-gap override is resolved); rows of cards are
+   separated by --card-row-gap as margin instead, with the trailing one cancelled. */
 .catalog-card,
 .recent-item {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 4;
   min-width: 0;
+  margin-bottom: var(--card-row-gap);
+}
+
+.catalog-card > h3,
+.catalog-card > p,
+.catalog-card > .project-meta,
+.recent-item > h3,
+.recent-item > p,
+.recent-item > .project-meta {
+  align-self: start;
 }
 
 .catalog-card h3,
@@ -765,9 +782,12 @@ a:hover > .project-artwork img {
 }
 
 .catalog-grid {
+  --card-row-gap: 34px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 34px 22px;
+  column-gap: 22px;
+  row-gap: 0;
+  margin-bottom: calc(-1 * var(--card-row-gap));
 }
 
 .recent-section {
@@ -804,15 +824,34 @@ a:hover > .project-artwork img {
 }
 
 .recent-strip {
+  --card-row-gap: 20px;
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
+  column-gap: 20px;
+  row-gap: 0;
+  margin-bottom: calc(-1 * var(--card-row-gap));
 }
 
 .recent-item:first-child .catalog-thumb,
 .recent-item:first-child .recent-note-artwork {
   aspect-ratio: 16 / 9.4;
+}
+
+/* In the three-column strip the wider lead thumbnail takes the height of the
+   16:10 thumbnails beside it: it drops its own ratio, contributes no height to
+   the shared thumbnail row, stretches to fill it, and its image covers the frame. */
+@media (min-width: 861px) {
+  .recent-item:first-child .catalog-thumb,
+  .recent-item:first-child .recent-note-artwork {
+    align-self: stretch;
+    aspect-ratio: auto;
+  }
+
+  .recent-item:first-child .catalog-thumb img,
+  .recent-item:first-child .recent-note-artwork img {
+    position: absolute;
+    inset: 0;
+  }
 }
 
 .recent-item h3 {
@@ -1335,8 +1374,8 @@ a:hover > .project-artwork img {
   }
 
   .recent-strip {
+    --card-row-gap: 32px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px 20px;
   }
 
   .recent-item:first-child {
@@ -1437,8 +1476,8 @@ a:hover > .project-artwork img {
 
   .catalog-grid,
   .recent-strip {
+    --card-row-gap: 36px;
     grid-template-columns: 1fr;
-    gap: 36px;
   }
 
   .recent-section {
