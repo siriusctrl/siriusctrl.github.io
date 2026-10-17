@@ -26,7 +26,10 @@ The default development URL is `http://localhost:4321/`.
 
 ## Content
 
-- Add or revise projects in `src/data/projects.ts`.
+- Add or revise projects in `src/data/projects.ts`. Give every project a curated
+  `date` (`YYYY-MM-DD`, the last meaningful update or release); the projects
+  index and the home page "Recently" strip sort by it, and projects dated within
+  60 days of the build show a "New" badge.
 - Add public writing under `src/content/notes/` as Markdown or MDX.
 - Give every article a stable `translationKey` and `language`.
 - Keep the default English article at the existing path and place Chinese translations under `src/content/notes/zh/`.
@@ -36,6 +39,7 @@ The default development URL is `http://localhost:4321/`.
   `npm run generate:theme-svg` to refresh their explicit `-light.svg` and
   `-dark.svg` browser assets. `npm run check` rejects missing or stale variants.
 - Use `scripts/capture-towerlab.sh` to refresh the TowerLab terminal capture.
+- Use `node scripts/capture-lattice.mjs` to refresh the Lattice screenshot from its live Pages deployment.
 
 ## Verification
 
@@ -60,4 +64,6 @@ The previous Hexo-generated site is preserved on the `archive/hexo-2023` branch.
 - Classical Atlas as interactive map stories about the classical world, with its own Pages deployment.
 - Fiasco as the multi-agent orchestration and background-job runtime.
 - TowerLab, fmtview, and termviz as selected terminal projects.
+- A home page with a "Recently" strip (the two newest projects and the newest essay) above the current threads.
+- A projects index laid out as a catalog grid: the newest project leads, the rest follow newest first, and Interactive / Agents / Terminal filters are a small progressive enhancement over a fully static list.
 - English and Chinese Markdown/MDX writing, RSS, sitemap, detail pages, and responsive light/dark presentation.

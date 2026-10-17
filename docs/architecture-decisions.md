@@ -149,3 +149,41 @@ On article routes, expose canonical and `hreflang` links for both versions. If t
 - Every translation is maintained as a separate content file.
 - The writing index and RSS remain English-first until dedicated localized indexes or feeds are justified.
 - Browser-language routing uses a small inline script on article pages.
+
+## ADR-0007: Present projects as a catalog grid instead of a scroll-driven stage
+
+Status: accepted
+
+### Context
+
+The projects index used a scroll-driven work stage: a sticky visual and one
+full-viewport entry per project, advanced by wheel, keyboard, and pointer
+controllers. It was expressive, but visitors saw one project at a time, had to
+scroll through every entry to find one, and new work was only visible once they
+reached the index. The controller was also the largest piece of client
+JavaScript on the site.
+
+### Decision
+
+Render `/projects/` as a static catalog grid. The newest project leads as a
+larger card; the rest follow newest first in a responsive grid of thumbnail
+cards that link to their detail pages. Filters by kind (Interactive, Agents,
+Terminal) toggle card visibility with a few lines of script; without JavaScript
+every card stays visible and the filters are hidden. Each project carries a
+curated `date`, which drives ordering and a "New" badge. The home page gains a
+"Recently" strip with the two newest projects and the newest essay, replacing
+the separate latest-writing feature and the compact project list.
+
+### Why
+
+- Findability: every project is reachable without scrolling past the others.
+- At-a-glance overview: thumbnails, kinds, and dates read as one catalog.
+- New work is surfaced on the home page instead of only on the index.
+- Less client JavaScript and no scroll hijacking, in line with ADR-0002.
+
+### Trade-offs
+
+- The cinematic, one-project-at-a-time presentation is gone.
+- Project dates are curated by hand and must be updated with meaningful releases.
+- The "New" badge is computed at build time, so it changes only when the site is rebuilt.
+
